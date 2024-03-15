@@ -6,19 +6,30 @@
         <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <script src="https://cdn.bootcss.com/vConsole/3.3.4/vconsole.min.js"></script>
+        <!-- 移动sdk -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+        <script type="text/javascript" src=" https://www.cmpassport.com/h5/js/jssdk_auth/jssdk-1.0.0.min.js "></script>
+        <!-- 联通 -->
+        <script src="js/fingerprint2.min.1.5.1.js"></script>
+        <script src="js/jquery.js"></script>
+        <script src="js/ispAuthPrefetch.js"></script>
+        <!-- 电信 -->
+        <script src="http://static.e.189.cn/open/login/js/wap/js-sdk/EAccountSDK-fjs-1.5.2.min.js"></script>
+        <meta content="always" name="referrer">
         <title>闪验h5</title>
         <script>
             new VConsole();
         </script>
+        <link rel="stylesheet" type="text/css" href="https://www.cmpassport.com/h5/js/jssdk_auth/css/ydrz-layer.css">
     </head>
     <body>
         <script src="./dist/umd/living.min.js?t=10000"></script>
         <script>
-            console.log(window,"window");
-            // window.jmliving({ appKey: 'BdpoLzyD', appId: 'WLD6zS41' }, function (data) {
-            //                     console.log(data.message);
-            //                     console.log(data);
-            //                 });
+
+            window.clshanyansdk({ appKey: 'BdpoLzyD', appId: '5FO1pbba' }, function (data) {
+                                console.log(data.message);
+                                console.log(data);
+                            });
         </script>
     </body>
 </html>

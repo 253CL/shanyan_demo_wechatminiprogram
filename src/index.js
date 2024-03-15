@@ -1,15 +1,11 @@
 import './index.less';
 import ReactDOM from 'react-dom/client';
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { useNotification } from 'rc-notification';
 import { httpPost } from './axios';
 import codeConfig from './config';
 let domobj = null;
 let rootobj = null;
-const lightColors = ['#FFFFFF', '#FFD9E3', '#D8D6FF', '#CFF9FF', '#FFCEFD', '#D8FFCD', '#FFF4CB']; // 亮色数组
-const darkColors = ['#000000', '#3B3C04', '#183C03', '#063C28', '#063C3A', '#060D3C', '#3C0636']; // 暗色数组
-const actionsArr = ['LookFront', 'LookLeft', 'LookRight', 'LookUp', 'LookDown']; //, 'OpenMouth', 'ShakeHead', 'BlinkEye','Nodhead''
-console.log('actionsArr', actionsArr);
 const noticeMotion = {
     motionName: 'jm-message-fade',
     motionAppear: true,
@@ -32,7 +28,6 @@ const isFunction = (value) => {
 
 function Main({ params, callback }) {
     const [notice, contextHolder] = useNotification({ motion: noticeMotion, prefixCls: 'jm-message', maxCount: 1 });
-    const appKey = params.appKey || '';
     const appId = params.appId || '';
 
     //提示框
@@ -42,76 +37,146 @@ function Main({ params, callback }) {
         },
         [notice]
     );
-
-    function actionclick(type) {
-        const colors = type === 1 || type === 3 ? lightColors.concat(darkColors).join(',') : '';
-        const actions = type === 1 || type === 2 ? actionsArr.join(',') : '';
-        beginHandle({ actions, colors });
-    }
-    function beginHandle({ colors = '', actions = '' }) {
-        const returnUrl = window.location.href;
-        const params = { appId, appKey, returnUrl, colors, actions };
-        let formData = new FormData();
-        for (let key in params) {
-            formData.append(key, params[key]);
+        const _getSign=(res={})=>{
+          return  httpPost('/sy/h5/init', { telecomType: '3', appId, data: res.encryValue })
         }
-        const url = 'glare-life-check-init';
-        httpPost(url, formData)
-            .then(function (response) {
-                const { data, code, message } = response || {};
-                if (code !== '200000') return noticeHandle(message);
-                if (!data.token) return noticeHandle(data.resMsg);
-                window.location.href = `https://api-h5.jumdata.com/lifecheck/v2/check/index?token=${data.token}`;
+    const cucc = (cuccdata) => {
+        window.LTRZ['getTokenInfo']({
+            //1.获取置换码方法
+            appKey: cuccdata.appSecret, //密钥
+            authenticator: cuccdata.sign, //加密后的数据。客户设置
+            ts: cuccdata.timestamp
+        })
+            .then((res) => {
+                console.log(res, 'cuccres');
             })
-            .catch((error) => {
-                console.log(error);
+            .catch((err) => {
+                console.log(err, 'cuccerr');
             });
-    }
-    const clearURLParams = () => {
-        const newURL = window.location.origin + window.location.pathname;
-        window.history.replaceState({}, document.title, newURL);
     };
-    const codeMapJsx = (code) => {
-        if (codeConfig[code]) {
-            const { explain, resultExplain } = codeConfig[code];
-            return (
-                <div>
-                    {explain && <h1>{explain}</h1>}
-                    {resultExplain && resultExplain.split('。').map((item, index) => <p key={index}>{item.trim()}</p>)}
-                </div>
-            );
-        } else {
-            return null;
-        }
-    };
+    const ctcc = useCallback((ctccdata) => {
+        window.fjs.getAccessCode({
+            debug: true, // 非必填，布尔值，开启调试模式,调用的所有api的返回值会在客户端alert出来，在pc端打印出来。生产环境请设置为false
+            btnId: 'j-get-code', //必填，“获取accessCode”按钮标签id（可参考下方html/js示例）
+            appId: ctccdata.appId, //必填，开发者在注册应用的时候由天翼账号开放平台分发的接入方appId
+            authDomain: '', //非必填，合作方传入域名参数
+            getSignParams: function (res) {
+                _getSign(res).then((data) => {
+                    console.log(data,"zuihoude ");
+                    window.fjs.setSign(data.data.sign);
+                });
+                
+                //获取sign加密串的回调。
+                //返回结果示例
+                // {
+                //   encryValue: 'xxx'
+                // }
+                // res.encryValue：需要被加密的字符串。
+                // 接入方前端ajax把该加密字符串发送给接入方后端。接入方服务器加密该字符串，（加密详情参考3.3.1）得到并返回sign。
+                // 接入方前端再调用fjs.setSign(sign) 把sign传给jssdk。（可参考下方html/js示例）
+            },
+            ready: function (res) {
+                console.log(res, 'ctccreadyres');
+                var j_get_code = document.getElementById('j-get-code');
+                j_get_code.style.display = 'block';
+                // 预判断成功回调，// res返回结果示例：
+                //  {
+                //      result: '0',
+                //      msg: '预取号成功'
+                //  }
+                // ready回调中，接入方需要把“获取本机号码”按钮显示即可。（可参考下方html/js示例）
+            },
+            success: function (res) {
+                console.log(res, 'ctccres');
+                //成功回调。通过返回参数，请求h5codeinfo接口获取用户手机号码信息。（详情参考3.4）
+                // res返回结果示例
+                //  {
+                //        result: '0',
+                //        accessCode: 'xxx',
+                //        fingerId: 'xxx',
+                //        gwAuth: 'xxx',
+                //        msg:"授权成功",
+                //  }
+            },
+            error: function (err) {
+                console.log(err, 'ctccerr');
+
+                //返回预判断失败。这里由合作方处理失败后的逻辑
+            }
+        });
+    }, []);
+    const cmccAjax = useCallback((cmccdata) => {
+        window.YDRZAuthLogin.getTokenInfo({
+            data: {
+                version: '2.0', //接口版本号 （必填）
+                appId: cmccdata.appId, //应用Id （必填）
+                sign: cmccdata.sign,
+                traceId: cmccdata.traceId,
+                timestamp: cmccdata.timestamp, //请求消息发送的系统时间，精确到毫秒，共17位，格式：20121227180001165
+                openType: '1', //取号类型
+                expandParams: '', //扩展参数 格式：参数名=值 多个时使用 \| 分割 （选填）
+                authPageType: '0', //若值为“1”时展示弹窗，若值为“2”时展示自定义弹窗版，若值为“3”时展示自定义页面版，若为其它值则展示页面。更多说明见“2.重要参数说明”中“2.3.authPageType”
+                devInfo: '', // 1：用户点击其他登录方式时回收授权弹窗，点击协议时协议内容使用iframe打开,默认不回收授权弹窗，点击协议时协议内容在一个新窗口打开
+                setReturn: '' // 1：授权页面显示返回键，不传或其他值根据浏览器判断
+            },
+            success: function (res) {
+                console.log(res, 'res',"移动的成功回调");
+            },
+            error: function (res) {
+                console.log(res, 'error');
+            },
+            layerCallback: function (res) {
+                //authPageType等于2时可以通过该回调方法监听，用户输入中间四位号码并勾选协议后触发
+            }
+        });
+    }, []);
+    // 移动初始化
+    const cmccInit = useCallback(() => {
+        httpPost('/sy/h5/init', { telecomType: '1', appId, data: '' })
+            .then((res) => {
+                cmccAjax(res.data);
+            })
+            .catch((err) => {
+                console.log('初始化失败');
+            });
+    }, [appId, cmccAjax]);
+    // 联通初始化
+    const cuccInit = useCallback(() => {
+        httpPost('/sy/h5/init', { telecomType: '2', appId, data: '' })
+            .then((res) => {
+                cucc(res.data);
+            })
+            .catch((err) => {
+                console.log('初始化失败');
+            });
+    }, [appId]);
+    // 电信初始化
+    const ctccInit = useCallback(() => {
+        httpPost('/sy/h5/init', { telecomType: '3', appId, data: '' })
+            .then((res) => {
+             ctcc(res.data);
+            })
+            .catch((err) => {
+                console.log('初始化失败',err);
+            });
+    }, [appId, ctcc]);
+    useEffect(() => {
+        // cmccInit();
+    }, [cmccInit]);
+    useEffect(() => {
+        // cuccInit();
+    }, [cuccInit]);
 
     useEffect(() => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const token = urlParams.get('token');
-        const params = { token, appId, appKey };
-        let formData = new FormData();
-        for (let key in params) {
-            formData.append(key, params[key]);
-        }
-        clearURLParams();
-        if (!token) return;
-        httpPost('glare-life-check-result', formData)
-            .then(function (response) {
-                const { data, code, message } = response || {};
-                code !== '200000' ? noticeHandle(message) : noticeHandle(codeMapJsx(data.resCode));
-            })
-            .catch((error) => {
-                console.log(error);
-            });
-    }, [appId, appKey, noticeHandle]);
+        ctccInit();
+    }, [ctccInit]);
     return (
         <React.Fragment>
             {contextHolder}
-            <div className="example">
-                <h3 onClick={() => actionclick(1)}>动态炫光活体（闪光+动作）</h3>
-                <h3 onClick={() => actionclick(2)}>动态炫光检测（动作）</h3>
-                <h3 onClick={() => actionclick(3)}>动态炫光检测（闪光）</h3>
-            </div>
+            <button style={{ display: 'none' }} id="j-get-code">
+                电信校验本机号码
+            </button>
+            <div className="example">闪验h5</div>
         </React.Fragment>
     );
 }

@@ -2,7 +2,8 @@ import axios from 'axios';
 const exampleobj = axios.create({
     withCredentials: true,
     // baseURL: 'https://api.253.com/open/i/htjc/'
-    baseURL: 'anarchism_api/open/i/htjc/'    
+    // baseURL: 'http://172.16.40.52:18080'  
+    baseURL: 'http://120.253.136.198:36011'  
 });
 
 // http request 拦截器
