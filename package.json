@@ -28,8 +28,10 @@
     "father": "^4.2.0"
   },
   "dependencies": {
+    "antd-mobile": "^5.34.0",
     "axios": "^1.4.0",
     "compressorjs": "^1.2.1",
+    "crypto-js": "^4.2.0",
     "rc-notification": "^5.0.4",
     "rc-progress": "^3.4.1",
     "react": "^18.2.0",

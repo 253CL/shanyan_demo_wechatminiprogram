@@ -7,17 +7,44 @@
     user-select: none;
     background-color: #fff;
     z-index: 1000;
-    .example {
-        text-align: center;
-        padding: 30vh 20vw 0px 20vw;
+    .top {
+        position: absolute;
+        width: 100vw;
+        top: 5vh;
     }
-
-    .example h3 {
-        color: #fff;
+    .top-title {
+        text-align: center;
+        font-weight: 800;
+        font-size: 20px;
+    }
+    .image {
+        margin-top: 10vh;
+        img {
+            display: block;
+            margin: 0 auto;
+            width: 30vh;
+        }
+    }
+    .title {
+        margin-bottom: 5vh;
+        text-align: center;
+        font-weight: 800;
         font-size: 16px;
-        line-height: 40px;
-        background-color: #2d77ff;
-        margin-bottom: 30px;
+    }
+    .phone-number {
+        display: flex;
+        justify-content: center;
+        font-size: 18px;
+        .phone-block {
+            display: block;
+            text-align: center;
+            line-height: 42px;
+            height: 42px;
+            width: 5vw;
+        }
+        &-box {
+            display: flex;
+        }
     }
 }
 
@@ -432,21 +459,21 @@
         cursor: pointer;
     }
 }
-.jm-success{
+.jm-success {
     margin: 10px;
     padding-top: 20vh;
-    &-center{        
-        img{
+    &-center {
+        img {
             display: block;
             margin: 0 auto;
         }
     }
-    &-text{
+    &-text {
         text-align: center;
         margin-top: 20px;
         margin-bottom: 20px;
     }
-   &-button {
+    &-button {
         color: #fff;
         height: 50px;
         font-size: 16px;
@@ -457,27 +484,27 @@
         cursor: pointer;
     }
 }
-.jm-error{
+.jm-error {
     margin: 10px;
     padding-top: 20vh;
-    &-center{        
-        img{
+    &-center {
+        img {
             display: block;
             margin: 0 auto;
         }
     }
-    &-text{
+    &-text {
         text-align: center;
         margin-top: 20px;
         margin-bottom: 20px;
         font-weight: 800;
     }
-    &-reason{
+    &-reason {
         text-align: center;
         margin-top: 20px;
         margin-bottom: 20px;
     }
-   &-button {
+    &-button {
         color: #fff;
         height: 50px;
         font-size: 16px;
