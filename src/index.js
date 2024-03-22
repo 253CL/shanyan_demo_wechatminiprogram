@@ -1,14 +1,12 @@
 import './index.less';
 import ReactDOM from 'react-dom/client';
-import React, { useCallback, useEffect, useRef, useState, useMemo } from 'react';
+import React, { useCallback, useEffect, useState, useMemo } from 'react';
 import { useNotification } from 'rc-notification';
 import { httpPost } from './axios';
-import codeConfig from './config';
 import axios from 'axios';
-import { Button, NumberKeyboard, PasscodeInput, Space } from 'antd-mobile';
+import { NumberKeyboard, PasscodeInput, Radio } from 'antd-mobile';
 
 const CryptoJS = require('crypto-js');
-const _appKey = 'hYmhmHWV';
 let domobj = null;
 let rootobj = null;
 const noticeMotion = {
@@ -33,53 +31,69 @@ const isFunction = (value) => {
 
 function Main({ params, callback }) {
     const [notice, contextHolder] = useNotification({ motion: noticeMotion, prefixCls: 'jm-message', maxCount: 1 });
-    const [cuccView, setCuccView] = useState(true);
+    const [cuccView, setCuccView] = useState(false);
     const [cuccPhoneNumber, setCuccPhoneNumber] = useState('');
     const [cuccResponseData, setCuccResponseData] = useState({});
+    const [checked, setchecked] = useState(false);
     const appId = params.appId || '';
-    const nativeInputRef = useRef(null);
-    //提示框
-    const noticeHandle = useCallback(
-        (content) => {
-            notice.open({ content, duration: 2.5, closable: false, placement: 'top' });
+    const appKey = params.appKey || '';
+    const radioChange = (e) => {
+        setchecked(!checked);
+    };
+    const cryptographicToken = useCallback(
+        (type, responseData) => {
+            const randomNumber = generateRandomBitNumber(32);
+            const params = {
+                ap: appId,
+                tk: responseData.token || responseData.accessCode || '',
+                au: responseData.gwAuth || '',
+                dd: randomNumber,
+                vs: '1.0.0',
+                fp: responseData.userInformation || ''
+            };
+            const token = convertSign(aesEncryptObject(appId, params));
+            return `${type}-` + token;
         },
-        [notice]
+        [appId]
     );
-    const onInput = (e) => {
-        console.log(e, '123132');
-    };
-    const replacementPhoneNumber = (token) => {
-        let params = { token, appId };
-        const sign = sortAndEncryptObjectProperties(params, _appKey);
-        params = { token, appId, sign };
-        let formData = new FormData();
-        for (let key in params) {
-            formData.append(key, params[key]);
-        }
-        axios
-            // .post('http://api.stable.253.com/open/web/mobile-query',formData,{headers: {
-            .post('https://31a7-218-76-38-2.ngrok-free.app/open/web/mobile-query', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                }
-            })
-            .then(({ data }) => {
-                if (data.code === '200000') {
-                    const mobile = phoneDecrypt(data.data.mobile, _appKey);
-                    console.log(mobile, '解密后的手机号码');
-                }
-            })
-            .catch((error) => {
-                console.error(error);
-            });
-    };
+    const replacementPhoneNumber = useCallback(
+        (token) => {
+            let params = { token, appId };
+            const sign = sortAndEncryptObjectProperties(params, appKey);
+            params = { token, appId, sign };
+            let formData = new FormData();
+            for (let key in params) {
+                formData.append(key, params[key]);
+            }
+            axios
+                // .post('http://api.stable.253.com/open/web/mobile-query',formData,{headers: {
+                .post('https://31a7-218-76-38-2.ngrok-free.app/open/web/mobile-query', formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    }
+                })
+                .then(({ data }) => {
+                    if (data.code === '200000') {
+                        const mobile = phoneDecrypt(data.data.mobile, appKey);
+                        if(cuccView){
+                            setCuccView(false)
+                        }
+                        callback('解密后的手机号码'+mobile)
+                    }
+                })
+                .catch((error) => {
+                    callback(error)
+                });
+        },
+        [appId, appKey, callback, cuccView]
+    );
     const _getSign = useCallback(
         (res = {}) => {
             return httpPost('/sy/h5/init', { telecomType: '3', appId, data: res.encryValue });
         },
         [appId]
     );
-    const cucc = (cuccdata) => {
+    const cucc = useCallback((cuccdata) => {
         window.LTRZ['getTokenInfo']({
             //1.获取置换码方法
             appKey: cuccdata.appSecret, //密钥
@@ -87,12 +101,13 @@ function Main({ params, callback }) {
             ts: cuccdata.timestamp
         })
             .then((res) => {
+                setCuccView(true);
                 setCuccResponseData(res);
             })
             .catch((err) => {
-                console.log(err, 'cuccerr');
+                // callback(err)
             });
-    };
+    },[]);
     const ctcc = useCallback(
         (ctccdata) => {
             window.fjs.getAccessCode({
@@ -102,82 +117,54 @@ function Main({ params, callback }) {
                 authDomain: '', //非必填，合作方传入域名参数
                 getSignParams: function (res) {
                     _getSign(res).then((data) => {
-                        console.log(data, 'zuihoude ');
                         window.fjs.setSign(data.data.sign);
                     });
-
-                    //获取sign加密串的回调。
-                    //返回结果示例
-                    // {
-                    //   encryValue: 'xxx'
-                    // }
-                    // res.encryValue：需要被加密的字符串。
-                    // 接入方前端ajax把该加密字符串发送给接入方后端。接入方服务器加密该字符串，（加密详情参考3.3.1）得到并返回sign。
-                    // 接入方前端再调用fjs.setSign(sign) 把sign传给jssdk。（可参考下方html/js示例）
                 },
                 ready: function (res) {
-                    console.log(res, 'ctccreadyres');
                     const j_get_code = document.getElementById('j-get-code');
-                    // j_get_code.click()
                     j_get_code.style.display = 'block';
-                    // 预判断成功回调，// res返回结果示例：
-                    //  {
-                    //      result: '0',
-                    //      msg: '预取号成功'
-                    //  }
-                    // ready回调中，接入方需要把“获取本机号码”按钮显示即可。（可参考下方html/js示例）
                 },
                 success: function (res) {
-                    console.log(res, 'ctccres');
                     const token = cryptographicToken('A3', res);
-                    console.log(res, 'res', '电信的成功回调发起时候的参数', token);
                     replacementPhoneNumber(token);
-                    //成功回调。通过返回参数，请求h5codeinfo接口获取用户手机号码信息。（详情参考3.4）
-                    // res返回结果示例
-                    //  {
-                    //        result: '0',
-                    //        accessCode: 'xxx',
-                    //        fingerId: 'xxx',
-                    //        gwAuth: 'xxx',
-                    //        msg:"授权成功",
-                    //  }
                 },
                 error: function (err) {
-                    console.log(err, 'ctccerr');
+                // callback(err)
 
-                    //返回预判断失败。这里由合作方处理失败后的逻辑
                 }
             });
         },
-        [_getSign]
+        [_getSign, cryptographicToken, replacementPhoneNumber]
     );
-    const cmccAjax = useCallback((cmccdata) => {
-        window.YDRZAuthLogin.getTokenInfo({
-            data: {
-                version: '2.0', //接口版本号 （必填）
-                appId: cmccdata.appId, //应用Id （必填）
-                sign: cmccdata.sign,
-                traceId: cmccdata.traceId,
-                timestamp: cmccdata.timestamp, //请求消息发送的系统时间，精确到毫秒，共17位，格式：20121227180001165
-                openType: '1', //取号类型
-                expandParams: '', //扩展参数 格式：参数名=值 多个时使用 \| 分割 （选填）
-                authPageType: '0', //若值为“1”时展示弹窗，若值为“2”时展示自定义弹窗版，若值为“3”时展示自定义页面版，若为其它值则展示页面。更多说明见“2.重要参数说明”中“2.3.authPageType”
-                devInfo: '', // 1：用户点击其他登录方式时回收授权弹窗，点击协议时协议内容使用iframe打开,默认不回收授权弹窗，点击协议时协议内容在一个新窗口打开
-                setReturn: '' // 1：授权页面显示返回键，不传或其他值根据浏览器判断
-            },
-            success: function (res) {
-                const token = cryptographicToken('A1', res);
-                console.log(res, 'res', '移动的成功回调发起时候的参数', token);
-                replacementPhoneNumber(token);
-            },
-            error: function (res) {
-                console.log(res, 'error');
-            },
-            layerCallback: function (res) {
-                //authPageType等于2时可以通过该回调方法监听，用户输入中间四位号码并勾选协议后触发
-            }
-        });
-    }, []);
+    const cmcc = useCallback(
+        (cmccdata) => {
+            window.YDRZAuthLogin.getTokenInfo({
+                data: {
+                    version: '2.0', //接口版本号 （必填）
+                    appId: cmccdata.appId, //应用Id （必填）
+                    sign: cmccdata.sign,
+                    traceId: cmccdata.traceId,
+                    timestamp: cmccdata.timestamp, //请求消息发送的系统时间，精确到毫秒，共17位，格式：20121227180001165
+                    openType: '1', //取号类型
+                    expandParams: '', //扩展参数 格式：参数名=值 多个时使用 \| 分割 （选填）
+                    authPageType: '0', //若值为“1”时展示弹窗，若值为“2”时展示自定义弹窗版，若值为“3”时展示自定义页面版，若为其它值则展示页面。更多说明见“2.重要参数说明”中“2.3.authPageType”
+                    devInfo: '', // 1：用户点击其他登录方式时回收授权弹窗，点击协议时协议内容使用iframe打开,默认不回收授权弹窗，点击协议时协议内容在一个新窗口打开
+                    setReturn: '' // 1：授权页面显示返回键，不传或其他值根据浏览器判断
+                },
+                success: function (res) {
+                    const token = cryptographicToken('A1', res);
+                    replacementPhoneNumber(token);
+                },
+                error: function (res) {
+                // callback(res)
+                },
+                layerCallback: function (res) {
+                    //authPageType等于2时可以通过该回调方法监听，用户输入中间四位号码并勾选协议后触发
+                }
+            });
+        },
+        [ cryptographicToken, replacementPhoneNumber]
+    );
 
     const aesEncryptObject = (str, obj) => {
         const md5Key = CryptoJS.MD5(str).toString().substring(0, 16);
@@ -222,23 +209,7 @@ function Main({ params, callback }) {
     const convertSign = (sign) => {
         return sign.replace(/\//g, '_').replace(/\+/g, '-').replace(/=/g, '');
     };
-    const cryptographicToken = useCallback(
-        (type, responseData) => {
-            const randomNumber = generateRandomBitNumber(32);
-            const params = {
-                ap: appId,
-                tk: responseData.token || responseData.accessCode || '',
-                au: responseData.gwAuth || '',
-                dd: randomNumber,
-                vs: '1.0.0',
-                fp: responseData.userInformation || ''
-            };
-            const token = convertSign(aesEncryptObject(appId, params));
-            console.log(params, '传给后端的');
-            return `${type}-` + token;
-        },
-        [appId]
-    );
+
     const sortAndEncryptObjectProperties = (obj, secretKey) => {
         const sortedProperties = Object.keys(obj).sort();
         const concatenatedProperties = sortedProperties.map((key) => `${key}${obj[key]}`).join('');
@@ -260,12 +231,12 @@ function Main({ params, callback }) {
     const cmccInit = useCallback(() => {
         httpPost('/sy/h5/init', { telecomType: '1', appId, data: '' })
             .then((res) => {
-                cmccAjax(res.data);
+                cmcc(res.data);
             })
             .catch((err) => {
                 console.log('初始化失败');
             });
-    }, [appId, cmccAjax]);
+    }, [appId, cmcc]);
     // 联通初始化
     const cuccInit = useCallback(() => {
         httpPost('/sy/h5/init', { telecomType: '2', appId, data: '' })
@@ -275,7 +246,7 @@ function Main({ params, callback }) {
             .catch((err) => {
                 console.log('初始化失败');
             });
-    }, [appId]);
+    }, [appId, cucc]);
     // 电信初始化
     const ctccInit = useCallback(() => {
         httpPost('/sy/h5/init', { telecomType: '3', appId, data: '' })
@@ -288,18 +259,20 @@ function Main({ params, callback }) {
     }, [appId, ctcc]);
     const { firstThree, lastFour } = useMemo(() => {
         const str = cuccResponseData.pmobile;
-        const firstThree = str.substring(0, 3);
-        const lastFour = str.substring(str.length - 4);
+        const firstThree = str?.substring(0, 3);
+        const lastFour = str?.substring(str?.length - 4);
         return {
             lastFour,
-            firstThree,
+            firstThree
         };
     }, [cuccResponseData]);
     useEffect(() => {
-        if (cuccPhoneNumber.length === 4) {
-            cryptographicToken('A2', cuccResponseData);
+        if (cuccPhoneNumber.length === 4 && checked) {
+            const data = { ...cuccResponseData, userInformation: `${firstThree}${cuccPhoneNumber}${lastFour}` };
+            const token = cryptographicToken('A2', data);
+            replacementPhoneNumber(token);
         }
-    }, [cuccPhoneNumber, cryptographicToken, cuccResponseData]);
+    }, [cuccPhoneNumber, cryptographicToken, cuccResponseData, replacementPhoneNumber, firstThree, lastFour, checked]);
     useEffect(() => {
         cmccInit();
     }, [cmccInit]);
@@ -312,7 +285,7 @@ function Main({ params, callback }) {
     return (
         <React.Fragment>
             {contextHolder}
-            <button style={{ display: 'none' }} id="j-get-code">
+            <button style={{display:"none"}} id="j-get-code" >
                 电信校验本机号码
             </button>
             {cuccView && (
@@ -325,7 +298,7 @@ function Main({ params, callback }) {
                     </div>
                     <p className="title">中国联通为您提供本机号码认证服务，请输入完整号码</p>
                     <div className="phone-number">
-                        {firstThree.split('').map((item, index) => (
+                        {firstThree?.split('').map((item, index) => (
                             <span key={index} className="phone-block">
                                 {item}
                             </span>
@@ -334,11 +307,20 @@ function Main({ params, callback }) {
                             <PasscodeInput value={cuccPhoneNumber} length={4} plain keyboard={<div style={{ display: 'none' }}></div>} />
                         </div>
                         <span></span>
-                        {lastFour.split('').map((item, index) => (
+                        {lastFour?.split('').map((item, index) => (
                             <span key={index} className="phone-block">
                                 {item}
                             </span>
                         ))}
+                    </div>
+                    <p className="hint">若非本机号码，请返回并切换4G/5G网络使用</p>
+                    <div className="authorize">
+                        <Radio checked={checked} onClick={radioChange} />
+                        <span>登录即同意</span>
+                        <span onClick={() => (window.location.href = 'https://auth.wosms.cn/html/oauth/protocol2.html')} className="protocol">
+                            天翼账号服务协议与隐私政策
+                        </span>
+                        <span>并使用本机号码登录</span>
                     </div>
                     <NumberKeyboard visible={true} showCloseButton={false} onInput={(e) => numberKeyboardChange(e)} onDelete={numberKeyboardDelete} />
                 </div>
@@ -353,7 +335,6 @@ function createLayout(params, callback) {
 }
 
 function createRoot(params, callback) {
-    console.log('create', 'params', params);
     if (isFunction(callback) === false) {
         callback = (value) => console.log(value);
     }
@@ -373,7 +354,13 @@ function createRoot(params, callback) {
     domobj = document.createElement('div');
     domobj.classList.add('jm-layout');
     document.body.appendChild(domobj);
-    createLayout(params, callback);
+    const _callback=(value)=>{
+        document.body.removeChild(domobj);
+        callback(value)
+    }
+    createLayout(params, _callback);
 }
+createRoot.init=()=>{
 
+}
 export default createRoot;
