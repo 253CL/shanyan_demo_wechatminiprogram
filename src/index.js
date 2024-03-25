@@ -30,6 +30,7 @@ const isFunction = (value) => {
 };
 
 function Main({ params, callback }) {
+    console.log('params', params);
     const [notice, contextHolder] = useNotification({ motion: noticeMotion, prefixCls: 'jm-message', maxCount: 1 });
     const [cuccView, setCuccView] = useState(false);
     const [cuccPhoneNumber, setCuccPhoneNumber] = useState('');
@@ -360,7 +361,26 @@ function createRoot(params, callback) {
     }
     createLayout(params, _callback);
 }
-createRoot.init=()=>{
+function Init (params, callback){
+    if (isFunction(callback) === false) {
+        callback = (value) => console.log(value);
+    }
 
+    if (isObj(params) === false) {
+        return callback({ code: '000500', message: '参数错误' });
+    }
+
+    if (Boolean(params.appKey) === false) {
+        return callback({ code: '000510', message: 'appKey必传' });
+    }
+
+    if (Boolean(params.appId) === false) {
+        return callback({ code: '000520', message: 'appId必传' });
+    }
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    useEffect(()=>{
+        console.log(123);
+    },[])
 }
-export default createRoot;
+const obj= { createRoot, Init };
+export default obj;

@@ -33,9 +33,9 @@
         <script>
             function beginHandle(type) {
                 if (type === 1) {
-                    console.log('chushihua');
+                    window.clshanyansdk.Init()
                 } else {
-                    window.clshanyansdk({ appKey: 'hYmhmHWV', appId: '5FO1pbba' }, function (data) {
+                    window.clshanyansdk.createRoot(config, function (data) {
                         document.getElementById('res').innerText = JSON.stringify(data);
                     });
                 }
