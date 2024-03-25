@@ -66,9 +66,9 @@ function Main({ params, callback }) {
                 formData.append(key, params[key]);
             }
             axios
-                // .post('http://api.stable.253.com/open/web/mobile-query',formData,{headers: {
-                .post('https://31a7-218-76-38-2.ngrok-free.app/open/web/mobile-query', formData, {
-                    headers: {
+                .post('http://api.stable.253.com/open/web/mobile-query',formData,{headers: {
+                // .post('https://e334-218-76-38-2.ngrok-free.app/open/web/mobile-query', formData, {
+                //     headers: {
                         'Content-Type': 'multipart/form-data'
                     }
                 })
@@ -156,6 +156,8 @@ function Main({ params, callback }) {
                     replacementPhoneNumber(token);
                 },
                 error: function (res) {
+                    console.log(res,"移动的报错");
+
                 // callback(res)
                 },
                 layerCallback: function (res) {
@@ -229,7 +231,7 @@ function Main({ params, callback }) {
     };
     // 移动初始化
     const cmccInit = useCallback(() => {
-        httpPost('/sy/h5/init', { telecomType: '1', appId, data: '' })
+        httpPost('', { telecomType: '1', appId, data: '' })
             .then((res) => {
                 cmcc(res.data);
             })
@@ -239,7 +241,7 @@ function Main({ params, callback }) {
     }, [appId, cmcc]);
     // 联通初始化
     const cuccInit = useCallback(() => {
-        httpPost('/sy/h5/init', { telecomType: '2', appId, data: '' })
+        httpPost('', { telecomType: '2', appId, data: '' })
             .then((res) => {
                 cucc(res.data);
             })
@@ -249,7 +251,7 @@ function Main({ params, callback }) {
     }, [appId, cucc]);
     // 电信初始化
     const ctccInit = useCallback(() => {
-        httpPost('/sy/h5/init', { telecomType: '3', appId, data: '' })
+        httpPost('', { telecomType: '3', appId, data: '' })
             .then((res) => {
                 ctcc(res.data);
             })
