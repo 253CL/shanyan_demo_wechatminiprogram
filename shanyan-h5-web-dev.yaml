@@ -14,7 +14,7 @@ spec:
   revisionHistoryLimit: 10
   selector:
     matchLabels:
-      name: robin-react
+      name: shanyan-h5-web
   strategy:
     rollingUpdate:
       maxSurge: 1
@@ -23,13 +23,13 @@ spec:
   template:
     metadata:
       labels:
-        app: robin-react
-        name: robin-react
+        app: shanyan-h5-web
+        name: shanyan-h5-web
     spec:
       containers:
         - image: 'hub.cm253.com/shanyan-dev/shanyan-h5-web:1.0.0'
           imagePullPolicy: IfNotPresent
-          name: robin-react
+          name: shanyan-h5-web
           resources:
             limits:
               cpu: 200m
