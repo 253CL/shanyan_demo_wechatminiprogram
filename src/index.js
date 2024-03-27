@@ -26,6 +26,9 @@ function Main({ params, callback }) {
     const [callResult, setCallResult] = useState([]);
     const appId = params.appId || '';
     const appKey = params.appKey || '';
+    const cmccCancel=()=>{
+        destroyHandle()
+    }
        //销毁组件
        const destroyHandle = useCallback(() => {
         setTimeout(() => {
@@ -106,6 +109,7 @@ function Main({ params, callback }) {
                 setCuccResponseData(res);
             })
             .catch((err) => {
+                console.log("cuccerr",err);
                 setCallResult((pre) => [...pre, { err, time: new Date().getTime() }]);
             });
     }, []);
@@ -129,6 +133,7 @@ function Main({ params, callback }) {
                 replacementPhoneNumber(token);
             },
             error: function (err) {
+                console.log("ctccerr",err);
                 setCallResult((pre) => [...pre, { err, time: new Date().getTime() }]);
             }
         });
@@ -152,6 +157,7 @@ function Main({ params, callback }) {
                 replacementPhoneNumber(token);
             },
             error: function (err) {
+                console.log("cmccerr",err);
                 setCallResult((pre) => [...pre, { err, time: new Date().getTime() }]);
             },
             layerCallback: function (res) {
@@ -259,7 +265,8 @@ function Main({ params, callback }) {
             </button>
             {cuccView && (
                 <div>
-                    <div className="top">
+                    <span className="cancel" onClick={cmccCancel}>{"<"}</span>
+                    <div className="top">                        
                         <p className="top-title">本机号码登录</p>
                     </div>
                     <div className="image">
