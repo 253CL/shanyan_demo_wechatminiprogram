@@ -31,11 +31,12 @@
         <span id="res"></span>
         <script src="./dist/umd/living.min.js?t=10000"></script>
         <script>
+            const config={ appKey: 'hYmhmHWV', appId: '5FO1pbba' }
             function beginHandle(type) {
                 if (type === 1) {
-                    window.clshanyansdk.Init()
+                    window.clshanyansdk.Init(config)
                 } else {
-                    window.clshanyansdk.createRoot(config, function (data) {
+                    window.clshanyansdk.start(config, function (data) {
                         document.getElementById('res').innerText = JSON.stringify(data);
                     });
                 }

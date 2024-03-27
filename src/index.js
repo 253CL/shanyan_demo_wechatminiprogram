@@ -1,7 +1,6 @@
 import './index.less';
 import ReactDOM from 'react-dom/client';
 import React, { useCallback, useEffect, useState, useMemo } from 'react';
-import { useNotification } from 'rc-notification';
 import { httpPost } from './axios';
 import axios from 'axios';
 import { NumberKeyboard, PasscodeInput, Radio } from 'antd-mobile';
@@ -9,36 +8,36 @@ import { NumberKeyboard, PasscodeInput, Radio } from 'antd-mobile';
 const CryptoJS = require('crypto-js');
 let domobj = null;
 let rootobj = null;
-const noticeMotion = {
-    motionName: 'jm-message-fade',
-    motionAppear: true,
-    motionEnter: true,
-    motionLeave: true,
-    onLeaveStart: (ele) => {
-        const { offsetHeight } = ele;
-        return { height: offsetHeight };
-    },
-    onLeaveActive: () => ({ height: 0, opacity: 0, margin: 0 })
-};
-
+let cuccResponseData = {};
+let cmccResponseData = {};
+let ctccResponseData = {};
 const isObj = (value) => {
     return Object.prototype.toString.call(value).slice(8, -1) === 'Object';
 };
-
 const isFunction = (value) => {
     return Object.prototype.toString.call(value).slice(8, -1) === 'Function';
 };
 
 function Main({ params, callback }) {
-    console.log('params', params);
-    const [notice, contextHolder] = useNotification({ motion: noticeMotion, prefixCls: 'jm-message', maxCount: 1 });
     const [cuccView, setCuccView] = useState(false);
     const [cuccPhoneNumber, setCuccPhoneNumber] = useState('');
-    const [cuccResponseData, setCuccResponseData] = useState({});
+    const [_cuccResponseData, setCuccResponseData] = useState({});
     const [checked, setchecked] = useState(false);
+    const [callResult, setCallResult] = useState([]);
     const appId = params.appId || '';
     const appKey = params.appKey || '';
-    const radioChange = (e) => {
+       //销毁组件
+       const destroyHandle = useCallback(() => {
+        setTimeout(() => {
+            if (rootobj) {
+                rootobj.unmount();
+            }
+            if (domobj) {
+                document.body.removeChild(domobj);
+            }
+        }, 0);
+    }, []);
+    const radioChange = () => {
         setchecked(!checked);
     };
     const cryptographicToken = useCallback(
@@ -68,7 +67,7 @@ function Main({ params, callback }) {
             }
             axios
                 // .post('http://api.stable.253.com/open/web/mobile-query',formData,{headers: {
-                .post('https://31a7-218-76-38-2.ngrok-free.app/open/web/mobile-query', formData, {
+                .post('https://f5a9-218-76-38-2.ngrok-free.app/open/web/mobile-query', formData, {
                     headers: {
                         'Content-Type': 'multipart/form-data'
                     }
@@ -76,17 +75,18 @@ function Main({ params, callback }) {
                 .then(({ data }) => {
                     if (data.code === '200000') {
                         const mobile = phoneDecrypt(data.data.mobile, appKey);
-                        if(cuccView){
-                            setCuccView(false)
+                        if (cuccView) {
+                            setCuccView(false);
                         }
-                        callback('解密后的手机号码'+mobile)
+                        destroyHandle()
+                        callback('解密后的手机号码' + mobile);
                     }
                 })
                 .catch((error) => {
-                    callback(error)
+                    callback(error);
                 });
         },
-        [appId, appKey, callback, cuccView]
+        [appId, appKey, callback, cuccView,destroyHandle]
     );
     const _getSign = useCallback(
         (res = {}) => {
@@ -94,78 +94,71 @@ function Main({ params, callback }) {
         },
         [appId]
     );
-    const cucc = useCallback((cuccdata) => {
+    const cucc = useCallback(() => {
         window.LTRZ['getTokenInfo']({
             //1.获取置换码方法
-            appKey: cuccdata.appSecret, //密钥
-            authenticator: cuccdata.sign, //加密后的数据。客户设置
-            ts: cuccdata.timestamp
+            appKey: cuccResponseData.appSecret, //密钥
+            authenticator: cuccResponseData.sign, //加密后的数据。客户设置
+            ts: cuccResponseData.timestamp
         })
             .then((res) => {
                 setCuccView(true);
                 setCuccResponseData(res);
             })
             .catch((err) => {
-                // callback(err)
+                setCallResult((pre) => [...pre, { err, time: new Date().getTime() }]);
             });
-    },[]);
-    const ctcc = useCallback(
-        (ctccdata) => {
-            window.fjs.getAccessCode({
-                debug: false, // 非必填，布尔值，开启调试模式,调用的所有api的返回值会在客户端alert出来，在pc端打印出来。生产环境请设置为false
-                btnId: 'j-get-code', //必填，“获取accessCode”按钮标签id（可参考下方html/js示例）
-                appId: ctccdata.appId, //必填，开发者在注册应用的时候由天翼账号开放平台分发的接入方appId
-                authDomain: '', //非必填，合作方传入域名参数
-                getSignParams: function (res) {
-                    _getSign(res).then((data) => {
-                        window.fjs.setSign(data.data.sign);
-                    });
-                },
-                ready: function (res) {
-                    const j_get_code = document.getElementById('j-get-code');
-                    j_get_code.style.display = 'block';
-                },
-                success: function (res) {
-                    const token = cryptographicToken('A3', res);
-                    replacementPhoneNumber(token);
-                },
-                error: function (err) {
-                // callback(err)
-
-                }
-            });
-        },
-        [_getSign, cryptographicToken, replacementPhoneNumber]
-    );
-    const cmcc = useCallback(
-        (cmccdata) => {
-            window.YDRZAuthLogin.getTokenInfo({
-                data: {
-                    version: '2.0', //接口版本号 （必填）
-                    appId: cmccdata.appId, //应用Id （必填）
-                    sign: cmccdata.sign,
-                    traceId: cmccdata.traceId,
-                    timestamp: cmccdata.timestamp, //请求消息发送的系统时间，精确到毫秒，共17位，格式：20121227180001165
-                    openType: '1', //取号类型
-                    expandParams: '', //扩展参数 格式：参数名=值 多个时使用 \| 分割 （选填）
-                    authPageType: '0', //若值为“1”时展示弹窗，若值为“2”时展示自定义弹窗版，若值为“3”时展示自定义页面版，若为其它值则展示页面。更多说明见“2.重要参数说明”中“2.3.authPageType”
-                    devInfo: '', // 1：用户点击其他登录方式时回收授权弹窗，点击协议时协议内容使用iframe打开,默认不回收授权弹窗，点击协议时协议内容在一个新窗口打开
-                    setReturn: '' // 1：授权页面显示返回键，不传或其他值根据浏览器判断
-                },
-                success: function (res) {
-                    const token = cryptographicToken('A1', res);
-                    replacementPhoneNumber(token);
-                },
-                error: function (res) {
-                // callback(res)
-                },
-                layerCallback: function (res) {
-                    //authPageType等于2时可以通过该回调方法监听，用户输入中间四位号码并勾选协议后触发
-                }
-            });
-        },
-        [ cryptographicToken, replacementPhoneNumber]
-    );
+    }, []);
+    const ctcc = useCallback(() => {
+        window.fjs.getAccessCode({
+            debug: false, // 非必填，布尔值，开启调试模式,调用的所有api的返回值会在客户端alert出来，在pc端打印出来。生产环境请设置为false
+            btnId: 'j-get-code', //必填，“获取accessCode”按钮标签id（可参考下方html/js示例）
+            appId: ctccResponseData.appId, //必填，开发者在注册应用的时候由天翼账号开放平台分发的接入方appId
+            authDomain: '', //非必填，合作方传入域名参数
+            getSignParams: function (res) {
+                _getSign(res).then((data) => {
+                    window.fjs.setSign(data.data.sign);
+                });
+            },
+            ready: function (res) {
+                const j_get_code = document.getElementById('j-get-code');
+                j_get_code.style.display = 'block';
+            },
+            success: function (res) {
+                const token = cryptographicToken('A3', res);
+                replacementPhoneNumber(token);
+            },
+            error: function (err) {
+                setCallResult((pre) => [...pre, { err, time: new Date().getTime() }]);
+            }
+        });
+    }, [_getSign, cryptographicToken, replacementPhoneNumber]);
+    const cmcc = useCallback(() => {
+        window.YDRZAuthLogin.getTokenInfo({
+            data: {
+                version: '2.0', //接口版本号 （必填）
+                appId: cmccResponseData.appId, //应用Id （必填）
+                sign: cmccResponseData.sign,
+                traceId: cmccResponseData.traceId,
+                timestamp: cmccResponseData.timestamp, //请求消息发送的系统时间，精确到毫秒，共17位，格式：20121227180001165
+                openType: '1', //取号类型
+                expandParams: '', //扩展参数 格式：参数名=值 多个时使用 \| 分割 （选填）
+                authPageType: '0', //若值为“1”时展示弹窗，若值为“2”时展示自定义弹窗版，若值为“3”时展示自定义页面版，若为其它值则展示页面。更多说明见“2.重要参数说明”中“2.3.authPageType”
+                devInfo: '', // 1：用户点击其他登录方式时回收授权弹窗，点击协议时协议内容使用iframe打开,默认不回收授权弹窗，点击协议时协议内容在一个新窗口打开
+                setReturn: '' // 1：授权页面显示返回键，不传或其他值根据浏览器判断
+            },
+            success: function (res) {
+                const token = cryptographicToken('A1', res);
+                replacementPhoneNumber(token);
+            },
+            error: function (err) {
+                setCallResult((pre) => [...pre, { err, time: new Date().getTime() }]);
+            },
+            layerCallback: function (res) {
+                //authPageType等于2时可以通过该回调方法监听，用户输入中间四位号码并勾选协议后触发
+            }
+        });
+    }, [cryptographicToken, replacementPhoneNumber]);
 
     const aesEncryptObject = (str, obj) => {
         const md5Key = CryptoJS.MD5(str).toString().substring(0, 16);
@@ -228,65 +221,40 @@ function Main({ params, callback }) {
             return prestr.substring(0, prestr.length - 1);
         });
     };
-    // 移动初始化
-    const cmccInit = useCallback(() => {
-        httpPost('/sy/h5/init', { telecomType: '1', appId, data: '' })
-            .then((res) => {
-                cmcc(res.data);
-            })
-            .catch((err) => {
-                console.log('初始化失败');
-            });
-    }, [appId, cmcc]);
-    // 联通初始化
-    const cuccInit = useCallback(() => {
-        httpPost('/sy/h5/init', { telecomType: '2', appId, data: '' })
-            .then((res) => {
-                cucc(res.data);
-            })
-            .catch((err) => {
-                console.log('初始化失败');
-            });
-    }, [appId, cucc]);
-    // 电信初始化
-    const ctccInit = useCallback(() => {
-        httpPost('/sy/h5/init', { telecomType: '3', appId, data: '' })
-            .then((res) => {
-                ctcc(res.data);
-            })
-            .catch((err) => {
-                console.log('初始化失败', err);
-            });
-    }, [appId, ctcc]);
     const { firstThree, lastFour } = useMemo(() => {
-        const str = cuccResponseData.pmobile;
+        const str = _cuccResponseData.pmobile;
         const firstThree = str?.substring(0, 3);
         const lastFour = str?.substring(str?.length - 4);
         return {
             lastFour,
             firstThree
         };
-    }, [cuccResponseData]);
+    }, [_cuccResponseData]);
+    useEffect(() => {
+        if (callResult.length === 3) {
+            const maxTimeObject = callResult.reduce((max, current) => (current.time > max.time ? current : max));
+            callback(maxTimeObject.err);
+        }
+    }, [callResult, callback]);
     useEffect(() => {
         if (cuccPhoneNumber.length === 4 && checked) {
             const data = { ...cuccResponseData, userInformation: `${firstThree}${cuccPhoneNumber}${lastFour}` };
             const token = cryptographicToken('A2', data);
             replacementPhoneNumber(token);
         }
-    }, [cuccPhoneNumber, cryptographicToken, cuccResponseData, replacementPhoneNumber, firstThree, lastFour, checked]);
+    }, [cuccPhoneNumber, cryptographicToken, _cuccResponseData, replacementPhoneNumber, firstThree, lastFour, checked]);
     useEffect(() => {
-        cmccInit();
-    }, [cmccInit]);
+        cucc();
+    }, [cucc]);
     useEffect(() => {
-        cuccInit();
-    }, [cuccInit]);
+        ctcc();
+    }, [ctcc]);
     useEffect(() => {
-        ctccInit();
-    }, [ctccInit]);
+        cmcc();
+    }, [cmcc]);
     return (
         <React.Fragment>
-            {contextHolder}
-            <button style={{display:"none"}} id="j-get-code" >
+            <button style={{ display: 'none' }} id="j-get-code">
                 电信校验本机号码
             </button>
             {cuccView && (
@@ -307,7 +275,6 @@ function Main({ params, callback }) {
                         <div className="phone-number-box">
                             <PasscodeInput value={cuccPhoneNumber} length={4} plain keyboard={<div style={{ display: 'none' }}></div>} />
                         </div>
-                        <span></span>
                         {lastFour?.split('').map((item, index) => (
                             <span key={index} className="phone-block">
                                 {item}
@@ -329,58 +296,102 @@ function Main({ params, callback }) {
         </React.Fragment>
     );
 }
-
+function InitLayout({ params, callback }) {
+    const appId = params.appId || '';
+    // 移动初始化
+    const cmccInit = useCallback(() => {
+        httpPost('/sy/h5/init', { telecomType: '1', appId, data: '' })
+            .then((res) => {
+                cmccResponseData = res.data;
+            })
+            .catch((err) => {
+                console.log('初始化失败');
+            });
+    }, [appId]);
+    // 联通初始化
+    const cuccInit = useCallback(() => {
+        httpPost('/sy/h5/init', { telecomType: '2', appId, data: '' })
+            .then((res) => {
+                cuccResponseData = res.data;
+            })
+            .catch((err) => {
+                console.log('初始化失败');
+            });
+    }, [appId]);
+    // 电信初始化
+    const ctccInit = useCallback(() => {
+        httpPost('/sy/h5/init', { telecomType: '3', appId, data: '' })
+            .then((res) => {
+                ctccResponseData = res.data;
+            })
+            .catch((err) => {
+                console.log('初始化失败', err);
+            });
+    }, [appId]);
+    useEffect(() => {
+        cmccInit();
+    }, [cmccInit]);
+    useEffect(() => {
+        cuccInit();
+    }, [cuccInit]);
+    useEffect(() => {
+        ctccInit();
+    }, [ctccInit]);
+    return;
+}
 function createLayout(params, callback) {
-    rootobj = ReactDOM.createRoot(domobj);
     rootobj.render(<Main params={params} callback={callback} />);
 }
-
-function createRoot(params, callback) {
+function createInitLayout(params, callback) {
+    rootobj = ReactDOM.createRoot(domobj);
+    rootobj.render(<InitLayout params={params} callback={callback} />);
+}
+function auth(params, callback) {
     if (isFunction(callback) === false) {
         callback = (value) => console.log(value);
     }
 
     if (isObj(params) === false) {
-        return callback({ code: '000500', message: '参数错误' });
+        callback({ code: '000500', message: '参数错误' });
+        return false;
     }
 
     if (Boolean(params.appKey) === false) {
-        return callback({ code: '000510', message: 'appKey必传' });
+        callback({ code: '000510', message: 'appKey必传' });
+        return false;
     }
 
     if (Boolean(params.appId) === false) {
-        return callback({ code: '000520', message: 'appId必传' });
+        callback({ code: '000520', message: 'appId必传' });
+        return false;
     }
-
-    domobj = document.createElement('div');
+    return true;
+}
+function start(params, callback) {
+    const result = auth(params, callback);
+    if (!result) {
+        return;
+    }
     domobj.classList.add('jm-layout');
-    document.body.appendChild(domobj);
-    const _callback=(value)=>{
+    const _callback = (value) => {
         document.body.removeChild(domobj);
-        callback(value)
-    }
+        callback(value);
+    };
     createLayout(params, _callback);
 }
-function Init (params, callback){
-    if (isFunction(callback) === false) {
-        callback = (value) => console.log(value);
-    }
 
-    if (isObj(params) === false) {
-        return callback({ code: '000500', message: '参数错误' });
+function Init(params, callback) {
+    const result = auth(params, callback);
+    if (!result) {
+        return;
     }
-
-    if (Boolean(params.appKey) === false) {
-        return callback({ code: '000510', message: 'appKey必传' });
-    }
-
-    if (Boolean(params.appId) === false) {
-        return callback({ code: '000520', message: 'appId必传' });
-    }
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    useEffect(()=>{
-        console.log(123);
-    },[])
+    domobj = document.createElement('div');
+    document.body.appendChild(domobj);
+    const _callback = (value) => {
+        document.body.removeChild(domobj);
+        callback(value);
+    };
+    createInitLayout(params, _callback);
 }
-const obj= { createRoot, Init };
+const obj = { start, Init };
 export default obj;
