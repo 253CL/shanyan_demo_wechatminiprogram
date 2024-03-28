@@ -83,6 +83,8 @@ function Main({ params, callback }) {
                         }
                         destroyHandle();
                         callback('解密后的手机号码' + mobile);
+                    }else{
+                        callback(data.message)  
                     }
                 })
                 .catch((error) => {

@@ -6,7 +6,8 @@ export default {
       memo.output.libraryExport("default");
       return memo;
     },
-    extractCSS: false, //提取 CSS 为单独的文件
+    extractCSS: false, //提取 CSS 为单独的文件    
+    output:"js/umd"
   },
   platform: "browser",
 };
