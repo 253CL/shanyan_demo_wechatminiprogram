@@ -113,31 +113,31 @@ function Main({ params, callback }) {
                 setCallResult((pre) => [...pre, { err, time: new Date().getTime() }]);
             });
     }, []);
-    // const ctcc = useCallback(() => {
-    //     window.fjs?.getAccessCode({
-    //         debug: false, // 非必填，布尔值，开启调试模式,调用的所有api的返回值会在客户端alert出来，在pc端打印出来。生产环境请设置为false
-    //         btnId: 'j-get-code', //必填，“获取accessCode”按钮标签id（可参考下方html/js示例）
-    //         appId: ctccResponseData.appId, //必填，开发者在注册应用的时候由天翼账号开放平台分发的接入方appId
-    //         authDomain: '', //非必填，合作方传入域名参数
-    //         getSignParams: function (res) {
-    //             _getSign(res).then((data) => {
-    //                 window.fjs.setSign(data.data.sign);
-    //             });
-    //         },
-    //         ready: function (res) {
-    //             const j_get_code = document.getElementById('j-get-code');
-    //             j_get_code.style.display = 'block';
-    //         },
-    //         success: function (res) {
-    //             const token = cryptographicToken('A3', res);
-    //             replacementPhoneNumber(token);
-    //         },
-    //         error: function (err) {
-    //             console.log("ctccerr",err);
-    //             setCallResult((pre) => [...pre, { err, time: new Date().getTime() }]);
-    //         }
-    //     });
-    // }, [_getSign, cryptographicToken, replacementPhoneNumber]);
+    const ctcc = useCallback(() => {
+        window.fjs?.getAccessCode({
+            debug: false, // 非必填，布尔值，开启调试模式,调用的所有api的返回值会在客户端alert出来，在pc端打印出来。生产环境请设置为false
+            btnId: 'j-get-code', //必填，“获取accessCode”按钮标签id（可参考下方html/js示例）
+            appId: ctccResponseData.appId, //必填，开发者在注册应用的时候由天翼账号开放平台分发的接入方appId
+            authDomain: '', //非必填，合作方传入域名参数
+            getSignParams: function (res) {
+                _getSign(res).then((data) => {
+                    window.fjs.setSign(data.data.sign);
+                });
+            },
+            ready: function (res) {
+                const j_get_code = document.getElementById('j-get-code');
+                j_get_code.style.display = 'block';
+            },
+            success: function (res) {
+                const token = cryptographicToken('A3', res);
+                replacementPhoneNumber(token);
+            },
+            error: function (err) {
+                console.log("ctccerr",err);
+                setCallResult((pre) => [...pre, { err, time: new Date().getTime() }]);
+            }
+        });
+    }, [_getSign, cryptographicToken, replacementPhoneNumber]);
     const cmcc = useCallback(() => {
         window.YDRZAuthLogin.getTokenInfo({
             data: {
@@ -252,9 +252,9 @@ function Main({ params, callback }) {
     useEffect(() => {
         cucc();
     }, [cucc]);
-    // useEffect(() => {
-    //     ctcc();
-    // }, [ctcc]);
+    useEffect(() => {
+        ctcc();
+    }, [ctcc]);
     useEffect(() => {
         cmcc();
     }, [cmcc]);
