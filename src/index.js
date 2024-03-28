@@ -259,6 +259,7 @@ function Main({ params, callback }) {
         ctcc();
     }, [ctcc]);
     useEffect(() => {
+        console.log("cmcc","zhixingle");
         cmcc();
     }, [cmcc]);
     return (
