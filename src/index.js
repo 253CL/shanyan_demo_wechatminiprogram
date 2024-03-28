@@ -26,11 +26,24 @@ function Main({ params, callback }) {
     const [callResult, setCallResult] = useState([]);
     const appId = params.appId || '';
     const appKey = params.appKey || '';
-    const cmccCancel=()=>{
-        destroyHandle()
-    }
-       //销毁组件
-       const destroyHandle = useCallback(() => {
+    const cmccCancel = () => {
+        destroyHandle();
+    };
+    const customConfigFn = () => {
+        window.YDRZAuthLogin.authPageInit({
+            bgColor: '#FFFFFF',
+            titleStyle: { name: '本机号码登录', fontFamily: 'PingFangSC-Medium, PingFang SC', fontSize: '1.33rem', fontColor: '#444444', width: '70%', height: '1.83rem', left: 'center', high: '1rem', textAlign: 'center' },
+            logoStyle: { url: 'https://www.cmpassport.com/h5/js/jssdk_auth/image/logo.png', width: '6.96rem', height: '7.32rem', high: '7.9rem', left: 'center' },
+            authTextStyle: { fontFamily: 'PingFangSC-Medium, PingFang SC', fontSize: '1.08rem', fontColor: '#444444', appNameColor: '#444444', width: '100%', textAlign: 'center', high: '22.75rem', left: 'center', fontWeight: '500' },
+            phoneNumStyle: { fontFamily: 'PingFangSC-Semibold, PingFang SC', fontSize: '2.08rem', fontColor: '#444444', bgColor: '#FFFFFF', fontWeight: '600', width: '15.42rem', left: 'center', high: '19.58rem', inputStyle: { width: '1.83rem', height: '2.17rem' } },
+            agreeStyle: { fontFamily: 'PingFangSC-Regular, PingFang SC', fontSize: '1rem', fontColor: '#999999', high: '30.58rem', left: 'center', checkedButton: { width: '1.33rem', height: '1.33rem', uncheckColor: '#cccccc', checkedColor: '#1E82EB', uncheckUrl: '', checkedUrl: '' }, hrefStyle: { fontColor: '#1E82EB', agreeArr: [] } },
+            tipStyle: { fontFamily: 'PingFangSC-Regular, PingFang SC', fontSize: '0.92rem', fontColor: '#999999', high: '27rem', left: 'center' },
+            returnBtnStyle: { width: '0.65rem', height: '1.1rem', left: '1rem', high: '1rem', url: 'https://www.cmpassport.com/h5/js/jssdk_auth/image/returnIcon.png' },
+            customControlStyle: { ifShow: 'ture', width: '120px', height: '24px', high: '450px', left: 'center', bgColor: '#fff', border: '0', borderRadius: '', url: 'https://www.baidu.com', name: '其他登录方式', fontSize: '16px', fontColor: '#392211', textAlign: 'center', textDecoration: '' }
+        });
+    };
+    //销毁组件
+    const destroyHandle = useCallback(() => {
         setTimeout(() => {
             if (rootobj) {
                 rootobj.unmount();
@@ -69,9 +82,10 @@ function Main({ params, callback }) {
                 formData.append(key, params[key]);
             }
             axios
-                .post('https://api.stable.253.com/open/web/mobile-query',formData,{headers: {
-                // .post('https://f5a9-218-76-38-2.ngrok-free.app/open/web/mobile-query', formData, {
-                //     headers: {
+                .post('https://120.253.136.198:36016/open/web/mobile-query', formData, {
+                    headers: {
+                        // .post('https://f5a9-218-76-38-2.ngrok-free.app/open/web/mobile-query', formData, {
+                        //     headers: {
                         'Content-Type': 'multipart/form-data'
                     }
                 })
@@ -89,7 +103,7 @@ function Main({ params, callback }) {
                     callback(error);
                 });
         },
-        [appId, appKey, callback, cuccView,destroyHandle]
+        [appId, appKey, callback, cuccView, destroyHandle]
     );
     const _getSign = useCallback(
         (res = {}) => {
@@ -109,7 +123,7 @@ function Main({ params, callback }) {
                 setCuccResponseData(res);
             })
             .catch((err) => {
-                console.log("cuccerr",err);
+                console.log('cuccerr', err);
                 setCallResult((pre) => [...pre, { err, time: new Date().getTime() }]);
             });
     }, []);
@@ -133,7 +147,7 @@ function Main({ params, callback }) {
                 replacementPhoneNumber(token);
             },
             error: function (err) {
-                console.log("ctccerr",err);
+                console.log('ctccerr', err);
                 setCallResult((pre) => [...pre, { err, time: new Date().getTime() }]);
             }
         });
@@ -157,7 +171,7 @@ function Main({ params, callback }) {
                 replacementPhoneNumber(token);
             },
             error: function (err) {
-                console.log("cmccerr",err);
+                console.log('cmccerr', err);
                 setCallResult((pre) => [...pre, { err, time: new Date().getTime() }]);
             },
             layerCallback: function (res) {
@@ -265,8 +279,10 @@ function Main({ params, callback }) {
             </button>
             {cuccView && (
                 <div>
-                    <span className="cancel" onClick={cmccCancel}>{"<"}</span>
-                    <div className="top">                        
+                    <span className="cancel" onClick={cmccCancel}>
+                        {'<'}
+                    </span>
+                    <div className="top">
                         <p className="top-title">本机号码登录</p>
                     </div>
                     <div className="image">
@@ -400,5 +416,22 @@ function Init(params, callback) {
     };
     createInitLayout(params, _callback);
 }
-const obj = { start, Init };
+// function isWifi() {
+//     const connection = window.YDRZAuthLogin.getConnection(123);
+//     return connection.netType === 'wifi';
+// }
+// function checkAuthEnable() {
+//     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+//     return isMobile && isMobileData();
+// }
+// function isMobileData() {
+//     const connection = window.YDRZAuthLogin.getConnection(123);
+//     return connection.netType === 'cellular';
+// }
+// const obj = { start, Init, isWifi, isMobileData, checkAuthEnable };
+
+function setUIConfig(){
+
+}
+const obj = { start, Init ,setUIConfig};
 export default obj;
