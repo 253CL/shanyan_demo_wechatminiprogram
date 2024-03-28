@@ -4,7 +4,6 @@ import React, { useCallback, useEffect, useState, useMemo } from 'react';
 import { httpPost } from './axios';
 import axios from 'axios';
 import { NumberKeyboard, PasscodeInput, Radio } from 'antd-mobile';
-
 const CryptoJS = require('crypto-js');
 let domobj = null;
 let rootobj = null;
