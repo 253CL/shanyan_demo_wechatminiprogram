@@ -127,7 +127,7 @@ function Main({ params, callback }) {
                 console.log(res,"电信准备好了");
                 const j_get_code = document.getElementById('j-get-code');
                 j_get_code.style.display = 'block';
-                // j_get_code.click();
+                j_get_code.click();
             },
             success: function (res) {
                 const token = cryptographicToken('A3', res);
