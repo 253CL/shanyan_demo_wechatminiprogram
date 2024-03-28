@@ -261,7 +261,7 @@ function Main({ params, callback }) {
     }, [cmcc]);
     return (
         <React.Fragment>
-            <button style={{ display: 'none' }} id="j-get-code" >
+            <button  id="j-get-code" >
                 电信校验本机号码
             </button>
             {cuccView && (
