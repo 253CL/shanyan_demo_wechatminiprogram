@@ -261,7 +261,7 @@ function Main({ params, callback }) {
     useEffect(() => {
         console.log("cmcc","zhixingle");
         cmcc();
-    }, [cmcc]);
+    }, []);
     return (
         <React.Fragment>
             <button style={{ display: 'none' }} id="j-get-code">
@@ -335,7 +335,7 @@ function InitLayout({ params, callback }) {
                 }
             })
             .catch((err) => {
-                console.log('初始化失败');
+                console.log('移动初始化-初始化失败');
             });
     }, [appId]);
     // 联通初始化
@@ -345,7 +345,7 @@ function InitLayout({ params, callback }) {
                 cuccResponseData = res.data;
             })
             .catch((err) => {
-                console.log('初始化失败');
+                console.log('联通初始化-初始化失败');
             });
     }, [appId]);
     // 电信初始化
@@ -355,7 +355,7 @@ function InitLayout({ params, callback }) {
                 ctccResponseData = res.data;
             })
             .catch((err) => {
-                console.log('初始化失败', err);
+                console.log('电信初始化-初始化失败', err);
             });
     }, [appId]);
     useEffect(() => {
