@@ -38,6 +38,7 @@
                     window.clshanyansdk.Init(config)
                 } else {
                     window.clshanyansdk.start(config, function (data) {
+                        console.log(data,"抛出的错误");
                         document.getElementById('res').innerText = JSON.stringify(data);
                     });
                 }
