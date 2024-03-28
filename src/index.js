@@ -252,9 +252,9 @@ function Main({ params, callback }) {
     useEffect(() => {
         cucc();
     }, [cucc]);
-    useEffect(() => {
-        ctcc();
-    }, [ctcc]);
+    // useEffect(() => {
+    //     ctcc();
+    // }, [ctcc]);
     useEffect(() => {
         cmcc();
     }, [cmcc]);
