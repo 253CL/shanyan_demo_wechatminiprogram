@@ -17,7 +17,7 @@ const isObj = (value) => {
 const isFunction = (value) => {
     return Object.prototype.toString.call(value).slice(8, -1) === 'Function';
 };
-
+let uiCongig={};
 function Main({ params, callback }) {
     const [cuccView, setCuccView] = useState(false);
     const [cuccPhoneNumber, setCuccPhoneNumber] = useState('');
@@ -28,19 +28,6 @@ function Main({ params, callback }) {
     const appKey = params.appKey || '';
     const cmccCancel = () => {
         destroyHandle();
-    };
-    const customConfigFn = () => {
-        window.YDRZAuthLogin.authPageInit({
-            bgColor: '#FFFFFF',
-            titleStyle: { name: '本机号码登录', fontFamily: 'PingFangSC-Medium, PingFang SC', fontSize: '1.33rem', fontColor: '#444444', width: '70%', height: '1.83rem', left: 'center', high: '1rem', textAlign: 'center' },
-            logoStyle: { url: 'https://www.cmpassport.com/h5/js/jssdk_auth/image/logo.png', width: '6.96rem', height: '7.32rem', high: '7.9rem', left: 'center' },
-            authTextStyle: { fontFamily: 'PingFangSC-Medium, PingFang SC', fontSize: '1.08rem', fontColor: '#444444', appNameColor: '#444444', width: '100%', textAlign: 'center', high: '22.75rem', left: 'center', fontWeight: '500' },
-            phoneNumStyle: { fontFamily: 'PingFangSC-Semibold, PingFang SC', fontSize: '2.08rem', fontColor: '#444444', bgColor: '#FFFFFF', fontWeight: '600', width: '15.42rem', left: 'center', high: '19.58rem', inputStyle: { width: '1.83rem', height: '2.17rem' } },
-            agreeStyle: { fontFamily: 'PingFangSC-Regular, PingFang SC', fontSize: '1rem', fontColor: '#999999', high: '30.58rem', left: 'center', checkedButton: { width: '1.33rem', height: '1.33rem', uncheckColor: '#cccccc', checkedColor: '#1E82EB', uncheckUrl: '', checkedUrl: '' }, hrefStyle: { fontColor: '#1E82EB', agreeArr: [] } },
-            tipStyle: { fontFamily: 'PingFangSC-Regular, PingFang SC', fontSize: '0.92rem', fontColor: '#999999', high: '27rem', left: 'center' },
-            returnBtnStyle: { width: '0.65rem', height: '1.1rem', left: '1rem', high: '1rem', url: 'https://www.cmpassport.com/h5/js/jssdk_auth/image/returnIcon.png' },
-            customControlStyle: { ifShow: 'ture', width: '120px', height: '24px', high: '450px', left: 'center', bgColor: '#fff', border: '0', borderRadius: '', url: 'https://www.baidu.com', name: '其他登录方式', fontSize: '16px', fontColor: '#392211', textAlign: 'center', textDecoration: '' }
-        });
     };
     //销毁组件
     const destroyHandle = useCallback(() => {
@@ -82,7 +69,7 @@ function Main({ params, callback }) {
                 formData.append(key, params[key]);
             }
             axios
-                .post('https://120.253.136.198:36016/open/web/mobile-query', formData, {
+                .post('https://56.cm253.com:8445/open/web/mobile-query', formData, {
                     headers: {
                         // .post('https://f5a9-218-76-38-2.ngrok-free.app/open/web/mobile-query', formData, {
                         //     headers: {
@@ -162,7 +149,7 @@ function Main({ params, callback }) {
                 timestamp: cmccResponseData.timestamp, //请求消息发送的系统时间，精确到毫秒，共17位，格式：20121227180001165
                 openType: '1', //取号类型
                 expandParams: '', //扩展参数 格式：参数名=值 多个时使用 \| 分割 （选填）
-                authPageType: '0', //若值为“1”时展示弹窗，若值为“2”时展示自定义弹窗版，若值为“3”时展示自定义页面版，若为其它值则展示页面。更多说明见“2.重要参数说明”中“2.3.authPageType”
+                authPageType:Object.keys(uiCongig)?'3': '0', //若值为“1”时展示弹窗，若值为“2”时展示自定义弹窗版，若值为“3”时展示自定义页面版，若为其它值则展示页面。更多说明见“2.重要参数说明”中“2.3.authPageType”
                 devInfo: '', // 1：用户点击其他登录方式时回收授权弹窗，点击协议时协议内容使用iframe打开,默认不回收授权弹窗，点击协议时协议内容在一个新窗口打开
                 setReturn: '' // 1：授权页面显示返回键，不传或其他值根据浏览器判断
             },
@@ -321,11 +308,28 @@ function Main({ params, callback }) {
 }
 function InitLayout({ params, callback }) {
     const appId = params.appId || '';
+    
+    const customConfigFn = () => {
+        window.YDRZAuthLogin.authPageInit({
+            bgColor: '#FFFFFF',
+            titleStyle: { name: `${uiCongig.setLoginTitle||"本机号码登录"}`, fontFamily: 'PingFangSC-Medium, PingFang SC', fontSize: '1.33rem', fontColor: '#444444', width: '70%', height: '1.83rem', left: 'center', high: '1rem', textAlign: 'center' },
+            logoStyle: { url:  `${uiCongig.setLoginLogo||"https://www.cmpassport.com/h5/js/jssdk_auth/image/logo.png"}` , width: '6.96rem', height: '7.32rem', high: '7.9rem', left: 'center' },
+            authTextStyle: { fontFamily: 'PingFangSC-Medium, PingFang SC', fontSize: '1.08rem', fontColor: '#444444', appNameColor: '#444444', width: '100%', textAlign: 'center', high: '22.75rem', left: 'center', fontWeight: '500' },
+            phoneNumStyle: { fontFamily: 'PingFangSC-Semibold, PingFang SC', fontSize: '2.08rem', fontColor: '#444444', bgColor: '#FFFFFF', fontWeight: '600', width: '15.42rem', left: 'center', high: '19.58rem', inputStyle: { width: '1.83rem', height: '2.17rem' } },
+            agreeStyle: { fontFamily: 'PingFangSC-Regular, PingFang SC', fontSize: '1rem', fontColor: '#999999', high: '30.58rem', left: 'center', checkedButton: { width: '1.33rem', height: '1.33rem', uncheckColor: '#cccccc', checkedColor: '#1E82EB', uncheckUrl: '', checkedUrl: '' }, hrefStyle: { fontColor: '#1E82EB', agreeArr: [{name:uiCongig.setPrivacyOne[0],url:uiCongig.setPrivacyOne[1]}] } },
+            tipStyle: { fontFamily: 'PingFangSC-Regular, PingFang SC', fontSize: '0.92rem', fontColor: '#999999', high: '27rem', left: 'center' },
+            returnBtnStyle: { width: '0.65rem', height: '1.1rem', left: '1rem', high: '1rem', url: 'https://www.cmpassport.com/h5/js/jssdk_auth/image/returnIcon.png' },
+            customControlStyle: { ifShow: 'ture', width: '120px', height: '24px', high: '450px', left: 'center', bgColor: '#fff', border: '0', borderRadius: '', url: 'https://www.baidu.com', name: '其他登录方式', fontSize: '16px', fontColor: '#392211', textAlign: 'center', textDecoration: '' }
+        });
+    };
     // 移动初始化
     const cmccInit = useCallback(() => {
         httpPost('', { telecomType: '1', appId, data: '' })
             .then((res) => {
                 cmccResponseData = res.data;
+                if(Object.keys(uiCongig)){
+                    customConfigFn()
+                }
             })
             .catch((err) => {
                 console.log('初始化失败');
@@ -429,9 +433,14 @@ function Init(params, callback) {
 //     return connection.netType === 'cellular';
 // }
 // const obj = { start, Init, isWifi, isMobileData, checkAuthEnable };
-
-function setUIConfig(){
-
+// const data={
+//     setLoginTitle:"页面标题",
+//     setLoginLogo:"logo地址",
+//     setPrivacyOne:["协议名称","协议地址"],
+//     setPrivacyTwo:["协议名称","协议地址"],
+// }
+function setUIConfig(config){
+    uiCongig=config
 }
 const obj = { start, Init ,setUIConfig};
 export default obj;
