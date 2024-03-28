@@ -69,9 +69,9 @@ function Main({ params, callback }) {
                 formData.append(key, params[key]);
             }
             axios
-                // .post('http://api.stable.253.com/open/web/mobile-query',formData,{headers: {
-                .post('https://f5a9-218-76-38-2.ngrok-free.app/open/web/mobile-query', formData, {
-                    headers: {
+                .post('http://api.stable.253.com/open/web/mobile-query',formData,{headers: {
+                // .post('https://f5a9-218-76-38-2.ngrok-free.app/open/web/mobile-query', formData, {
+                //     headers: {
                         'Content-Type': 'multipart/form-data'
                     }
                 })
