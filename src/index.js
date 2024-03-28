@@ -93,7 +93,7 @@ function Main({ params, callback }) {
     );
     const _getSign = useCallback(
         (res = {}) => {
-            return httpPost('/sy/h5/init', { telecomType: '3', appId, data: res.encryValue });
+            return httpPost('', { telecomType: '3', appId, data: res.encryValue });
         },
         [appId]
     );
@@ -310,7 +310,7 @@ function InitLayout({ params, callback }) {
     const appId = params.appId || '';
     // 移动初始化
     const cmccInit = useCallback(() => {
-        httpPost('/sy/h5/init', { telecomType: '1', appId, data: '' })
+        httpPost('', { telecomType: '1', appId, data: '' })
             .then((res) => {
                 cmccResponseData = res.data;
                 // window.YDRZAuthLogin.authPageInit({
@@ -331,7 +331,7 @@ function InitLayout({ params, callback }) {
     }, [appId]);
     // 联通初始化
     const cuccInit = useCallback(() => {
-        httpPost('/sy/h5/init', { telecomType: '2', appId, data: '' })
+        httpPost('', { telecomType: '2', appId, data: '' })
             .then((res) => {
                 cuccResponseData = res.data;
             })
@@ -341,7 +341,7 @@ function InitLayout({ params, callback }) {
     }, [appId]);
     // 电信初始化
     const ctccInit = useCallback(() => {
-        httpPost('/sy/h5/init', { telecomType: '3', appId, data: '' })
+        httpPost('', { telecomType: '3', appId, data: '' })
             .then((res) => {
                 ctccResponseData = res.data;
             })
