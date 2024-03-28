@@ -246,6 +246,7 @@ function Main({ params, callback }) {
     }, [callResult, callback]);
     useEffect(() => {
         if (cuccPhoneNumber.length === 4 && checked) {
+            console.log(_cuccResponseData,"联通运营商的返回结果");
             const data = { ...cuccResponseData, userInformation: `${firstThree}${cuccPhoneNumber}${lastFour}` };
             const token = cryptographicToken('A2', data);
             replacementPhoneNumber(token);
