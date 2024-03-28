@@ -127,6 +127,7 @@ function Main({ params, callback }) {
                 });
             },
             ready: function (res) {
+                console.log(res,"电信准备好了");
                 const j_get_code = document.getElementById('j-get-code');
                 j_get_code.style.display = 'block';
             },
