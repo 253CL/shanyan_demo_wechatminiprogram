@@ -77,10 +77,7 @@ function Main({ params, callback }) {
                 })
                 .then(({ data }) => {
                     if (data.code === '200000') {
-                        const mobile = phoneDecrypt(data.data.mobile, appKey);
-                        if (cuccView) {
-                            setCuccView(false);
-                        }
+                        const mobile = phoneDecrypt(data.data.mobile, appKey);                        
                         destroyHandle();
                         callback('解密后的手机号码' + mobile);
                     }else{
@@ -91,7 +88,7 @@ function Main({ params, callback }) {
                     callback(error);
                 });
         },
-        [appId, appKey, callback, cuccView, destroyHandle]
+        [appId, appKey, callback, destroyHandle]
     );
     const _getSign = useCallback(
         (res = {}) => {
@@ -251,16 +248,16 @@ function Main({ params, callback }) {
             const token = cryptographicToken('A2', data);
             replacementPhoneNumber(token);
         }
-    }, [cuccPhoneNumber, cryptographicToken, _cuccResponseData, replacementPhoneNumber, firstThree, lastFour, checked]);
+    }, [cuccPhoneNumber, cryptographicToken, _cuccResponseData, firstThree, lastFour, checked, replacementPhoneNumber]);
     useEffect(() => {
         cucc();
     }, [cucc]);
     useEffect(() => {
         ctcc();
-    }, []);
+    }, [ctcc]);
     useEffect(() => {
         cmcc();
-    }, []);
+    }, [cmcc]);
     return (
         <React.Fragment>
             <button style={{ display: 'none' }} id="j-get-code">
@@ -302,7 +299,7 @@ function Main({ params, callback }) {
                         </span>
                         <span>并使用本机号码登录</span>
                     </div>
-                    <NumberKeyboard visible={true} showCloseButton={false} onInput={(e) => numberKeyboardChange(e)} onDelete={numberKeyboardDelete} />
+                    <NumberKeyboard visible={cuccView} showCloseButton={false} onInput={(e) => numberKeyboardChange(e)} onDelete={numberKeyboardDelete} />
                 </div>
             )}
         </React.Fragment>
