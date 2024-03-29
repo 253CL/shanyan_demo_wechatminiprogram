@@ -26,7 +26,8 @@
     <body>
         <div class="example">
             <button onclick="beginHandle(1)">初始化</button>
-            <button id="j-get-code" onclick="beginHandle(2)">启动授权登录</button>
+            <button id="j-get-code" onclick="beginHandle(2)" >启动授权登录</button>
+            <button onclick="beginHandle(3)" >自定义配置</button></button>
         </div>
         <span>返回的结果</span>
         <span id="res"></span>
@@ -37,16 +38,23 @@
             function beginHandle(type) {
                 if (type === 1) {
                     window.clshanyansdk.Init(config, function (data) {
-                        console.log(data, '抛出的错误');
                         document.getElementById('res').innerText = JSON.stringify(data);
                     });
-                } else {
+                } else if(type===2){
+                    console.log("我走了你别再等候");
                     window.clshanyansdk.start(config, function (data) {
                         console.log(data,"抛出的错误");
                         document.getElementById('res').innerText = JSON.stringify(data);
                     });
+                }else if(type===3){
+                    window.clshanyansdk.setUIConfig({setLoginTitle:"创蓝云智",setLoginLogo:"https://n.sinaimg.cn/tech/656/w376h280/20191030/a94f-ihqyuym4783651.jpg"})
                 }
             }
+            // 需要这样监听 直接在按钮加点击事件电信初始化以后会被电信的sdk所吞掉事件
+            const button = document.getElementById('j-get-code');
+            button.addEventListener('click', function() {
+                beginHandle(2)
+});
         </script>
     </body>
 </html>

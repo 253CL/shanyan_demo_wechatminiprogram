@@ -41,7 +41,7 @@ const isFunction = (value) => {
 const convertSign = (sign) => {
     return sign.replace(/\//g, '_').replace(/\+/g, '-').replace(/=/g, '');
 };
-const replacementPhoneNumber = (token, appId, appKey, callback, destroyHandle) => {
+const replacementPhoneNumber = (token, appId, appKey, callback) => {
     let params = { token, appId };
     const sign = sortAndEncryptObjectProperties(params, appKey);
     params = { token, appId, sign };
@@ -61,8 +61,7 @@ const replacementPhoneNumber = (token, appId, appKey, callback, destroyHandle) =
             if (data.code === '200000') {
                 const mobile = phoneDecrypt(data.data.mobile, appKey);
                 console.log(mobile);
-                callback('解密后的手机号码' + mobile);                
-                destroyHandle();
+                callback('解密后的手机号码' + mobile);
             } else {
                 callback(data.message);
             }
@@ -100,9 +99,6 @@ const cryptographicToken = (type, responseData, appId) => {
     const token = convertSign(aesEncryptObject(appId, params));
     return `${type}-` + token;
 };
-const isCtcc=(data)=>{
-   return Object.keys(data)>0
-}
 const isWifi=() =>{
     const connection = window.YDRZAuthLogin.getConnection(123);
     return connection.netType === 'wifi';
@@ -133,4 +129,4 @@ const auth=(params, callback)=> {
     }
     return true;
 }
-export { replacementPhoneNumber, cryptographicToken,isCtcc ,isWifi,checkAuthEnable,isMobileData,auth};
+export { replacementPhoneNumber, cryptographicToken ,isWifi,checkAuthEnable,isMobileData,auth};
