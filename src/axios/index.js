@@ -2,7 +2,7 @@ import axios from 'axios';
 const exampleobj = axios.create({
     withCredentials: true,
     // baseURL: 'https://api.253.com/open/i/htjc/'
-    // baseURL: 'http://172.16.40.52:18080'  
+    // baseURL: 'http://172.16.40.52:18080/sy/h5/init'  
     baseURL: 'http://120.253.136.198:36011/sy/h5/init'  
     // baseURL: 'flash_h5_api/sy/h5/init'  
 });

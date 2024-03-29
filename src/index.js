@@ -53,6 +53,7 @@ function Main({ params, callback }) {
             ts: cuccResponseData.timestamp
         })
             .then((res) => {
+                domobj.classList.add('jm-layout');
                 setCuccView(true);
                 setCuccResponseData(res);
             })
@@ -287,7 +288,6 @@ function start(params, callback) {
     if(isCtcc(ctccResponseData)){
         return;
     }
-    domobj.classList.add('jm-layout');
     const _callback = (value) => {
         callback(value);
         destroyHandle();
