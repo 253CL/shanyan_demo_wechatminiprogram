@@ -3,14 +3,15 @@ import ReactDOM from 'react-dom/client';
 import React, { useCallback, useEffect, useState, useMemo } from 'react';
 import { httpPost } from './axios';
 import { NumberKeyboard, PasscodeInput, Radio } from 'antd-mobile';
-import {replacementPhoneNumber,cryptographicToken,auth} from "./config/index"
+import { replacementPhoneNumber, cryptographicToken, auth } from './config/index';
 let domobj = null;
 let rootobj = null;
 let cuccResponseData = {};
 let cmccResponseData = {};
 let ctccResponseData = {};
-let uiCongig={};
-let ctccFlag=false;
+let uiCongig = {};
+let ctccFlag = false;
+let token = '';
 //销毁组件
 const destroyHandle = () => {
     setTimeout(() => {
@@ -20,7 +21,8 @@ const destroyHandle = () => {
         if (domobj) {
             document.body.removeChild(domobj);
         }
-    }, 0)}
+    }, 0);
+};
 function Main({ params, callback }) {
     const [cuccView, setCuccView] = useState(false);
     const [cuccPhoneNumber, setCuccPhoneNumber] = useState('');
@@ -53,7 +55,6 @@ function Main({ params, callback }) {
             });
     }, []);
     const cmcc = useCallback(() => {
-        console.log("cishi de ",Object.keys(uiCongig).length>0?'3': '0');
         window.YDRZAuthLogin.getTokenInfo({
             data: {
                 version: '2.0', //接口版本号 （必填）
@@ -63,13 +64,13 @@ function Main({ params, callback }) {
                 timestamp: cmccResponseData.timestamp, //请求消息发送的系统时间，精确到毫秒，共17位，格式：20121227180001165
                 openType: '1', //取号类型
                 expandParams: '', //扩展参数 格式：参数名=值 多个时使用 \| 分割 （选填）
-                authPageType:Object.keys(uiCongig).length>0?'3': '0', //若值为“1”时展示弹窗，若值为“2”时展示自定义弹窗版，若值为“3”时展示自定义页面版，若为其它值则展示页面。更多说明见“2.重要参数说明”中“2.3.authPageType”
+                authPageType: Object.keys(uiCongig).length > 0 ? '3' : '0', //若值为“1”时展示弹窗，若值为“2”时展示自定义弹窗版，若值为“3”时展示自定义页面版，若为其它值则展示页面。更多说明见“2.重要参数说明”中“2.3.authPageType”
                 devInfo: '', // 1：用户点击其他登录方式时回收授权弹窗，点击协议时协议内容使用iframe打开,默认不回收授权弹窗，点击协议时协议内容在一个新窗口打开
                 setReturn: '' // 1：授权页面显示返回键，不传或其他值根据浏览器判断
             },
             success: function (res) {
-                const token = cryptographicToken('A1', res,appId);
-                replacementPhoneNumber(token,appId,appKey,callback);
+                const token = cryptographicToken('A1', res, appId);
+                replacementPhoneNumber(token, appId, appKey, callback);
             },
             error: function (err) {
                 console.log('cmccerr', err);
@@ -91,6 +92,14 @@ function Main({ params, callback }) {
             return prestr.substring(0, prestr.length - 1);
         });
     };
+    const handleProtocolClick = () => {
+        const url = uiCongig.setPrivacyOne[1] ? uiCongig.setPrivacyOne[1] : 'https://auth.wosms.cn/html/oauth/protocol2.html';
+        window.location.href = url;
+    };
+    const handleProtocolClicktwo = () => {
+        const url = uiCongig.setPrivacyTwo[1] ? uiCongig.setPrivacyTwo[1] : 'https://auth.wosms.cn/html/oauth/protocol2.html';
+        window.location.href = url;
+    };
     const { firstThree, lastFour } = useMemo(() => {
         const str = _cuccResponseData.pmobile;
         const firstThree = str?.substring(0, 3);
@@ -108,9 +117,9 @@ function Main({ params, callback }) {
     }, [callResult, callback]);
     useEffect(() => {
         if (cuccPhoneNumber.length === 4 && checked) {
-            const data = { ...cuccResponseData, userInformation: `${firstThree}${cuccPhoneNumber}${lastFour}`,accessCode:_cuccResponseData.accessCode };
-            const token = cryptographicToken('A2', data,appId);
-            replacementPhoneNumber(token,appId,appKey,callback);
+            const data = { ...cuccResponseData, userInformation: `${firstThree}${cuccPhoneNumber}${lastFour}`, accessCode: _cuccResponseData.accessCode };
+            const token = cryptographicToken('A2', data, appId);
+            replacementPhoneNumber(token, appId, appKey, callback);
         }
     }, [_cuccResponseData.accessCode, appId, appKey, callback, checked, cuccPhoneNumber, firstThree, lastFour]);
     useEffect(() => {
@@ -127,10 +136,10 @@ function Main({ params, callback }) {
                         {'<'}
                     </span>
                     <div className="top">
-                        <p className="top-title">本机号码登录</p>
+                        <p className="top-title">{uiCongig.setLoginTitle || '本机号码登录'}</p>
                     </div>
                     <div className="image">
-                        <img alt="" src="https://n.sinaimg.cn/tech/656/w376h280/20191030/a94f-ihqyuym4783651.jpg"></img>
+                        <img alt="" src={uiCongig.setLoginLogo || 'https://n.sinaimg.cn/tech/656/w376h280/20191030/a94f-ihqyuym4783651.jpg'}></img>
                     </div>
                     <p className="title">中国联通为您提供本机号码认证服务，请输入完整号码</p>
                     <div className="phone-number">
@@ -152,9 +161,14 @@ function Main({ params, callback }) {
                     <div className="authorize">
                         <Radio checked={checked} onClick={radioChange} />
                         <span>登录即同意</span>
-                        <span onClick={() => (window.location.href = 'https://auth.wosms.cn/html/oauth/protocol2.html')} className="protocol">
-                            天翼账号服务协议与隐私政策
+                        <span onClick={handleProtocolClick} className="protocol">
+                            {uiCongig.setPrivacyOne[0] || '中国联通服务协议与隐私政策'}
                         </span>
+                        {uiCongig.setPrivacyTwo[0] && (
+                            <span onClick={handleProtocolClicktwo} className="protocol">
+                                {uiCongig.setPrivacyTwo[0] || '中国联通服务协议与隐私政策'}
+                            </span>
+                        )}
                         <span>并使用本机号码登录</span>
                     </div>
                     <NumberKeyboard visible={cuccView} showCloseButton={false} onInput={(e) => numberKeyboardChange(e)} onDelete={numberKeyboardDelete} />
@@ -184,11 +198,11 @@ function InitLayout({ params, callback }) {
                 });
             },
             ready: function (res) {
-              ctccFlag=true;
+                ctccFlag = true;
             },
             success: function (res) {
-                const token = cryptographicToken('A3', res,appId);
-                replacementPhoneNumber(token,appId,appKey,callback);
+                const token = cryptographicToken('A3', res, appId);
+                replacementPhoneNumber(token, appId, appKey, callback);
             },
             error: function (err) {
                 // callback(err)
@@ -196,14 +210,21 @@ function InitLayout({ params, callback }) {
         });
     }, [_getSign, appId, appKey, callback]);
     const customConfigFn = () => {
-        console.log(uiCongig.setLoginTitle);
         window.YDRZAuthLogin.authPageInit({
             bgColor: '#FFFFFF',
-            titleStyle: { name: `${uiCongig.setLoginTitle||"本机号码登录"}`, fontFamily: 'PingFangSC-Medium, PingFang SC', fontSize: '1.33rem', fontColor: '#444444', width: '70%', height: '1.83rem', left: 'center', high: '1rem', textAlign: 'center' },
-            logoStyle: { url:  `${uiCongig.setLoginLogo||"https://www.cmpassport.com/h5/js/jssdk_auth/image/logo.png"}` , width: '6.96rem', height: '7.32rem', high: '7.9rem', left: 'center' },
+            titleStyle: { name: `${uiCongig.setLoginTitle || '本机号码登录'}`, fontFamily: 'PingFangSC-Medium, PingFang SC', fontSize: '1.33rem', fontColor: '#444444', width: '70%', height: '1.83rem', left: 'center', high: '1rem', textAlign: 'center' },
+            logoStyle: { url: `${uiCongig.setLoginLogo || 'https://www.cmpassport.com/h5/js/jssdk_auth/image/logo.png'}`, width: '6.96rem', height: '7.32rem', high: '7.9rem', left: 'center' },
             authTextStyle: { fontFamily: 'PingFangSC-Medium, PingFang SC', fontSize: '1.08rem', fontColor: '#444444', appNameColor: '#444444', width: '100%', textAlign: 'center', high: '22.75rem', left: 'center', fontWeight: '500' },
             phoneNumStyle: { fontFamily: 'PingFangSC-Semibold, PingFang SC', fontSize: '2.08rem', fontColor: '#444444', bgColor: '#FFFFFF', fontWeight: '600', width: '15.42rem', left: 'center', high: '19.58rem', inputStyle: { width: '1.83rem', height: '2.17rem' } },
-            agreeStyle: { fontFamily: 'PingFangSC-Regular, PingFang SC', fontSize: '1rem', fontColor: '#999999', high: '30.58rem', left: 'center', checkedButton: { width: '1.33rem', height: '1.33rem', uncheckColor: '#cccccc', checkedColor: '#1E82EB', uncheckUrl: '', checkedUrl: '' }, hrefStyle: { fontColor: '#1E82EB', agreeArr: [{name:uiCongig.setPrivacyOne[0],url:uiCongig.setPrivacyOne[1]}] } },
+            agreeStyle: {
+                fontFamily: 'PingFangSC-Regular, PingFang SC',
+                fontSize: '1rem',
+                fontColor: '#999999',
+                high: '30.58rem',
+                left: 'center',
+                checkedButton: { width: '1.33rem', height: '1.33rem', uncheckColor: '#cccccc', checkedColor: '#1E82EB', uncheckUrl: '', checkedUrl: '' },
+                hrefStyle: { fontColor: '#1E82EB', agreeArr: [{ name: uiCongig.setPrivacyOne[0], url: uiCongig.setPrivacyOne[1] }] }
+            },
             tipStyle: { fontFamily: 'PingFangSC-Regular, PingFang SC', fontSize: '0.92rem', fontColor: '#999999', high: '27rem', left: 'center' },
             returnBtnStyle: { width: '0.65rem', height: '1.1rem', left: '1rem', high: '1rem', url: 'https://www.cmpassport.com/h5/js/jssdk_auth/image/returnIcon.png' },
             customControlStyle: { ifShow: 'ture', width: '120px', height: '24px', high: '450px', left: 'center', bgColor: '#fff', border: '0', borderRadius: '', url: 'https://www.baidu.com', name: '其他登录方式', fontSize: '16px', fontColor: '#392211', textAlign: 'center', textDecoration: '' }
@@ -214,12 +235,12 @@ function InitLayout({ params, callback }) {
         httpPost('', { telecomType: '1', appId, data: '' })
             .then((res) => {
                 cmccResponseData = res.data;
-                if(Object.keys(uiCongig).length>0){
-                    customConfigFn()
+                if (Object.keys(uiCongig).length > 0) {
+                    customConfigFn();
                 }
             })
             .catch((err) => {
-                console.log('移动初始化-初始化失败',err);
+                console.log('移动初始化-初始化失败', err);
             });
     }, [appId]);
     // 联通初始化
@@ -242,7 +263,7 @@ function InitLayout({ params, callback }) {
             .catch((err) => {
                 console.log('电信初始化-初始化失败', err);
             });
-    }, [appId,ctcc]);
+    }, [appId, ctcc]);
     useEffect(() => {
         cmccInit();
     }, [cmccInit]);
@@ -260,19 +281,19 @@ function createLayout(params, callback) {
 function createInitLayout(params, callback) {
     rootobj = ReactDOM.createRoot(domobj);
     rootobj.render(<InitLayout params={params} callback={callback} />);
-} 
+}
 function start(params, callback) {
     const result = auth(params, callback);
     if (!result) {
         return;
     }
-    if(ctccFlag){
+    if (ctccFlag) {
         return;
     }
-    const _callBack=(value)=>{
+    const _callBack = (value) => {
         callback(value);
         destroyHandle();
-    }
+    };
     createLayout(params, _callBack);
 }
 
@@ -283,15 +304,18 @@ function Init(params, callback) {
     }
     domobj = document.createElement('div');
     document.body.appendChild(domobj);
-    const _callBack=(value)=>{
+    const _callBack = (value) => {
         callback(value);
         destroyHandle();
-    }
+    };
     createInitLayout(params, _callBack);
 }
 
-function setUIConfig(config){
-    uiCongig=config
+function setUIConfig(config) {
+    uiCongig = config;
 }
-const obj = { start, Init ,setUIConfig};
+function getToken(){
+    return token
+}
+const obj = { start, Init, setUIConfig, getToken };
 export default obj;
