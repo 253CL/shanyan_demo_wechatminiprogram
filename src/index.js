@@ -322,7 +322,6 @@ function Init(params, callback) {
     document.body.appendChild(domobj);
     const _callBack = (value) => {
         callback(value);
-        destroyHandle();
     };
     createInitLayout(params, _callBack);
 }
