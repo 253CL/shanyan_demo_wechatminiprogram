@@ -181,6 +181,7 @@ function InitLayout({ params, callback }) {
     const appId = params.appId || '';
     const appKey = params.appKey || '';
     const [error,setError]=useState({});
+    const [success,setSuccess]=useState({});
     const _getSign = useCallback(
         (res = {}) => {
             return httpPost('', { telecomType: '3', appId, data: res.encryValue });
@@ -239,6 +240,7 @@ function InitLayout({ params, callback }) {
                 if (Object.keys(uiCongig).length > 0) {
                     customConfigFn();
                 }
+                setSuccess(v=>({...v,cmcc:true}))
             })
             .catch((err) => {
                 setError(v=>({...v,cmcc:err}))
@@ -249,6 +251,7 @@ function InitLayout({ params, callback }) {
         httpPost('', { telecomType: '2', appId, data: '' })
             .then((res) => {
                 cuccResponseData = res.data;
+                setSuccess(v=>({...v,cucc:true}))
             })
             .catch((err) => {
                 setError(v=>({...v,cucc:err}))
@@ -260,6 +263,7 @@ function InitLayout({ params, callback }) {
             .then((res) => {
                 ctccResponseData = res.data;
                 ctcc();
+                setSuccess(v=>({...v,ctcc:true}))
             })
             .catch((err) => {
                 setError(v=>({...v,ctcc:err}))
@@ -269,7 +273,10 @@ function InitLayout({ params, callback }) {
         if(Object.keys(error).length===3){
             callback({ code: '000400', message: '初始化失败' });
         }
-    },[callback, error])
+        if(Object.keys(success).length===3){
+            callback({ code: '000000', message: '初始化成功' });
+        }
+    },[callback, error, success])
     useEffect(() => {
         cmccInit();
     }, [cmccInit]);
