@@ -24,6 +24,7 @@ const destroyHandle = () => {
     }, 0);
 };
 function Main({ params, callback }) {
+    console.log("我进了main");
     const [cuccView, setCuccView] = useState(false);
     const [cuccPhoneNumber, setCuccPhoneNumber] = useState('');
     const [_cuccResponseData, setCuccResponseData] = useState({});
