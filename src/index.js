@@ -180,6 +180,7 @@ function Main({ params, callback }) {
 function InitLayout({ params, callback }) {
     const appId = params.appId || '';
     const appKey = params.appKey || '';
+    const [error,setError]=useState({});
     const _getSign = useCallback(
         (res = {}) => {
             return httpPost('', { telecomType: '3', appId, data: res.encryValue });
@@ -240,7 +241,7 @@ function InitLayout({ params, callback }) {
                 }
             })
             .catch((err) => {
-                console.log('移动初始化-初始化失败', err);
+                setError(v=>({...v,cmcc:err}))
             });
     }, [appId]);
     // 联通初始化
@@ -250,7 +251,7 @@ function InitLayout({ params, callback }) {
                 cuccResponseData = res.data;
             })
             .catch((err) => {
-                console.log('联通初始化-初始化失败');
+                setError(v=>({...v,cucc:err}))
             });
     }, [appId]);
     // 电信初始化
@@ -261,9 +262,14 @@ function InitLayout({ params, callback }) {
                 ctcc();
             })
             .catch((err) => {
-                console.log('电信初始化-初始化失败', err);
+                setError(v=>({...v,ctcc:err}))
             });
     }, [appId, ctcc]);
+    useEffect(()=>{
+        if(Object.keys(error).length===3){
+            callback({ code: '000400', message: '初始化失败' });
+        }
+    },[callback, error])
     useEffect(() => {
         cmccInit();
     }, [cmccInit]);
