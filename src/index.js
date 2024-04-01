@@ -163,11 +163,11 @@ function Main({ params, callback }) {
                         <Radio checked={checked} onClick={radioChange} />
                         <span>登录即同意</span>
                         <span onClick={handleProtocolClick} className="protocol">
-                            {uiCongig?.setPrivacyOne[0] || '中国联通服务协议与隐私政策'}
+                            {(uiCongig.setPrivacyOne?.[0]) || '中国联通服务协议与隐私政策'}
                         </span>
-                        {uiCongig?.setPrivacyTwo[0] && (
+                        {uiCongig.setPrivacyTwo?.[0] && (
                             <span onClick={handleProtocolClicktwo} className="protocol">
-                                {uiCongig?.setPrivacyTwo[0] || '中国联通服务协议与隐私政策'}
+                                {(uiCongig.setPrivacyTwo?.[0]) || '中国联通服务协议与隐私政策'}
                             </span>
                         )}
                         <span>并使用本机号码登录</span>
@@ -226,7 +226,7 @@ function InitLayout({ params, callback }) {
                 high: '30.58rem',
                 left: 'center',
                 checkedButton: { width: '1.33rem', height: '1.33rem', uncheckColor: '#cccccc', checkedColor: '#1E82EB', uncheckUrl: '', checkedUrl: '' },
-                hrefStyle: { fontColor: '#1E82EB', agreeArr: [{ name: uiCongig?.setPrivacyOne[0], url: uiCongig?.setPrivacyOne[1] }] }
+                hrefStyle: { fontColor: '#1E82EB', agreeArr: [{ name: uiCongig?.setPrivacyOne?.[0], url: uiCongig?.setPrivacyOne?.[1] }] }
             },
             tipStyle: { fontFamily: 'PingFangSC-Regular, PingFang SC', fontSize: '0.92rem', fontColor: '#999999', high: '27rem', left: 'center' },
             returnBtnStyle: { width: '0.65rem', height: '1.1rem', left: '1rem', high: '1rem', url: 'https://www.cmpassport.com/h5/js/jssdk_auth/image/returnIcon.png' },
