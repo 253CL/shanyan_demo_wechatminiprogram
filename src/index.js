@@ -250,10 +250,12 @@ function InitLayout({ params, callback }) {
     const cuccInit = useCallback(() => {
         httpPost('', { telecomType: '2', appId, data: '' })
             .then((res) => {
+                console.log(res, '联通的数据');
                 cuccResponseData = res.data;
                 setSuccess(v=>({...v,cucc:true}))
             })
             .catch((err) => {
+                console.log("联通的报错",err);
                 setError(v=>({...v,cucc:err}))
             });
     }, [appId]);
