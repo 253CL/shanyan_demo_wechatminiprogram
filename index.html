@@ -24,6 +24,9 @@
         <link rel="stylesheet" type="text/css" href="https://www.cmpassport.com/h5/js/jssdk_auth/css/ydrz-layer.css" />
     </head>
     <body>
+        <label for="input1">appkey:</label> <input type="text" id="input1" value="YPMXIiau" /><br />
+        <label for="input2">appId:</label>
+        <input type="text" id="input2" value="mnOTaPwX" /><br />
         <div class="example">
             <button onclick="beginHandle(1)">初始化</button>
             <button id="j-get-code">启动授权登录</button>
@@ -33,11 +36,10 @@
         <span id="res"></span>
         <script src="js/umd/living.min.js?t=10000"></script>
         <script>
-            // const config = { appKey: 'NIsHsMc3', appId: 'uZNUlz3B' }; 
-            // const config = { appKey: 'mt7vh6Hk', appId: 'mYldGd5a' }; loca
-            // const config = { appKey: 'mt7vh6Hk', appId: 'mYldGd5a' }; 
-            const config = { appKey: 'YPMXIiau', appId: 'mnOTaPwX' }; 
             function beginHandle(type) {
+                var appKey = document.getElementById('input1').value;
+                var appId = document.getElementById('input2').value;
+                const config = { appKey, appId };
                 if (type === 1) {
                     window.clshanyansdk.Init(config, function (data) {
                         document.getElementById('res').innerText = JSON.stringify(data);
