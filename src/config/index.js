@@ -50,10 +50,8 @@ const replacementPhoneNumber = (token, appId, appKey, callback) => {
         formData.append(key, params[key]);
     }
     axios
-        .post('https://56.cm253.com:8445/open/web/mobile-query', formData, {
+        .post('https://57.cm253.com:8445/open/web/mobile-query', formData, {
             headers: {
-                // .post('https://f5a9-218-76-38-2.ngrok-free.app/open/web/mobile-query', formData, {
-                //     headers: {
                 'Content-Type': 'multipart/form-data'
             }
         })
