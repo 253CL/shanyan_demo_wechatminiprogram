@@ -7,42 +7,59 @@
     user-select: none;
     background-color: #fff;
     z-index: 1000;
+
+    .content {
+        height:76vh;
+        overflow-y: auto;
+    }
+    .adm-number-keyboard-key{
+        height: 6vh;
+    }
+
     .top {
         position: absolute;
+        background-color: white;
+        z-index: 10000;
+        padding-top: 3vh;
         width: 100vw;
-        top: 5vh;
-        
-    }
-    .cancel{
-        position: absolute;
-        top: 5vh;
-            left: 10px;
-            font-size: 28px;
+
+        .cancel {
+            position: absolute;
+            top: 3.5vh;
+            left: 2.5vw;
+            height: 4vh;
         }
-    .top-title {
-        text-align: center;
-        font-weight: 800;
-        font-size: 20px;
+
+        .top-title {
+            text-align: center;
+            font-weight: 800;
+            font-size: 5vw;
+            line-height: 5vh;
+        }
     }
+
     .image {
         margin-top: 10vh;
+
         img {
             display: block;
             margin: 0 auto;
-            width: 30vh;
-            height: 30vh;
+            width: 20vh;
+            height: 20vh;
         }
     }
+
     .title {
-        margin-bottom: 5vh;
+        margin-bottom: 4vh;
         text-align: center;
-        font-weight: 800;
-        font-size: 16px;
+        font-size: 3vw;
     }
+
     .phone-number {
         display: flex;
         justify-content: center;
-        font-size: 18px;
+        font-size: 4.8vw;
+
         .phone-block {
             display: block;
             text-align: center;
@@ -50,27 +67,38 @@
             height: 42px;
             width: 5vw;
         }
+
         &-box {
             display: flex;
         }
     }
-    .hint{
+
+    .hint {
         margin: 10px 0;
+        font-size: 3vw;
         text-align: center;
         color: #d3d335;
+    }
 
-    }
-    .authorize{
+    .authorize {
+        font-size: 3.5vw;       
+        line-height: 3.5vw;
         text-align: center;
-        .adm-radio-icon{
-            width: 15px;
-            height: 15px;
+        .adm-radio-icon {
+            width: 3.5vw;
+            height: 3.5vw;
         }
-        .protocol{
-        color: #2d77ff;
+
+        .protocol {
+            color: #2d77ff;
         }
     }
-    
+
+    .keyboard-container {
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+    }
 }
 
 .jm-message {
@@ -484,20 +512,24 @@
         cursor: pointer;
     }
 }
+
 .jm-success {
     margin: 10px;
     padding-top: 20vh;
+
     &-center {
         img {
             display: block;
             margin: 0 auto;
         }
     }
+
     &-text {
         text-align: center;
         margin-top: 20px;
         margin-bottom: 20px;
     }
+
     &-button {
         color: #fff;
         height: 50px;
@@ -509,26 +541,31 @@
         cursor: pointer;
     }
 }
+
 .jm-error {
     margin: 10px;
     padding-top: 20vh;
+
     &-center {
         img {
             display: block;
             margin: 0 auto;
         }
     }
+
     &-text {
         text-align: center;
         margin-top: 20px;
         margin-bottom: 20px;
         font-weight: 800;
     }
+
     &-reason {
         text-align: center;
         margin-top: 20px;
         margin-bottom: 20px;
     }
+
     &-button {
         color: #fff;
         height: 50px;
@@ -540,10 +577,12 @@
         cursor: pointer;
     }
 }
+
 @keyframes checkingMove {
     0% {
         transform: translateY(-100%);
     }
+
     100% {
         transform: translateY(300%);
     }
@@ -554,6 +593,7 @@
         opacity: 0;
         transform: scale(0.6);
     }
+
     100% {
         opacity: 1;
         transform: scale(1);
