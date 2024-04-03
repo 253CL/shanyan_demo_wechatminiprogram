@@ -24,21 +24,40 @@
         <link rel="stylesheet" type="text/css" href="https://www.cmpassport.com/h5/js/jssdk_auth/css/ydrz-layer.css" />
     </head>
     <body>
-        <label for="input1">appkey:</label> <input type="text" id="input1" value="YPMXIiau" /><br />
+        <label for="input1">appkey:</label>
+         <input type="text" id="input1" value="hYmhmHWV" /><br />
         <label for="input2">appId:</label>
-        <input type="text" id="input2" value="mnOTaPwX" /><br />
+        <input type="text" id="input2" value="5FO1pbba" /><br />
+        <br />
+        <br />
+        <label for="input3">setLoginTitle:</label>
+         <input type="text" id="input3"  /><br />
+        <label for="input4">setLoginLogo:</label>
+        <input type="text" id="input4"  /><br />
+        <label for="setPrivacyOneName">setPrivacyOneName:</label>
+         <input type="text" id="setPrivacyOneName"  /><br />
+         <label for="setPrivacyOneUrl">setPrivacyOneUrl:</label>
+         <input type="text" id="setPrivacyOneUrl"  /><br />
+        <label for="setPrivacyTwoName">setPrivacyTwoName:</label>
+        <input type="text" id="setPrivacyTwoName"  /><br />
+        <label for="setPrivacyTwoUrl">setPrivacyTwoUrl:</label>
+        <input type="text" id="setPrivacyTwoUrl"  /><br />
         <div class="example">
             <button onclick="beginHandle(1)">初始化</button>
             <button id="j-get-code">启动授权登录</button>
-            <!-- <button onclick="beginHandle(3)" >自定义配置</button></button> -->
+            <button onclick="beginHandle(3)" >自定义配置</button></button>
         </div>
         <span>返回的结果</span>
         <span id="res"></span>
         <script src="js/umd/living.min.js?t=10000"></script>
         <script>
             function beginHandle(type) {
-                var appKey = document.getElementById('input1').value;
-                var appId = document.getElementById('input2').value;
+                const appKey = document.getElementById('input1').value;
+                const appId = document.getElementById('input2').value;
+                const setLoginTitle = document.getElementById('setLoginTitle').value;
+                const setLoginLogo = document.getElementById('setLoginLogo').value;
+                const setPrivacyOne = [document.getElementById('setPrivacyOneName').value,document.getElementById('setPrivacyOneUrl').value];
+                const setPrivacyTwo = [document.getElementById('setPrivacyTwoName').value,document.getElementById('setPrivacyTwoUrl').value];
                 const config = { appKey, appId };
                 if (type === 1) {
                     window.clshanyansdk.Init(config, function (data) {
@@ -49,7 +68,7 @@
                         document.getElementById('res').innerText = JSON.stringify(data);
                     });
                 } else if (type === 3) {
-                    window.clshanyansdk.setUIConfig({ setLoginTitle: '创蓝云智', setLoginLogo: 'https://www.cmpassport.com/h5/js/jssdk_auth/image/logo.png', setPrivacyOne: ['百度', 'http://www.baidu.com'], setPrivacyTwo: ['百度2', 'http://www.baidu.com'] });
+                    window.clshanyansdk.setUIConfig({ setLoginTitle, setLoginLogo, setPrivacyOne,setPrivacyTwo });
                 }
             }
             // 需要这样监听 直接在按钮加点击事件电信初始化以后会被电信的sdk所吞掉事件
