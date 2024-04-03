@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import React, { useCallback, useEffect, useState, useMemo } from 'react';
 import { httpPost } from './axios';
 import { NumberKeyboard, PasscodeInput, Radio } from 'antd-mobile';
+import { useNotification } from 'rc-notification';
 import { replacementPhoneNumber, cryptographicToken, auth } from './config/index';
 let domobj = null;
 let rootobj = null;
@@ -11,7 +12,18 @@ let cmccResponseData = {};
 let ctccResponseData = {};
 let uiCongig = {};
 let ctccFlag = false;
-let token = '';
+let ctccFinish = false;
+const noticeMotion = {
+    motionName: 'jm-message-fade',
+    motionAppear: true,
+    motionEnter: true,
+    motionLeave: true,
+    onLeaveStart: (ele) => {
+        const { offsetHeight } = ele;
+        return { height: offsetHeight };
+    },
+    onLeaveActive: () => ({ height: 0, opacity: 0, margin: 0 })
+};
 //销毁组件
 const destroyHandle = () => {
     setTimeout(() => {
@@ -23,8 +35,9 @@ const destroyHandle = () => {
         }
     }, 0);
 };
+
 function Main({ params, callback }) {
-    console.log("我进了main");
+    const [notice, contextHolder] = useNotification({ motion: noticeMotion, prefixCls: 'jm-message', maxCount: 1 });
     const [cuccView, setCuccView] = useState(false);
     const [cuccPhoneNumber, setCuccPhoneNumber] = useState('');
     const [_cuccResponseData, setCuccResponseData] = useState({});
@@ -33,11 +46,19 @@ function Main({ params, callback }) {
     const appId = params.appId || '';
     const appKey = params.appKey || '';
     const cuccCancel = () => {
+        setCuccView(false);
         destroyHandle();
     };
     const radioChange = () => {
         setchecked(!checked);
     };
+    //提示框
+    const noticeHandle = useCallback(
+        (content) => {
+            notice.open({ content, duration: 2.5, closable: false, placement: 'top' });
+        },
+        [notice]
+    );
     const cucc = useCallback(() => {
         window.LTRZ['getTokenInfo']({
             //1.获取置换码方法
@@ -94,11 +115,11 @@ function Main({ params, callback }) {
         });
     };
     const handleProtocolClick = () => {
-        const url = uiCongig?.setPrivacyOne[1] ? uiCongig?.setPrivacyOne[1] : 'https://auth.wosms.cn/html/oauth/protocol2.html';
+        const url = uiCongig?.setPrivacyOne?.[1] ? uiCongig?.setPrivacyOne[1] : 'https://auth.wosms.cn/html/oauth/protocol2.html';
         window.location.href = url;
     };
     const handleProtocolClicktwo = () => {
-        const url = uiCongig?.setPrivacyTwo[1] ? uiCongig?.setPrivacyTwo[1] : 'https://auth.wosms.cn/html/oauth/protocol2.html';
+        const url = uiCongig?.setPrivacyTwo?.[1] ? uiCongig?.setPrivacyTwo[1] : 'https://auth.wosms.cn/html/oauth/protocol2.html';
         window.location.href = url;
     };
     const { firstThree, lastFour } = useMemo(() => {
@@ -124,55 +145,62 @@ function Main({ params, callback }) {
         }
     }, [_cuccResponseData.accessCode, appId, appKey, callback, checked, cuccPhoneNumber, firstThree, lastFour]);
     useEffect(() => {
+        if (cuccPhoneNumber.length === 4 && !checked) {
+            noticeHandle('请勾选同意服务条款');
+        }
+    }, [checked, cuccPhoneNumber.length, noticeHandle]);
+    useEffect(() => {
         cucc();
     }, [cucc]);
     useEffect(() => {
         cmcc();
     }, [cmcc]);
+
     return (
         <React.Fragment>
+            {contextHolder}
             {cuccView && (
                 <div>
-                    <span className="cancel" onClick={cuccCancel}>
-                        {'<'}
-                    </span>
                     <div className="top">
+                        <img className="cancel" onClick={cuccCancel} src="https://static2.253.com/wanshu/shanyanh5/left.png" alt="返回按钮"></img>
                         <p className="top-title">{uiCongig.setLoginTitle || '本机号码登录'}</p>
                     </div>
-                    <div className="image">
-                        <img alt="" src={uiCongig.setLoginLogo || 'https://n.sinaimg.cn/tech/656/w376h280/20191030/a94f-ihqyuym4783651.jpg'}></img>
-                    </div>
-                    <p className="title">中国联通为您提供本机号码认证服务，请输入完整号码</p>
-                    <div className="phone-number">
-                        {firstThree?.split('').map((item, index) => (
-                            <span key={index} className="phone-block">
-                                {item}
-                            </span>
-                        ))}
-                        <div className="phone-number-box">
-                            <PasscodeInput value={cuccPhoneNumber} length={4} plain keyboard={<div style={{ display: 'none' }}></div>} />
+                    <div className="content">
+                        <div className="image">
+                            <img alt="" src={uiCongig.setLoginLogo || 'https://static2.253.com/wanshu/shanyanh5/unicm.jpeg'}></img>
                         </div>
-                        {lastFour?.split('').map((item, index) => (
-                            <span key={index} className="phone-block">
-                                {item}
+                        <p className="title">请填写完整号码并授权使用此号码</p>
+                        <div className="phone-number">
+                            {firstThree?.split('').map((item, index) => (
+                                <span key={index} className="phone-block">
+                                    {item}
+                                </span>
+                            ))}
+                            <div className="phone-number-box">
+                                <PasscodeInput value={cuccPhoneNumber} length={4} plain keyboard={<div style={{ display: 'none' }}></div>} />
+                            </div>
+                            {lastFour?.split('').map((item, index) => (
+                                <span key={index} className="phone-block">
+                                    {item}
+                                </span>
+                            ))}
+                        </div>
+                        <p className="hint">若非本机号码，请返回并切换4G/5G网络使用</p>
+                        <div className="authorize">
+                            <Radio checked={checked} onClick={radioChange} />
+                            <span>登录即同意</span>
+                            <span onClick={handleProtocolClick} className="protocol">
+                                {uiCongig.setPrivacyOne?.[0] || '《中国联通认证服务协议》'}
                             </span>
-                        ))}
+                            {uiCongig.setPrivacyTwo?.[0] && (
+                                <span onClick={handleProtocolClicktwo} className="protocol">
+                                    {uiCongig.setPrivacyTwo?.[0] || '《中国联通认证服务协议》'}
+                                </span>
+                            )}
+                            <span>并使用本机号码登录</span>
+                        </div>
+                        <NumberKeyboard  getContainer={null} visible={cuccView} showCloseButton={false} onInput={(e) => numberKeyboardChange(e)} onDelete={numberKeyboardDelete} />
                     </div>
-                    <p className="hint">若非本机号码，请返回并切换4G/5G网络使用</p>
-                    <div className="authorize">
-                        <Radio checked={checked} onClick={radioChange} />
-                        <span>登录即同意</span>
-                        <span onClick={handleProtocolClick} className="protocol">
-                            {(uiCongig.setPrivacyOne?.[0]) || '中国联通服务协议与隐私政策'}
-                        </span>
-                        {uiCongig.setPrivacyTwo?.[0] && (
-                            <span onClick={handleProtocolClicktwo} className="protocol">
-                                {(uiCongig.setPrivacyTwo?.[0]) || '中国联通服务协议与隐私政策'}
-                            </span>
-                        )}
-                        <span>并使用本机号码登录</span>
-                    </div>
-                    <NumberKeyboard visible={cuccView} showCloseButton={false} onInput={(e) => numberKeyboardChange(e)} onDelete={numberKeyboardDelete} />
                 </div>
             )}
         </React.Fragment>
@@ -181,8 +209,8 @@ function Main({ params, callback }) {
 function InitLayout({ params, callback }) {
     const appId = params.appId || '';
     const appKey = params.appKey || '';
-    const [error,setError]=useState({});
-    const [success,setSuccess]=useState({});
+    const [error, setError] = useState({});
+    const [success, setSuccess] = useState({});
     const _getSign = useCallback(
         (res = {}) => {
             return httpPost('', { telecomType: '3', appId, data: res.encryValue });
@@ -190,6 +218,7 @@ function InitLayout({ params, callback }) {
         [appId]
     );
     const ctcc = useCallback(() => {
+        ctccFinish = false;
         window.fjs?.getAccessCode({
             debug: false, // 非必填，布尔值，开启调试模式,调用的所有api的返回值会在客户端alert出来，在pc端打印出来。生产环境请设置为false
             btnId: 'j-get-code', //必填，“获取accessCode”按钮标签id（可参考下方html/js示例）
@@ -201,6 +230,7 @@ function InitLayout({ params, callback }) {
                 });
             },
             ready: function (res) {
+                ctccFinish = true;
                 ctccFlag = true;
             },
             success: function (res) {
@@ -208,6 +238,7 @@ function InitLayout({ params, callback }) {
                 replacementPhoneNumber(token, appId, appKey, callback);
             },
             error: function (err) {
+                ctccFinish = true;
                 // callback(err)
             }
         });
@@ -241,10 +272,10 @@ function InitLayout({ params, callback }) {
                 if (Object.keys(uiCongig).length > 0) {
                     customConfigFn();
                 }
-                setSuccess(v=>({...v,cmcc:true}))
+                setSuccess((v) => ({ ...v, cmcc: true }));
             })
             .catch((err) => {
-                setError(v=>({...v,cmcc:err}))
+                setError((v) => ({ ...v, cmcc: err }));
             });
     }, [appId]);
     // 联通初始化
@@ -253,11 +284,11 @@ function InitLayout({ params, callback }) {
             .then((res) => {
                 console.log(res, '联通的数据');
                 cuccResponseData = res.data;
-                setSuccess(v=>({...v,cucc:true}))
+                setSuccess((v) => ({ ...v, cucc: true }));
             })
             .catch((err) => {
-                console.log("联通的报错",err);
-                setError(v=>({...v,cucc:err}))
+                console.log('联通的报错', err);
+                setError((v) => ({ ...v, cucc: err }));
             });
     }, [appId]);
     // 电信初始化
@@ -266,20 +297,20 @@ function InitLayout({ params, callback }) {
             .then((res) => {
                 ctccResponseData = res.data;
                 ctcc();
-                setSuccess(v=>({...v,ctcc:true}))
+                setSuccess((v) => ({ ...v, ctcc: true }));
             })
             .catch((err) => {
-                setError(v=>({...v,ctcc:err}))
+                setError((v) => ({ ...v, ctcc: err }));
             });
     }, [appId, ctcc]);
-    useEffect(()=>{
-        if(Object.keys(error).length===3){
+    useEffect(() => {
+        if (Object.keys(error).length === 3) {
             callback({ code: '000400', message: '初始化失败' });
         }
-        if(Object.keys(success).length===3){
+        if (Object.keys(success).length === 3) {
             callback({ code: '000000', message: '初始化成功' });
         }
-    },[callback, error, success])
+    }, [callback, error, success]);
     useEffect(() => {
         cmccInit();
     }, [cmccInit]);
@@ -306,6 +337,9 @@ function start(params, callback) {
     if (ctccFlag) {
         return;
     }
+    if (!ctccFinish) {
+        return callback('请稍后再试');
+    }
     const _callBack = (value) => {
         callback(value);
         destroyHandle();
@@ -329,8 +363,5 @@ function Init(params, callback) {
 function setUIConfig(config) {
     uiCongig = config;
 }
-function getToken(){
-    return token
-}
-const obj = { start, Init, setUIConfig, getToken };
+const obj = { start, Init, setUIConfig };
 export default obj;
