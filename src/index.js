@@ -199,7 +199,7 @@ function Main({ params, callback }) {
                             )}
                             <span>并使用本机号码登录</span>
                         </div>
-                        <NumberKeyboard  getContainer={null} visible={cuccView} showCloseButton={false} onInput={(e) => numberKeyboardChange(e)} onDelete={numberKeyboardDelete} />
+                        <NumberKeyboard getContainer={null} visible={cuccView} showCloseButton={false} onInput={(e) => numberKeyboardChange(e)} onDelete={numberKeyboardDelete} />
                     </div>
                 </div>
             )}
@@ -209,11 +209,9 @@ function Main({ params, callback }) {
 function InitLayout({ params, callback }) {
     const appId = params.appId || '';
     const appKey = params.appKey || '';
-    const [error, setError] = useState({});
-    const [success, setSuccess] = useState({});
     const _getSign = useCallback(
         (res = {}) => {
-            return httpPost('', { telecomType: '3', appId, data: res.encryValue });
+            return httpPost('', {appId, data: res.encryValue });
         },
         [appId]
     );
@@ -226,7 +224,7 @@ function InitLayout({ params, callback }) {
             authDomain: '', //非必填，合作方传入域名参数
             getSignParams: function (res) {
                 _getSign(res).then((data) => {
-                    window.fjs.setSign(data.data.sign);
+                    window.fjs.setSign(data.data.ctccSign);
                 });
             },
             ready: function (res) {
@@ -264,62 +262,27 @@ function InitLayout({ params, callback }) {
             customControlStyle: { ifShow: 'ture', width: '120px', height: '24px', high: '450px', left: 'center', bgColor: '#fff', border: '0', borderRadius: '', url: 'https://www.baidu.com', name: '其他登录方式', fontSize: '16px', fontColor: '#392211', textAlign: 'center', textDecoration: '' }
         });
     };
-    // 移动初始化
-    const cmccInit = useCallback(() => {
-        httpPost('', { telecomType: '1', appId, data: '' })
-            .then((res) => {
-                cmccResponseData = res.data;
+    const initAjax = useCallback(() => {
+        httpPost('', { appId, data: '' })
+            .then(({ data }) => {
+                const { cuccAppId, cuccSign, ctccAppId, ctccSign, cmccAppId, cmccSign, traceId, cmccTimestamp,cuccTimestamp } = data;
+                cuccResponseData = { appSecret: cuccAppId, sign: cuccSign ,timestamp:cuccTimestamp};
+                ctccResponseData = { appId: ctccAppId, sign: ctccSign };
+                cmccResponseData = { appId: cmccAppId, sign: cmccSign, traceId, timestamp:cmccTimestamp };
                 if (Object.keys(uiCongig).length > 0) {
                     customConfigFn();
                 }
-                setSuccess((v) => ({ ...v, cmcc: true }));
-            })
-            .catch((err) => {
-                setError((v) => ({ ...v, cmcc: err }));
-            });
-    }, [appId]);
-    // 联通初始化
-    const cuccInit = useCallback(() => {
-        httpPost('', { telecomType: '2', appId, data: '' })
-            .then((res) => {
-                console.log(res, '联通的数据');
-                cuccResponseData = res.data;
-                setSuccess((v) => ({ ...v, cucc: true }));
-            })
-            .catch((err) => {
-                console.log('联通的报错', err);
-                setError((v) => ({ ...v, cucc: err }));
-            });
-    }, [appId]);
-    // 电信初始化
-    const ctccInit = useCallback(() => {
-        httpPost('', { telecomType: '3', appId, data: '' })
-            .then((res) => {
-                ctccResponseData = res.data;
                 ctcc();
-                setSuccess((v) => ({ ...v, ctcc: true }));
+                callback({ code: '000000', message: '初始化成功' });
             })
             .catch((err) => {
-                setError((v) => ({ ...v, ctcc: err }));
+                callback({ code: '000400', message: '初始化失败' });
             });
-    }, [appId, ctcc]);
+    }, [appId, callback, ctcc]);
+
     useEffect(() => {
-        if (Object.keys(error).length === 3) {
-            callback({ code: '000400', message: '初始化失败' });
-        }
-        if (Object.keys(success).length === 3) {
-            callback({ code: '000000', message: '初始化成功' });
-        }
-    }, [callback, error, success]);
-    useEffect(() => {
-        cmccInit();
-    }, [cmccInit]);
-    useEffect(() => {
-        cuccInit();
-    }, [cuccInit]);
-    useEffect(() => {
-        ctccInit();
-    }, [ctccInit]);
+        initAjax();
+    }, [initAjax]);
     return;
 }
 function createLayout(params, callback) {
