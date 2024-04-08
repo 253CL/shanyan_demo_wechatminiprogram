@@ -264,16 +264,20 @@ function InitLayout({ params, callback }) {
     };
     const initAjax = useCallback(() => {
         httpPost('', { appId, data: '' })
-            .then(({ data }) => {
-                const { cuccAppId, cuccSign, ctccAppId, ctccSign, cmccAppId, cmccSign, traceId, cmccTimestamp,cuccTimestamp } = data;
-                cuccResponseData = { appSecret: cuccAppId, sign: cuccSign ,timestamp:cuccTimestamp};
-                ctccResponseData = { appId: ctccAppId, sign: ctccSign };
-                cmccResponseData = { appId: cmccAppId, sign: cmccSign, traceId, timestamp:cmccTimestamp };
-                if (Object.keys(uiCongig).length > 0) {
-                    customConfigFn();
+            .then(({ data,retCode,retMsg }) => {
+                if(retCode==="0"){
+                    const { cuccAppId, cuccSign, ctccAppId, ctccSign, cmccAppId, cmccSign, traceId, cmccTimestamp,cuccTimestamp } = data;
+                    cuccResponseData = { appSecret: cuccAppId, sign: cuccSign ,timestamp:cuccTimestamp};
+                    ctccResponseData = { appId: ctccAppId, sign: ctccSign };
+                    cmccResponseData = { appId: cmccAppId, sign: cmccSign, traceId, timestamp:cmccTimestamp };
+                    if (Object.keys(uiCongig).length > 0) {
+                        customConfigFn();
+                    }
+                    ctcc();
+                    callback({ code: '000000', message: '初始化成功' });
+                }else{
+                    callback({ code: '000400', message: retMsg });
                 }
-                ctcc();
-                callback({ code: '000000', message: '初始化成功' });
             })
             .catch((err) => {
                 callback({ code: '000400', message: '初始化失败' });
