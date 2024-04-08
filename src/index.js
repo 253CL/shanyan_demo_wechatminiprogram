@@ -274,7 +274,7 @@ function InitLayout({ params, callback }) {
                         customConfigFn();
                     }
                     ctcc();
-                    callback({ code: '000000', message: '初始化成功' });
+                    callback({ code: '000000', message: '初始化成功',data });
                 }else{
                     callback({ code: '000400', message: retMsg });
                 }
