@@ -26,8 +26,7 @@ exampleobj.interceptors.response.use(
         return Promise.resolve(data);
     },
     ({ response }) => {
-        let { status, statusText } = response || {};
-        return Promise.reject({ code: status, msg: statusText });
+        return Promise.reject(response);
     }
 );
 

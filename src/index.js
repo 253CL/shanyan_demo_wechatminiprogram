@@ -29,9 +29,11 @@ const destroyHandle = () => {
     setTimeout(() => {
         if (rootobj) {
             rootobj.unmount();
+            rootobj = null;
         }
         if (domobj) {
             document.body.removeChild(domobj);
+            domobj=null;
         }
     }, 0);
 };
@@ -291,6 +293,14 @@ function InitLayout({ params, callback }) {
     return;
 }
 function createLayout(params, callback) {
+    if (!domobj) {
+        domobj = document.createElement('div');
+        document.body.appendChild(domobj);
+    }
+    if (!rootobj) {
+        rootobj = ReactDOM.createRoot(domobj);
+    }
+
     rootobj.render(<Main params={params} callback={callback} />);
 }
 function createInitLayout(params, callback) {
