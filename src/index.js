@@ -261,7 +261,7 @@ function InitLayout({ params, callback }) {
                 hrefStyle: { fontColor: '#1E82EB', agreeArr: [{ name: uiCongig?.setPrivacyOne?.[0], url: uiCongig?.setPrivacyOne?.[1] },{ name: uiCongig?.setPrivacyTwo?.[0], url: uiCongig?.setPrivacyTwo?.[1] }] }
             },
             tipStyle: { fontFamily: 'PingFangSC-Regular, PingFang SC', fontSize: '0.92rem', fontColor: '#999999', high: '27rem', left: 'center' },
-            returnBtnStyle: { width: '0.65rem', height: '1.1rem', left: '1rem', high: '1rem', url: 'https://www.cmpassport.com/h5/js/jssdk_auth/image/returnIcon.png' },
+            returnBtnStyle: { width: '0.65rem', height: '1.1rem', left: '1rem', high: '1.3rem', url: 'https://www.cmpassport.com/h5/js/jssdk_auth/image/returnIcon.png' },
         });
     };
     const initAjax = useCallback(() => {
