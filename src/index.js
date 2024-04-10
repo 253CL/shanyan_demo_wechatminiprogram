@@ -243,27 +243,6 @@ function InitLayout({ params, callback }) {
             }
         });
     }, [_getSign, appId, appKey, callback]);
-    const customConfigFn = () => {
-        console.log(`${uiCongig.setLoginTitle || '本机号码登录'}`);
-        window.YDRZAuthLogin.authPageInit({
-            bgColor: '#FFFFFF',
-            titleStyle: { name: `${uiCongig.setLoginTitle || '本机号码登录'}`, fontFamily: 'PingFangSC-Medium, PingFang SC', fontSize: '1.33rem', fontColor: '#444444', width: '70%', height: '1.83rem', left: 'center', high: '1rem', textAlign: 'center' },
-            logoStyle: { url: `${uiCongig.setLoginLogo || 'https://www.cmpassport.com/h5/js/jssdk_auth/image/logo.png'}` },
-            phoneNumStyle: { fontFamily: 'PingFangSC-Semibold, PingFang SC', fontSize: '2.58rem', fontColor: '#444444', bgColor: '#FFFFFF', fontWeight: '500', width: '27rem', left: 'center', high: '20.58rem', inputStyle: { width: '1.83rem', height: '3rem' } },
-            authTextStyle: { fontFamily: 'PingFangSC-Medium, PingFang SC', fontSize: '1.08rem', fontColor: '#444444', appNameColor: '#444444', width: '100%', textAlign: 'center', high: '16.75rem', left: 'center', fontWeight: '500' },
-            agreeStyle: {
-                fontFamily: 'PingFangSC-Regular, PingFang SC',
-                fontSize: '1rem',
-                fontColor: '#999999',
-                high: '30.58rem',
-                left: 'center',
-                checkedButton: { width: '1.33rem', height: '1.33rem', uncheckColor: '#cccccc', checkedColor: '#1E82EB', uncheckUrl: '', checkedUrl: '' },
-                hrefStyle: { fontColor: '#1E82EB', agreeArr: [{ name: uiCongig?.setPrivacyOne?.[0], url: uiCongig?.setPrivacyOne?.[1] },{ name: uiCongig?.setPrivacyTwo?.[0], url: uiCongig?.setPrivacyTwo?.[1] }] }
-            },
-            tipStyle: { fontFamily: 'PingFangSC-Regular, PingFang SC', fontSize: '0.92rem', fontColor: '#999999', high: '27rem', left: 'center' },
-            returnBtnStyle: { width: '0.65rem', height: '1.1rem', left: '1rem', high: '1.3rem', url: 'https://www.cmpassport.com/h5/js/jssdk_auth/image/returnIcon.png' },
-        });
-    };
     const initAjax = useCallback(() => {
         httpPost('', { appId, data: '' })
             .then(({ data,retCode,retMsg }) => {
@@ -272,9 +251,6 @@ function InitLayout({ params, callback }) {
                     cuccResponseData = { appSecret: cuccAppId, sign: cuccSign ,timestamp:cuccTimestamp};
                     ctccResponseData = { appId: ctccAppId, sign: ctccSign };
                     cmccResponseData = { appId: cmccAppId, sign: cmccSign, traceId, timestamp:cmccTimestamp };
-                    if (Object.keys(uiCongig).length > 0) {
-                        customConfigFn();
-                    }
                     ctcc();
                     callback({ code: '000000', message: '初始化成功' });
                 }else{
@@ -292,6 +268,27 @@ function InitLayout({ params, callback }) {
 
     return;
 }
+
+const customConfigFn = () => {
+    window.YDRZAuthLogin.authPageInit({
+        bgColor: '#FFFFFF',
+        titleStyle: { name: `${uiCongig.setLoginTitle || '本机号码登录'}`, fontFamily: 'PingFangSC-Medium, PingFang SC', fontSize: '1.33rem', fontColor: '#444444', width: '70%', height: '1.83rem', left: 'center', high: '1rem', textAlign: 'center' },
+        logoStyle: { url: `${uiCongig.setLoginLogo || 'https://www.cmpassport.com/h5/js/jssdk_auth/image/logo.png'}` },
+        phoneNumStyle: { fontFamily: 'PingFangSC-Semibold, PingFang SC', fontSize: '2.58rem', fontColor: '#444444', bgColor: '#FFFFFF', fontWeight: '500', width: '27rem', left: 'center', high: '20.58rem', inputStyle: { width: '1.83rem', height: '3rem' } },
+        authTextStyle: { fontFamily: 'PingFangSC-Medium, PingFang SC', fontSize: '1.08rem', fontColor: '#444444', appNameColor: '#444444', width: '100%', textAlign: 'center', high: '16.75rem', left: 'center', fontWeight: '500' },
+        agreeStyle: {
+            fontFamily: 'PingFangSC-Regular, PingFang SC',
+            fontSize: '1rem',
+            fontColor: '#999999',
+            high: '30.58rem',
+            left: 'center',
+            checkedButton: { width: '1.33rem', height: '1.33rem', uncheckColor: '#cccccc', checkedColor: '#1E82EB', uncheckUrl: '', checkedUrl: '' },
+            hrefStyle: { fontColor: '#1E82EB', agreeArr: [{ name: uiCongig?.setPrivacyOne?.[0], url: uiCongig?.setPrivacyOne?.[1] },{ name: uiCongig?.setPrivacyTwo?.[0], url: uiCongig?.setPrivacyTwo?.[1] }] }
+        },
+        tipStyle: { fontFamily: 'PingFangSC-Regular, PingFang SC', fontSize: '0.92rem', fontColor: '#999999', high: '27rem', left: 'center' },
+        returnBtnStyle: { width: '0.65rem', height: '1.1rem', left: '1rem', high: '1.3rem', url: 'https://www.cmpassport.com/h5/js/jssdk_auth/image/returnIcon.png' },
+    });
+};
 function createLayout(params, callback) {
     if (!domobj) {
         domobj = document.createElement('div');
@@ -340,6 +337,9 @@ function Init(params, callback) {
 
 function setUIConfig(config) {
     uiCongig = config;
+    if (Object.keys(uiCongig).length > 0) {
+        customConfigFn();
+    }
 }
 const obj = { start, Init, setUIConfig };
 export default obj;
