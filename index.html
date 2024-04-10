@@ -25,15 +25,15 @@
     </head>
     <body>
         <label for="input1">appkey:</label>
-         <input type="text" id="input1" value="hYmhmHWV" /><br />
+         <input type="text" id="input1" value="NIsHsMc3" /><br />
         <label for="input2">appId:</label>
-        <input type="text" id="input2" value="5FO1pbba" /><br />
+        <input type="text" id="input2" value="uZNUlz3B" /><br />
         <br />
         <br />
         <label for="input3">setLoginTitle:</label>
          <input type="text" id="input3"  /><br />
         <label for="input4">setLoginLogo:</label>
-        <input type="text" id="input4"  /><br />
+        <input type="text" id="input4" value="https://static2.253.com/wanshu/shanyanh5/unicm.jpeg"  /><br />
         <label for="setPrivacyOneName">setPrivacyOneName:</label>
          <input type="text" id="setPrivacyOneName"  /><br />
          <label for="setPrivacyOneUrl">setPrivacyOneUrl:</label>
@@ -52,12 +52,12 @@
         <script src="js/umd/living.min.js?t=10000"></script>
         <script>
             function beginHandle(type) {
-                const appKey = document.getElementById('input1').value;
-                const appId = document.getElementById('input2').value;
-                const setLoginTitle = document.getElementById('setLoginTitle').value;
-                const setLoginLogo = document.getElementById('setLoginLogo').value;
-                const setPrivacyOne = [document.getElementById('setPrivacyOneName').value,document.getElementById('setPrivacyOneUrl').value];
-                const setPrivacyTwo = [document.getElementById('setPrivacyTwoName').value,document.getElementById('setPrivacyTwoUrl').value];
+                const appKey = document.getElementById('input1')?.value;
+                const appId = document.getElementById('input2')?.value;
+                const setLoginTitle = document.getElementById('input3')?.value;
+                const setLoginLogo = document.getElementById('input4')?.value;
+                const setPrivacyOne = [document.getElementById('setPrivacyOneName')?.value,document.getElementById('setPrivacyOneUrl')?.value];
+                const setPrivacyTwo = [document.getElementById('setPrivacyTwoName')?.value,document.getElementById('setPrivacyTwoUrl')?.value];
                 const config = { appKey, appId };
                 if (type === 1) {
                     window.clshanyansdk.Init(config, function (data) {

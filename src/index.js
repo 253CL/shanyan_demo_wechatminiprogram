@@ -244,12 +244,13 @@ function InitLayout({ params, callback }) {
         });
     }, [_getSign, appId, appKey, callback]);
     const customConfigFn = () => {
+        console.log(`${uiCongig.setLoginTitle || '本机号码登录'}`);
         window.YDRZAuthLogin.authPageInit({
             bgColor: '#FFFFFF',
             titleStyle: { name: `${uiCongig.setLoginTitle || '本机号码登录'}`, fontFamily: 'PingFangSC-Medium, PingFang SC', fontSize: '1.33rem', fontColor: '#444444', width: '70%', height: '1.83rem', left: 'center', high: '1rem', textAlign: 'center' },
-            logoStyle: { url: `${uiCongig.setLoginLogo || 'https://www.cmpassport.com/h5/js/jssdk_auth/image/logo.png'}`, width: '6.96rem', height: '7.32rem', high: '7.9rem', left: 'center' },
-            authTextStyle: { fontFamily: 'PingFangSC-Medium, PingFang SC', fontSize: '1.08rem', fontColor: '#444444', appNameColor: '#444444', width: '100%', textAlign: 'center', high: '22.75rem', left: 'center', fontWeight: '500' },
-            phoneNumStyle: { fontFamily: 'PingFangSC-Semibold, PingFang SC', fontSize: '2.08rem', fontColor: '#444444', bgColor: '#FFFFFF', fontWeight: '600', width: '15.42rem', left: 'center', high: '19.58rem', inputStyle: { width: '1.83rem', height: '2.17rem' } },
+            logoStyle: { url: `${uiCongig.setLoginLogo || 'https://www.cmpassport.com/h5/js/jssdk_auth/image/logo.png'}` },
+            phoneNumStyle: { fontFamily: 'PingFangSC-Semibold, PingFang SC', fontSize: '2.58rem', fontColor: '#444444', bgColor: '#FFFFFF', fontWeight: '500', width: '27rem', left: 'center', high: '20.58rem', inputStyle: { width: '1.83rem', height: '3rem' } },
+            authTextStyle: { fontFamily: 'PingFangSC-Medium, PingFang SC', fontSize: '1.08rem', fontColor: '#444444', appNameColor: '#444444', width: '100%', textAlign: 'center', high: '16.75rem', left: 'center', fontWeight: '500' },
             agreeStyle: {
                 fontFamily: 'PingFangSC-Regular, PingFang SC',
                 fontSize: '1rem',
@@ -257,11 +258,10 @@ function InitLayout({ params, callback }) {
                 high: '30.58rem',
                 left: 'center',
                 checkedButton: { width: '1.33rem', height: '1.33rem', uncheckColor: '#cccccc', checkedColor: '#1E82EB', uncheckUrl: '', checkedUrl: '' },
-                hrefStyle: { fontColor: '#1E82EB', agreeArr: [{ name: uiCongig?.setPrivacyOne?.[0], url: uiCongig?.setPrivacyOne?.[1] }] }
+                hrefStyle: { fontColor: '#1E82EB', agreeArr: [{ name: uiCongig?.setPrivacyOne?.[0], url: uiCongig?.setPrivacyOne?.[1] },{ name: uiCongig?.setPrivacyTwo?.[0], url: uiCongig?.setPrivacyTwo?.[1] }] }
             },
             tipStyle: { fontFamily: 'PingFangSC-Regular, PingFang SC', fontSize: '0.92rem', fontColor: '#999999', high: '27rem', left: 'center' },
             returnBtnStyle: { width: '0.65rem', height: '1.1rem', left: '1rem', high: '1rem', url: 'https://www.cmpassport.com/h5/js/jssdk_auth/image/returnIcon.png' },
-            customControlStyle: { ifShow: 'ture', width: '120px', height: '24px', high: '450px', left: 'center', bgColor: '#fff', border: '0', borderRadius: '', url: 'https://www.baidu.com', name: '其他登录方式', fontSize: '16px', fontColor: '#392211', textAlign: 'center', textDecoration: '' }
         });
     };
     const initAjax = useCallback(() => {
