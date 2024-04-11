@@ -1,6 +1,6 @@
 import './index.less';
 import ReactDOM from 'react-dom/client';
-import React, { useCallback, useEffect, useState, useMemo } from 'react';
+import React, { useCallback, useEffect, useState, useMemo, useRef } from 'react';
 import { httpPost } from './axios';
 import { NumberKeyboard, PasscodeInput, Radio, Dialog } from 'antd-mobile';
 import { useNotification } from 'rc-notification';
@@ -41,14 +41,17 @@ const destroyHandle = () => {
 function Main({ params, callback }) {
     const [notice, contextHolder] = useNotification({ motion: noticeMotion, prefixCls: 'jm-message', maxCount: 1 });
     const [cuccView, setCuccView] = useState(false);
+    const [cuccDialogView, setcuccDialogView] = useState(false)
     const [cuccPhoneNumber, setCuccPhoneNumber] = useState('');
     const [_cuccResponseData, setCuccResponseData] = useState({});
     const [checked, setchecked] = useState(false);
     const [callResult, setCallResult] = useState([]);
+    const ref = useRef();
     const appId = params.appId || '';
     const appKey = params.appKey || '';
     const cuccCancel = () => {
         setCuccView(false);
+        setcuccDialogView(false);
         destroyHandle();
     };
     const radioChange = () => {
@@ -63,7 +66,7 @@ function Main({ params, callback }) {
     );
     const cuccAuthorization = () => {
         if (uiCongig.isModal) {
-            console.log("弹窗版本 联通运营商授权页面");
+            setcuccDialogView(true);
         } else {
             domobj.classList.add('jm-layout');
             setCuccView(true);
@@ -200,33 +203,78 @@ function Main({ params, callback }) {
                         <div className="authorize">
                             <Radio checked={checked} onClick={radioChange} />
                             <span>登录即同意</span>
-                            <span onClick={handleProtocolClick} className="protocol">
-                                {uiCongig.setPrivacyOne?.[0] || '《中国联通认证服务协议》'}
-                            </span>
+                            {uiCongig.setPrivacyOne?.[0] && (
+                                <span onClick={handleProtocolClick} className="protocol">
+                                    {uiCongig.setPrivacyOne?.[0] || '《中国联通认证服务协议》'}
+                                </span>
+                            )}
                             {uiCongig.setPrivacyTwo?.[0] && (
                                 <span onClick={handleProtocolClicktwo} className="protocol">
                                     {uiCongig.setPrivacyTwo?.[0] || '《中国联通认证服务协议》'}
                                 </span>
                             )}
+                            <span onClick={() => window.location.href = "https://auth.wosms.cn/html/oauth/protocol2.html"} className="protocol">
+                                《中国联通认证服务协议》
+                            </span>
                             <span>并使用本机号码登录</span>
                         </div>
-                        <NumberKeyboard getContainer={null} visible={cuccView} showCloseButton={false} onInput={(e) => numberKeyboardChange(e)} onDelete={numberKeyboardDelete} />
+
                     </div>
                 </div>
             )}
+            <NumberKeyboard getContainer={null} visible={cuccView || cuccDialogView} showCloseButton={false} onInput={(e) => numberKeyboardChange(e)} onDelete={numberKeyboardDelete} />
+            <div ref={ref} className="cucc-modal"></div>
             <Dialog
-                visible={true}
-                content='弹窗版本ui'
+                style={{ width: "80vw" }}
+                getContainer={ref.current}
+                visible={cuccDialogView}
+                content={
+                    <div className="content">
+                        <div className="image">
+                            <img alt="" src={uiCongig.setLoginLogo || 'https://static2.253.com/wanshu/shanyanh5/liantong.png'}></img>
+                        </div>
+                        <p className="title">请填写完整号码并授权使用此号码</p>
+                        <div className="phone-number">
+                            {[1, 2, 3, 4].map((item, index) => (
+                                <span key={index} className="phone-block">
+                                    {item}
+                                </span>
+                            ))}
+                            <div className="phone-number-box">
+                                <PasscodeInput value={cuccPhoneNumber} length={4} plain keyboard={<div style={{ display: 'none' }}></div>} />
+                            </div>
+                            {[1, 2, 3, 4].map((item, index) => (
+                                <span key={index} className="phone-block">
+                                    {item}
+                                </span>
+                            ))}
+                        </div>
+                        <p className="hint">若非本机号码，请返回并切换4G/5G网络使用</p>
+                        <div className="authorize">
+                            <Radio checked={checked} onClick={radioChange} />
+                            <span>登录即同意</span>
+                            {uiCongig.setPrivacyOne?.[0] && (
+                                <span onClick={handleProtocolClick} className="protocol">
+                                    {uiCongig.setPrivacyOne?.[0] || '《中国联通认证服务协议》'}
+                                </span>
+                            )}
+                            {uiCongig.setPrivacyTwo?.[0] && (
+                                <span onClick={handleProtocolClicktwo} className="protocol">
+                                    {uiCongig.setPrivacyTwo?.[0] || '《中国联通认证服务协议》'}
+                                </span>
+                            )}
+                            <span onClick={() => window.location.href = "https://auth.wosms.cn/html/oauth/protocol2.html"} className="protocol">
+                                《中国联通认证服务协议》
+                            </span>
+                            <span>并使用本机号码登录</span>
+                        </div>
+
+                    </div>
+                }
                 closeOnAction
                 onClose={() => {
                     console.log("我要关掉你");
                 }}
-                actions={[
-                    {
-                        key: 'confirm',
-                        text: '我知道了',
-                    },
-                ]}
             />
         </React.Fragment>
     );
@@ -291,7 +339,12 @@ function InitLayout({ params, callback }) {
 
     return;
 }
-
+const definedProtocolArr = () => {
+    return [
+        uiCongig?.setPrivacyOne?.[0] && { name: uiCongig.setPrivacyOne[0], url: uiCongig.setPrivacyOne[1] },
+        uiCongig?.setPrivacyTwo?.[0] && { name: uiCongig.setPrivacyTwo[0], url: uiCongig.setPrivacyTwo[1] }
+    ].filter(item => item);
+}
 const customConfigFn = () => {
     window.YDRZAuthLogin.authPageInit({
         bgColor: '#FFFFFF',
@@ -308,10 +361,7 @@ const customConfigFn = () => {
             checkedButton: { width: '1.33rem', height: '1.33rem', uncheckColor: '#cccccc', checkedColor: '#1E82EB', uncheckUrl: '', checkedUrl: '' },
             hrefStyle: {
                 fontColor: '#1E82EB',
-                agreeArr: [
-                    { name: uiCongig?.setPrivacyOne?.[0], url: uiCongig?.setPrivacyOne?.[1] },
-                    { name: uiCongig?.setPrivacyTwo?.[0], url: uiCongig?.setPrivacyTwo?.[1] }
-                ]
+                agreeArr: definedProtocolArr()
             }
         },
         tipStyle: { fontFamily: 'PingFangSC-Regular, PingFang SC', fontSize: '0.92rem', fontColor: '#999999', high: '27rem', left: 'center' },
@@ -320,17 +370,19 @@ const customConfigFn = () => {
 };
 const customModalConfigFn = () => {
     window.YDRZAuthLogin.CustomControlsInit('ydrzCustomControls', {
-        titleStyle: { ifShow: 'true', name: `${uiCongig.setLoginTitle || '本机号码登录'}` },
+        titleStyle: { ifShow: 'true', name: `${uiCongig.setLoginTitle || '本机号码登录'}`, high: "6.5rem " },
         layerStyle: { width: '', height: '20rem', bgColor: '#fff', borderRadius: '23px' },
+        logoStyle: { url: `${uiCongig.setLoginLogo || 'https://www.cmpassport.com/h5/js/jssdk_auth/image/logo.png'}`, width: "5rem", height: "5rem", high: "1rem" },
         maskStyle: {
             ifShowMask: true,
             bgColor: '',
             opacity: ''
         },
+
         phoneStyle: {
             fontSize: '',
             fontColor: '#000000',
-            high: '7rem',
+            high: '10rem',
             left: '20px'
         },
         agreeStyle: {
@@ -340,7 +392,7 @@ const customModalConfigFn = () => {
             hrefColor: '',
             high: '15rem',
             left: '',
-            agreeArr: [{ name: '《中国移动服务协议》', url: '协议链接' }]
+            agreeArr: definedProtocolArr()
         },
         closeBtnStyle: {
             ifShowBtn: true,
@@ -354,15 +406,15 @@ const customModalConfigFn = () => {
             ifShow: true,
             width: '',
             height: '24px',
-            high: 'center',
+            high: '12rem',
             left: 'center',
             bgColor: '#fff',
             border: '0',
             borderRadius: '',
-            url: '',
+            url: "null",
             name: '若非本机号码，请返回并切换4G/5G网络使用',
             fontSize: '12px',
-            fontColor: '#392211',
+            fontColor: 'rgb(230 114 28)',
             textAlign: 'center',
             textDecoration: ''
         }
