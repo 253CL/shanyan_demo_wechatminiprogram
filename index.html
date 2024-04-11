@@ -25,8 +25,8 @@
     </head>
     <body>
         <label for="input1">appkey:</label>
-         <input type="text" id="input1" value="NIsHsMc3" /><br />
-         <!-- <input type="text" id="input1" value="hYmhmHWV" /><br /> -->
+         <!-- <input type="text" id="input1" value="NIsHsMc3" /><br /> -->
+         <input type="text" id="input1" value="hYmhmHWV" /><br />
         <label for="input2">appId:</label>
         <input type="text" id="input2" value="uZNUlz3B" /><br />
         <!-- <input type="text" id="input2" value="5FO1pbba" /><br /> -->
@@ -35,7 +35,7 @@
         <label for="input3">setLoginTitle:</label>
          <input type="text" id="input3"  /><br />
         <label for="input4">setLoginLogo:</label>
-        <input type="text" id="input4" value="https://static2.253.com/wanshu/shanyanh5/unicm.jpeg"  /><br />
+        <input type="text" id="input4"   /><br />
         <label for="setPrivacyOneName">setPrivacyOneName:</label>
          <input type="text" id="setPrivacyOneName"  /><br />
          <label for="setPrivacyOneUrl">setPrivacyOneUrl:</label>
@@ -44,6 +44,10 @@
         <input type="text" id="setPrivacyTwoName"  /><br />
         <label for="setPrivacyTwoUrl">setPrivacyTwoUrl:</label>
         <input type="text" id="setPrivacyTwoUrl"  /><br />
+        <input type="radio" id="trueRadio" name="value" value="true">
+    <label for="trueRadio">True</label><br>
+    <input type="radio" id="falseRadio" name="value" value="false">
+    <label for="falseRadio">False</label><br><br>
         <div class="example">
             <button style="height: 50px;" onclick="beginHandle(1)">初始化</button>
             <button style="height: 50px;" id="j-get-code">启动授权登录</button>
@@ -54,12 +58,15 @@
         <script src="js/umd/living.min.js?t=10000"></script>
         <script>
             function beginHandle(type) {
+                let _config={};
                 const appKey = document.getElementById('input1')?.value;
                 const appId = document.getElementById('input2')?.value;
                 const setLoginTitle = document.getElementById('input3')?.value;
                 const setLoginLogo = document.getElementById('input4')?.value;
                 const setPrivacyOne = [document.getElementById('setPrivacyOneName')?.value,document.getElementById('setPrivacyOneUrl')?.value];
                 const setPrivacyTwo = [document.getElementById('setPrivacyTwoName')?.value,document.getElementById('setPrivacyTwoUrl')?.value];
+                const trueRadio = document.getElementById('trueRadio');
+            const falseRadio = document.getElementById('falseRadio');
                 const config = { appKey, appId };
                 if (type === 1) {
                     window.clshanyansdk.Init(config, function (data) {
@@ -70,7 +77,22 @@
                         document.getElementById('res').innerText = JSON.stringify(data);
                     });
                 } else if (type === 3) {
-                    window.clshanyansdk.setUIConfig({ setLoginTitle, setLoginLogo, setPrivacyOne,setPrivacyTwo });
+                    if(setLoginTitle){
+                        _config.setLoginTitle=setLoginTitle;
+                    }
+                    if(setLoginLogo){
+                        _config.setLoginLogo=setLoginLogo;
+                    }
+                    if(setPrivacyOne.every((item)=>item)){
+                        _config.setPrivacyOne=setPrivacyOne;
+                    }
+                    if(setPrivacyTwo.every((item)=>item)){
+                        _config.setPrivacyTwo=setPrivacyTwo;
+                    }
+                    if(trueRadio){
+                        _config.isModal=trueRadio.checked
+                    }
+                    window.clshanyansdk.setUIConfig(_config);
                 }
             }
             // 需要这样监听 直接在按钮加点击事件电信初始化以后会被电信的sdk所吞掉事件

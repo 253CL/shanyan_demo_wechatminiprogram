@@ -2,9 +2,9 @@ import './index.less';
 import ReactDOM from 'react-dom/client';
 import React, { useCallback, useEffect, useState, useMemo } from 'react';
 import { httpPost } from './axios';
-import { NumberKeyboard, PasscodeInput, Radio } from 'antd-mobile';
+import { NumberKeyboard, PasscodeInput, Radio, Dialog } from 'antd-mobile';
 import { useNotification } from 'rc-notification';
-import { replacementPhoneNumber, cryptographicToken, auth } from './config/index';
+import { replacementPhoneNumber, cryptographicToken, auth, checkKeysExist, dynamicType } from './config/index';
 let domobj = null;
 let rootobj = null;
 let cuccResponseData = {};
@@ -33,7 +33,7 @@ const destroyHandle = () => {
         }
         if (domobj) {
             document.body.removeChild(domobj);
-            domobj=null;
+            domobj = null;
         }
     }, 0);
 };
@@ -61,6 +61,14 @@ function Main({ params, callback }) {
         },
         [notice]
     );
+    const cuccAuthorization = () => {
+        if (uiCongig.isModal) {
+            console.log("弹窗版本 联通运营商授权页面");
+        } else {
+            domobj.classList.add('jm-layout');
+            setCuccView(true);
+        }
+    }
     const cucc = useCallback(() => {
         window.LTRZ['getTokenInfo']({
             //1.获取置换码方法
@@ -69,8 +77,8 @@ function Main({ params, callback }) {
             ts: cuccResponseData.timestamp
         })
             .then((res) => {
-                domobj.classList.add('jm-layout');
-                setCuccView(true);
+                cuccAuthorization()
+
                 setCuccResponseData(res);
             })
             .catch((err) => {
@@ -78,6 +86,7 @@ function Main({ params, callback }) {
                 setCallResult((pre) => [...pre, { err, time: new Date().getTime() }]);
             });
     }, []);
+
     const cmcc = useCallback(() => {
         window.YDRZAuthLogin.getTokenInfo({
             data: {
@@ -88,7 +97,7 @@ function Main({ params, callback }) {
                 timestamp: cmccResponseData.timestamp, //请求消息发送的系统时间，精确到毫秒，共17位，格式：20121227180001165
                 openType: '1', //取号类型
                 expandParams: '', //扩展参数 格式：参数名=值 多个时使用 \| 分割 （选填）
-                authPageType: Object.keys(uiCongig).length > 0 ? '3' : '0', //若值为“1”时展示弹窗，若值为“2”时展示自定义弹窗版，若值为“3”时展示自定义页面版，若为其它值则展示页面。更多说明见“2.重要参数说明”中“2.3.authPageType”
+                authPageType: dynamicType(uiCongig), //若值为“1”时展示弹窗，若值为“2”时展示自定义弹窗版，若值为“3”时展示自定义页面版，若为其它值则展示页面。更多说明见“2.重要参数说明”中“2.3.authPageType”
                 devInfo: '', // 1：用户点击其他登录方式时回收授权弹窗，点击协议时协议内容使用iframe打开,默认不回收授权弹窗，点击协议时协议内容在一个新窗口打开
                 setReturn: '' // 1：授权页面显示返回键，不传或其他值根据浏览器判断
             },
@@ -169,7 +178,7 @@ function Main({ params, callback }) {
                     </div>
                     <div className="content">
                         <div className="image">
-                            <img alt="" src={uiCongig.setLoginLogo || 'https://static2.253.com/wanshu/shanyanh5/unicm.jpeg'}></img>
+                            <img alt="" src={uiCongig.setLoginLogo || 'https://static2.253.com/wanshu/shanyanh5/liantong.png'}></img>
                         </div>
                         <p className="title">请填写完整号码并授权使用此号码</p>
                         <div className="phone-number">
@@ -201,10 +210,24 @@ function Main({ params, callback }) {
                             )}
                             <span>并使用本机号码登录</span>
                         </div>
-                        <NumberKeyboard  getContainer={null} visible={cuccView} showCloseButton={false} onInput={(e) => numberKeyboardChange(e)} onDelete={numberKeyboardDelete} />
+                        <NumberKeyboard getContainer={null} visible={cuccView} showCloseButton={false} onInput={(e) => numberKeyboardChange(e)} onDelete={numberKeyboardDelete} />
                     </div>
                 </div>
             )}
+            <Dialog
+                visible={true}
+                content='弹窗版本ui'
+                closeOnAction
+                onClose={() => {
+                    console.log("我要关掉你");
+                }}
+                actions={[
+                    {
+                        key: 'confirm',
+                        text: '我知道了',
+                    },
+                ]}
+            />
         </React.Fragment>
     );
 }
@@ -245,15 +268,15 @@ function InitLayout({ params, callback }) {
     }, [_getSign, appId, appKey, callback]);
     const initAjax = useCallback(() => {
         httpPost('', { appId, data: '' })
-            .then(({ data,retCode,retMsg }) => {
-                if(retCode==="0"){
-                    const { cuccAppId, cuccSign, ctccAppId, ctccSign, cmccAppId, cmccSign, traceId, cmccTimestamp,cuccTimestamp } = data;
-                    cuccResponseData = { appSecret: cuccAppId, sign: cuccSign ,timestamp:cuccTimestamp};
+            .then(({ data, retCode, retMsg }) => {
+                if (retCode === '0') {
+                    const { cuccAppId, cuccSign, ctccAppId, ctccSign, cmccAppId, cmccSign, traceId, cmccTimestamp, cuccTimestamp } = data;
+                    cuccResponseData = { appSecret: cuccAppId, sign: cuccSign, timestamp: cuccTimestamp };
                     ctccResponseData = { appId: ctccAppId, sign: ctccSign };
-                    cmccResponseData = { appId: cmccAppId, sign: cmccSign, traceId, timestamp:cmccTimestamp };
+                    cmccResponseData = { appId: cmccAppId, sign: cmccSign, traceId, timestamp: cmccTimestamp };
                     ctcc();
                     callback({ code: '000000', message: '初始化成功' });
-                }else{
+                } else {
                     callback({ code: '000400', message: retMsg });
                 }
             })
@@ -283,10 +306,66 @@ const customConfigFn = () => {
             high: '30.58rem',
             left: 'center',
             checkedButton: { width: '1.33rem', height: '1.33rem', uncheckColor: '#cccccc', checkedColor: '#1E82EB', uncheckUrl: '', checkedUrl: '' },
-            hrefStyle: { fontColor: '#1E82EB', agreeArr: [{ name: uiCongig?.setPrivacyOne?.[0], url: uiCongig?.setPrivacyOne?.[1] },{ name: uiCongig?.setPrivacyTwo?.[0], url: uiCongig?.setPrivacyTwo?.[1] }] }
+            hrefStyle: {
+                fontColor: '#1E82EB',
+                agreeArr: [
+                    { name: uiCongig?.setPrivacyOne?.[0], url: uiCongig?.setPrivacyOne?.[1] },
+                    { name: uiCongig?.setPrivacyTwo?.[0], url: uiCongig?.setPrivacyTwo?.[1] }
+                ]
+            }
         },
         tipStyle: { fontFamily: 'PingFangSC-Regular, PingFang SC', fontSize: '0.92rem', fontColor: '#999999', high: '27rem', left: 'center' },
-        returnBtnStyle: { width: '0.65rem', height: '1.1rem', left: '1rem', high: '1.3rem', url: 'https://www.cmpassport.com/h5/js/jssdk_auth/image/returnIcon.png' },
+        returnBtnStyle: { width: '0.65rem', height: '1.1rem', left: '1rem', high: '1.3rem', url: 'https://www.cmpassport.com/h5/js/jssdk_auth/image/returnIcon.png' }
+    });
+};
+const customModalConfigFn = () => {
+    window.YDRZAuthLogin.CustomControlsInit('ydrzCustomControls', {
+        titleStyle: { ifShow: 'true', name: `${uiCongig.setLoginTitle || '本机号码登录'}` },
+        layerStyle: { width: '', height: '20rem', bgColor: '#fff', borderRadius: '23px' },
+        maskStyle: {
+            ifShowMask: true,
+            bgColor: '',
+            opacity: ''
+        },
+        phoneStyle: {
+            fontSize: '',
+            fontColor: '#000000',
+            high: '7rem',
+            left: '20px'
+        },
+        agreeStyle: {
+            fontSize: '',
+            textalign: '',
+            fontColor: '',
+            hrefColor: '',
+            high: '15rem',
+            left: '',
+            agreeArr: [{ name: '《中国移动服务协议》', url: '协议链接' }]
+        },
+        closeBtnStyle: {
+            ifShowBtn: true,
+            btnImage: '',
+            top: '',
+            right: '',
+            width: '',
+            height: ''
+        },
+        customControlStyle: {
+            ifShow: true,
+            width: '',
+            height: '24px',
+            high: 'center',
+            left: 'center',
+            bgColor: '#fff',
+            border: '0',
+            borderRadius: '',
+            url: '',
+            name: '若非本机号码，请返回并切换4G/5G网络使用',
+            fontSize: '12px',
+            fontColor: '#392211',
+            textAlign: 'center',
+            textDecoration: ''
+        }
     });
 };
 function createLayout(params, callback) {
@@ -337,8 +416,12 @@ function Init(params, callback) {
 
 function setUIConfig(config) {
     uiCongig = config;
-    if (Object.keys(uiCongig).length > 0) {
-        customConfigFn();
+    if (uiCongig.isModal) {
+        customModalConfigFn();
+    } else {
+        if (checkKeysExist(config)) {
+            customConfigFn();
+        }
     }
 }
 const obj = { start, Init, setUIConfig };

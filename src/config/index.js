@@ -97,19 +97,19 @@ const cryptographicToken = (type, responseData, appId) => {
     const token = convertSign(aesEncryptObject(appId, params));
     return `${type}-` + token;
 };
-const isWifi=() =>{
+const isWifi = () => {
     const connection = window.YDRZAuthLogin.getConnection(123);
     return connection.netType === 'wifi';
-}
-const checkAuthEnable=() =>{
+};
+const checkAuthEnable = () => {
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     return isMobile && isMobileData();
-}
-const isMobileData=() =>{
+};
+const isMobileData = () => {
     const connection = window.YDRZAuthLogin.getConnection(123);
     return connection.netType === 'cellular';
-}
-const auth=(params, callback)=> {
+};
+const auth = (params, callback) => {
     if (isFunction(callback) === false) {
         callback = (value) => console.log(value);
     }
@@ -126,5 +126,21 @@ const auth=(params, callback)=> {
         return false;
     }
     return true;
-}
-export { replacementPhoneNumber, cryptographicToken ,isWifi,checkAuthEnable,isMobileData,auth};
+};
+const checkKeysExist = (obj) => {
+    const keysToCheck = ['setLoginTitle', 'setLoginLogo', 'setPrivacyOne', 'setPrivacyTwo'];
+    for (let key of keysToCheck) {
+        if (key in obj) {
+            return true;
+        }
+    }
+    return false;
+};
+const dynamicType = (uiCongig) => {
+    if (uiCongig.isModal) {
+        return '2';
+    } else {
+        return checkKeysExist(uiCongig) ? '3' : '0';
+    }
+};
+export { replacementPhoneNumber, cryptographicToken, isWifi, checkAuthEnable, isMobileData, auth, checkKeysExist, dynamicType };
