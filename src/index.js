@@ -42,7 +42,7 @@ const destroyHandle = () => {
 function Main({ params, callback }) {
     const [notice, contextHolder] = useNotification({ motion: noticeMotion, prefixCls: 'jm-message', maxCount: 1 });
     const [cuccView, setCuccView] = useState(false);
-    const [cuccDialogView, setcuccDialogView] = useState(true)
+    const [cuccDialogView, setcuccDialogView] = useState(false)
     const [cuccPhoneNumber, setCuccPhoneNumber] = useState('');
     const [_cuccResponseData, setCuccResponseData] = useState({});
     const [checked, setchecked] = useState(false);
