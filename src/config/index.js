@@ -51,6 +51,7 @@ const replacementPhoneNumber = (token, appId, appKey, callback) => {
     }
     axios
         .post('https://57.cm253.com:8445/open/web/mobile-query', formData, {
+        // .post('https://56.cm253.com:8445/open/web/mobile-query', formData, {
             headers: {
                 'Content-Type': 'multipart/form-data'
             }
@@ -143,4 +144,84 @@ const dynamicType = (uiCongig) => {
         return checkKeysExist(uiCongig) ? '3' : '0';
     }
 };
-export { replacementPhoneNumber, cryptographicToken, isWifi, checkAuthEnable, isMobileData, auth, checkKeysExist, dynamicType };
+const definedProtocolArr = (uiCongig) => {
+    return [
+        uiCongig?.setPrivacyOne?.[0] && { name: uiCongig.setPrivacyOne[0], url: uiCongig.setPrivacyOne[1] },
+        uiCongig?.setPrivacyTwo?.[0] && { name: uiCongig.setPrivacyTwo[0], url: uiCongig.setPrivacyTwo[1] }
+    ].filter(item => item);
+}
+const customConfigFn = (uiCongig) => {
+    window.YDRZAuthLogin.authPageInit({
+        bgColor: '#FFFFFF',
+        titleStyle: { name: `${uiCongig.setLoginTitle || '本机号码登录'}`, fontFamily: 'PingFangSC-Medium, PingFang SC', fontSize: '1.33rem', fontColor: '#444444', width: '70%', height: '1.83rem', left: 'center', high: '1rem', textAlign: 'center' },
+        logoStyle: { url: `${uiCongig.setLoginLogo || 'https://www.cmpassport.com/h5/js/jssdk_auth/image/logo.png'}` },
+        phoneNumStyle: { fontFamily: 'PingFangSC-Semibold, PingFang SC', fontSize: '2.58rem', fontColor: '#444444', bgColor: '#FFFFFF', fontWeight: '500', width: '27rem', left: 'center', high: '20.58rem', inputStyle: { width: '1.83rem', height: '3rem' } },
+        authTextStyle: { fontFamily: 'PingFangSC-Medium, PingFang SC', fontSize: '1.08rem', fontColor: '#444444', appNameColor: '#444444', width: '100%', textAlign: 'center', high: '16.75rem', left: 'center', fontWeight: '500' },
+        agreeStyle: {
+            fontFamily: 'PingFangSC-Regular, PingFang SC',
+            fontSize: '1rem',
+            fontColor: '#999999',
+            high: '30.58rem',
+            left: 'center',
+            checkedButton: { width: '1.33rem', height: '1.33rem', uncheckColor: '#cccccc', checkedColor: '#1E82EB', uncheckUrl: '', checkedUrl: '' },
+            hrefStyle: {
+                fontColor: '#1E82EB',
+                agreeArr: definedProtocolArr()
+            }
+        },
+        tipStyle: { fontFamily: 'PingFangSC-Regular, PingFang SC', fontSize: '0.92rem', fontColor: '#999999', high: '27rem', left: 'center' },
+        returnBtnStyle: { width: '0.65rem', height: '1.1rem', left: '1rem', high: '1.3rem', url: 'https://www.cmpassport.com/h5/js/jssdk_auth/image/returnIcon.png' }
+    });
+};
+
+const customModalConfigFn = (uiCongig) => {
+    window.YDRZAuthLogin.CustomControlsInit('ydrzCustomControls', {
+        titleStyle: { ifShow: 'true', name: "请填写完整号码并授权使用此号码", high: "6.5rem ", fontSize: "3vw" },
+        layerStyle: { width: '', height: '20rem', bgColor: '#fff', borderRadius: '23px' },
+        logoStyle: { url: `${uiCongig.setLoginLogo || 'https://www.cmpassport.com/h5/js/jssdk_auth/image/logo.png'}`, width: "5rem", height: "5rem", high: "1rem" },
+        maskStyle: {
+            ifShowMask: true,
+            bgColor: '',
+            opacity: ''
+        },
+        phoneStyle: {
+            fontSize: '',
+            fontColor: '#000000',
+            high: '10rem',
+            left: '20px'
+        },
+        agreeStyle: {
+            fontSize: '',
+            textalign: '',
+            fontColor: '',
+            hrefColor: '',
+            high: '15rem',
+            left: '',
+            agreeArr: definedProtocolArr()
+        },
+        closeBtnStyle: {
+            ifShowBtn: true,
+            btnImage: '',
+            top: '',
+            right: '',
+            width: '',
+            height: ''
+        },
+        customControlStyle: {
+            ifShow: true,
+            width: '',
+            height: '24px',
+            high: '12rem',
+            left: 'center',
+            bgColor: '#fff',
+            border: '0',
+            borderRadius: '',
+            name: '若非本机号码，请返回并切换4G/5G网络使用',
+            fontSize: '12px',
+            fontColor: 'rgb(230 114 28)',
+            textAlign: 'center',
+            textDecoration: ''
+        }
+    });
+};
+export { replacementPhoneNumber, cryptographicToken, isWifi, checkAuthEnable, isMobileData, auth, checkKeysExist, dynamicType, customConfigFn, customModalConfigFn };

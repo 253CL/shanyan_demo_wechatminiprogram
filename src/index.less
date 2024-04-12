@@ -197,87 +197,93 @@
     .content {
         height:50vh;
         overflow-y: auto;
-    }
-    .top {
-        position: absolute;
-        background-color: white;
-        z-index: 10000;
-        padding-top: 3vh;
-        width: 100vw;
-
-        .cancel {
+        .cancelImg{
             position: absolute;
-            top: 3.5vh;
-            left: 2.5vw;
-            height: 4vh;
+            right: 12px;
+            width: 4vw;
         }
-
-        .top-title {
+        .top {
+            position: absolute;
+            background-color: white;
+            z-index: 10000;
+            padding-top: 3vh;
+            width: 100vw;
+    
+            .cancel {
+                position: absolute;
+                top: 3.5vh;
+                left: 2.5vw;
+                height: 4vh;
+            }
+    
+            .top-title {
+                text-align: center;
+                font-weight: 800;
+                font-size: 5vw;
+                line-height: 5vh;
+            }
+        }
+    
+        .image {
+            img {
+                display: block;
+                margin: 0 auto;
+                width: 20vh;
+                height: 20vh;
+            }
+        }
+    
+        .title {
+            margin-bottom: 4vh;
             text-align: center;
-            font-weight: 800;
-            font-size: 5vw;
-            line-height: 5vh;
+            font-size: 3vw;
         }
-    }
-
-    .image {
-        img {
-            display: block;
-            margin: 0 auto;
-            width: 20vh;
-            height: 20vh;
-        }
-    }
-
-    .title {
-        margin-bottom: 4vh;
-        text-align: center;
-        font-size: 3vw;
-    }
-
-    .phone-number {
-        display: flex;
-        justify-content: center;
-        font-size: 4.8vw;
-        .phone-block {
-            display: block;
-            text-align: center;
-            line-height: 42px;
-            height: 42px;
-            width: 5vw;
-        }
-
-        &-box {
+    
+        .phone-number {
             display: flex;
+            justify-content: center;
+            font-size: 4.8vw;
+            .phone-block {
+                display: block;
+                text-align: center;
+                line-height: 42px;
+                height: 42px;
+                width: 5vw;
+            }
+    
+            &-box {
+                display: flex;
+            }
+        }
+    
+        .hint {
+            margin: 10px 0;
+            font-size: 3vw;
+            text-align: center;
+            color: #d3d335;
+        }
+    
+        .authorize {
+            font-size: 3.5vw;       
+            line-height: 3.5vw;
+            text-align: center;
+            .adm-radio-icon {
+                width: 3.5vw;
+                height: 3.5vw;
+            }
+    
+            .protocol {
+                color: #2d77ff;
+            }
+        }
+    
+        .keyboard-container {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
         }
     }
-
-    .hint {
-        margin: 10px 0;
-        font-size: 3vw;
-        text-align: center;
-        color: #d3d335;
-    }
-
-    .authorize {
-        font-size: 3.5vw;       
-        line-height: 3.5vw;
-        text-align: center;
-        .adm-radio-icon {
-            width: 3.5vw;
-            height: 3.5vw;
-        }
-
-        .protocol {
-            color: #2d77ff;
-        }
-    }
-
-    .keyboard-container {
-        position: absolute;
-        bottom: 0;
-        width: 100%;
-    }
+    
 }
 
 @keyframes checkingMove {
