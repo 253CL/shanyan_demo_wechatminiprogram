@@ -144,6 +144,10 @@ const dynamicType = (uiCongig) => {
     }
 };
 const definedProtocolArr = (uiCongig) => {
+    console.log([
+        uiCongig?.setPrivacyOne?.[0] && { name: uiCongig.setPrivacyOne[0], url: uiCongig.setPrivacyOne[1] },
+        uiCongig?.setPrivacyTwo?.[0] && { name: uiCongig.setPrivacyTwo[0], url: uiCongig.setPrivacyTwo[1] }
+    ].filter(item => item));
     return [
         uiCongig?.setPrivacyOne?.[0] && { name: uiCongig.setPrivacyOne[0], url: uiCongig.setPrivacyOne[1] },
         uiCongig?.setPrivacyTwo?.[0] && { name: uiCongig.setPrivacyTwo[0], url: uiCongig.setPrivacyTwo[1] }
@@ -165,7 +169,7 @@ const customConfigFn = (uiCongig) => {
             checkedButton: { width: '1.33rem', height: '1.33rem', uncheckColor: '#cccccc', checkedColor: '#1E82EB', uncheckUrl: '', checkedUrl: '' },
             hrefStyle: {
                 fontColor: '#1E82EB',
-                agreeArr: definedProtocolArr()
+                agreeArr: definedProtocolArr(uiCongig)
             }
         },
         tipStyle: { fontFamily: 'PingFangSC-Regular, PingFang SC', fontSize: '0.92rem', fontColor: '#999999', high: '27rem', left: 'center' },
