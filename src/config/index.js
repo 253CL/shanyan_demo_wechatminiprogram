@@ -59,7 +59,6 @@ const replacementPhoneNumber = (token, appId, appKey, callback) => {
         .then(({ data }) => {
             if (data.code === '200000') {
                 const mobile = phoneDecrypt(data.data.mobile, appKey);
-                console.log(mobile);
                 callback('解密后的手机号码' + mobile);
             } else {
                 callback(data.message);
