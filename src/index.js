@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useState, useMemo, useRef } from 'react'
 import { httpPost } from './axios';
 import { NumberKeyboard, PasscodeInput, Radio, Dialog } from 'antd-mobile';
 import { useNotification } from 'rc-notification';
-import { replacementPhoneNumber, cryptographicToken, auth, checkKeysExist, dynamicType,customModalConfigFn ,customConfigFn} from './config/index';
+import { replacementPhoneNumber, cryptographicToken, auth, checkKeysExist, dynamicType, customModalConfigFn, customConfigFn } from './config/index';
 let domobj = null;
 let rootobj = null;
 let cuccResponseData = {};
@@ -26,7 +26,7 @@ const noticeMotion = {
 };
 //销毁组件
 const destroyHandle = () => {
-    uiCongig={};
+    uiCongig = {};
     setTimeout(() => {
         if (rootobj) {
             rootobj.unmount();
@@ -106,7 +106,7 @@ function Main({ params, callback }) {
             },
             success: function (res) {
                 // 移动弹窗版本 默认会直接 success 需要判断 是否是授权了的
-                if(!uiCongig.isModal||(uiCongig.isModal &&res.token)){
+                if (!uiCongig.isModal || (uiCongig.isModal && res.token)) {
                     const token = cryptographicToken('A1', res, appId);
                     replacementPhoneNumber(token, appId, appKey, callback);
                 }
@@ -384,8 +384,11 @@ function Init(params, callback) {
     createInitLayout(params, _callBack);
 }
 
-function setUIConfig(config) {
+function setUIConfig(config, callback) {
     uiCongig = config;
+    if (uiCongig.setPrivacyOne?.[0].length > 20 || uiCongig.setPrivacyTwo?.[0].length > 20) {
+        return callback({ code: '000500', message: "协议长度不能超过20" });
+    }
     if (uiCongig.isModal) {
         customModalConfigFn(uiCongig);
     } else {

@@ -93,7 +93,9 @@
                     if(trueRadio){
                         _config.isModal=trueRadio.checked
                     }
-                    window.clshanyansdk.setUIConfig(_config);
+                    window.clshanyansdk.setUIConfig(_config,function (data) {
+                        document.getElementById('res').innerText = JSON.stringify(data);
+                    });
                 }
             }
             // 需要这样监听 直接在按钮加点击事件电信初始化以后会被电信的sdk所吞掉事件
