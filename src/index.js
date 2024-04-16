@@ -272,7 +272,6 @@ function Main({ params, callback }) {
                             </span>
                             <span>并使用本机号码登录</span>
                         </div>
-
                     </div>
                 }
             />
