@@ -88,7 +88,9 @@
             width: 3.5vw;
             height: 3.5vw;
         }
-
+        span{
+            vertical-align: middle;
+        }
         .protocol {
             color: #2d77ff;
         }
@@ -181,401 +183,112 @@
         opacity: 1;
     }
 }
-
-.jm-card {
-    &-title {
-        font-size: 18px;
-        font-weight: 300;
-        text-align: center;
-        padding-top: 10px;
-        padding-bottom: 10px;
+.cucc-modal{
+    .adm-center-popup{
+        max-width: 90vw;
     }
-
-    &-images {
-        width: 37vh;
-        height: 25vh;
-        margin: 0px auto;
-        position: relative;
-        overflow: hidden;
-
-        img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: inline-block;
-        }
-
-        input {
-            top: 0px;
-            left: 0px;
-            width: 100%;
-            height: 100%;
-            opacity: 0.01;
-            cursor: pointer;
+    .adm-center-popup-wrap{
+        top: 35%;
+        width: 90vw;
+        max-width: 90vw;
+    }
+    
+    .adm-number-keyboard-key{
+        height: 6vh;
+    }
+    .content {
+        height:50vh;
+        overflow-y: auto;
+        .cancelImg{
             position: absolute;
-            display: inline-block;
-            -webkit-tap-highlight-color: transparent;
-            z-index: 100;
+            right: 12px;
+            width: 4vw;
         }
-    }
-
-    &-describe {
-        font-size: 16px;
-        text-align: center;
-        font-weight: 300;
-        margin-top: 5px;
-        margin-bottom: 20px;
-    }
-
-    &-submit {
-        left: 5vw;
-        right: 5vw;
-        bottom: 5vh;
-        z-index: 100;
-        position: fixed;
-        padding-bottom: env(safe-area-inset-bottom);
-    }
-
-    &-cancel {
-        text-align: center;
-        margin-bottom: 20px;
-
-        span {
-            font-size: 16px;
-            cursor: pointer;
-        }
-    }
-
-    &-button {
-        color: #fff;
-        height: 50px;
-        font-size: 16px;
-        line-height: 50px;
-        text-align: center;
-        border-radius: 6px;
-        background-color: #1677ff;
-        cursor: pointer;
-    }
-}
-
-.jm-default {
-    &-actions {
-        padding: 30px 30px;
-        text-align: center;
-        justify-content: center;
-        align-items: center;
-        display: flex;
-    }
-
-    &-title {
-        font-size: 18px;
-        padding: 0px 20px;
-        margin-bottom: 20px;
-    }
-
-    &-describe {
-        color: #666;
-        font-size: 16px;
-        padding: 3px 20px;
-
-        span {
-            color: #f00;
-            margin-left: 3px;
-            margin-right: 3px;
-            font-weight: bold;
-        }
-    }
-
-    &-submit {
-        left: 5vw;
-        right: 5vw;
-        bottom: 5vh;
-        z-index: 100;
-        position: fixed;
-        padding-bottom: env(safe-area-inset-bottom);
-    }
-
-    &-cancel {
-        text-align: center;
-        margin-bottom: 20px;
-
-        span {
-            font-size: 16px;
-            cursor: pointer;
-        }
-    }
-
-    &-button {
-        color: #fff;
-        height: 50px;
-        font-size: 16px;
-        line-height: 50px;
-        text-align: center;
-        border-radius: 6px;
-        background-color: #1677ff;
-        position: relative;
-        overflow: hidden;
-        cursor: pointer;
-
-        input {
-            top: 0px;
-            left: 0px;
-            width: 100%;
-            height: 100%;
-            opacity: 0.01;
-            cursor: pointer;
+        .top {
             position: absolute;
-            display: inline-block;
-            -webkit-tap-highlight-color: transparent;
-            z-index: 100;
+            background-color: white;
+            z-index: 10000;
+            padding-top: 3vh;
+            width: 100vw;
+    
+            .cancel {
+                position: absolute;
+                top: 3.5vh;
+                left: 2.5vw;
+                height: 4vh;
+            }
+    
+            .top-title {
+                text-align: center;
+                font-weight: 800;
+                font-size: 5vw;
+                line-height: 5vh;
+            }
+        }
+    
+        .image {
+            img {
+                display: block;
+                margin: 0 auto;
+                width: 20vh;
+                height: 20vh;
+            }
+        }
+    
+        .title {
+            margin-bottom: 4vh;
+            text-align: center;
+            font-size: 3vw;
+        }
+    
+        .phone-number {
+            display: flex;
+            justify-content: center;
+            font-size: 4.8vw;
+            .phone-block {
+                display: block;
+                text-align: center;
+                line-height: 42px;
+                height: 42px;
+                width: 5vw;
+            }
+    
+            &-box {
+                display: flex;
+            }
+        }
+    
+        .hint {
+            margin: 10px 0;
+            font-size: 3vw;
+            text-align: center;
+            color: #d3d335;
+        }
+    
+        .authorize {
+            font-size: 3.5vw;       
+            line-height: 3.5vw;
+            text-align: center;
+            .adm-radio-icon {
+                width: 3.5vw;
+                height: 3.5vw;
+            }
+            span{
+                vertical-align: middle;
+            }
+    
+            .protocol {
+                color: #2d77ff;
+            }
+        }
+    
+        .keyboard-container {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
         }
     }
-}
-
-.jm-custom {
-    &-title {
-        height: 30px;
-        font-size: 24px;
-        line-height: 30px;
-        text-align: center;
-        padding-top: 20px;
-        padding-bottom: 20px;
-    }
-
-    &-camera {
-        width: 70vw;
-        height: 70vw;
-        font-size: 0px;
-        margin: 0px auto;
-        position: relative;
-        max-width: 375px;
-        max-height: 375px;
-    }
-
-    &-video {
-        top: 0px;
-        left: 0px;
-        width: 100%;
-        height: 100%;
-        padding: 10px 10px;
-        box-sizing: border-box;
-        position: absolute;
-        overflow: hidden;
-        z-index: 10;
-    }
-
-    &-video-content {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        border-radius: 50%;
-        background-color: #999;
-        transform: rotateY(180deg);
-        display: inline-block;
-
-        &::-webkit-media-controls-play-button {
-            display: none;
-        }
-
-        &::-webkit-media-controls-enclosure {
-            display: none;
-        }
-    }
-
-    &-checking {
-        top: 10px;
-        left: 10px;
-        right: 10px;
-        bottom: 10px;
-        border-radius: 100%;
-        position: absolute;
-        overflow: hidden;
-        z-index: 20;
-
-        img {
-            animation-duration: 2s;
-            animation-name: checkingMove;
-            animation-iteration-count: infinite;
-            display: inline-block;
-        }
-    }
-
-    &-actions {
-        margin-top: 20px;
-        text-align: center;
-
-        img {
-            height: 96px;
-            display: inline-block;
-        }
-
-        span {
-            color: #fff;
-            width: 22px;
-            height: 22px;
-            font-size: 12px;
-            line-height: 22px;
-            border-radius: 11px;
-            background-color: #2d77ff;
-            margin: 0 5px;
-            display: inline-block;
-        }
-
-        span[data-active='true'] {
-            color: #dce4ef;
-            background-color: #dce4ef;
-        }
-    }
-
-    &-submit {
-        left: 5vw;
-        right: 5vw;
-        bottom: 5vh;
-        z-index: 100;
-        position: fixed;
-        padding-bottom: env(safe-area-inset-bottom);
-    }
-
-    &-cancel {
-        text-align: center;
-        margin-bottom: 20px;
-
-        span {
-            font-size: 16px;
-            cursor: pointer;
-        }
-    }
-
-    &-switch {
-        text-align: center;
-
-        span {
-            color: #2d77ff;
-            font-size: 16px;
-            cursor: pointer;
-        }
-    }
-
-    &-mask {
-        top: 0px;
-        left: 0px;
-        width: 100vw;
-        height: 100vh;
-        position: fixed;
-        align-items: center;
-        justify-content: center;
-        background: rgba(0, 0, 0, 0.5);
-        display: flex;
-        z-index: 120;
-    }
-
-    &-modal {
-        width: 70vw;
-        max-width: 576px;
-        text-align: center;
-        border-radius: 8px;
-        background-color: #fff;
-        animation: modal-overlay-enter 0.3s;
-    }
-
-    &-modal-title {
-        font-size: 18px;
-        font-weight: 500;
-        padding-top: 20px;
-        padding-bottom: 10px;
-    }
-
-    &-modal-body {
-        color: #666;
-        line-height: 20px;
-        padding-bottom: 20px;
-    }
-
-    &-modal-footer {
-        display: flex;
-        border-top: 1px solid #ebedf0;
-    }
-
-    &-modal-cancel {
-        flex: 1;
-        height: 48px;
-        line-height: 48px;
-        cursor: pointer;
-    }
-
-    &-modal-confirm {
-        flex: 1;
-        height: 48px;
-        color: #2d77ff;
-        line-height: 48px;
-        border-left: 1px solid #ebedf0;
-        cursor: pointer;
-    }
-}
-
-.jm-success {
-    margin: 10px;
-    padding-top: 20vh;
-
-    &-center {
-        img {
-            display: block;
-            margin: 0 auto;
-        }
-    }
-
-    &-text {
-        text-align: center;
-        margin-top: 20px;
-        margin-bottom: 20px;
-    }
-
-    &-button {
-        color: #fff;
-        height: 50px;
-        font-size: 16px;
-        line-height: 50px;
-        text-align: center;
-        border-radius: 6px;
-        background-color: #1677ff;
-        cursor: pointer;
-    }
-}
-
-.jm-error {
-    margin: 10px;
-    padding-top: 20vh;
-
-    &-center {
-        img {
-            display: block;
-            margin: 0 auto;
-        }
-    }
-
-    &-text {
-        text-align: center;
-        margin-top: 20px;
-        margin-bottom: 20px;
-        font-weight: 800;
-    }
-
-    &-reason {
-        text-align: center;
-        margin-top: 20px;
-        margin-bottom: 20px;
-    }
-
-    &-button {
-        color: #fff;
-        height: 50px;
-        font-size: 16px;
-        line-height: 50px;
-        text-align: center;
-        border-radius: 6px;
-        background-color: #1677ff;
-        cursor: pointer;
-    }
+    
 }
 
 @keyframes checkingMove {
