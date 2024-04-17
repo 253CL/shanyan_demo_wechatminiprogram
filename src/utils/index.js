@@ -137,7 +137,7 @@ const checkKeysExist = (obj) => {
     return false;
 };
 const dynamicType = (uiCongig) => {
-    if (uiCongig.isModal) {
+    if (uiCongig.setPageType) {
         return '2';
     } else {
         return checkKeysExist(uiCongig) ? '3' : '0';

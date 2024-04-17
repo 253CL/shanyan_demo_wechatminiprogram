@@ -3,20 +3,19 @@
     <head>
         <meta charset="UTF-8" />
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-        <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+        <!-- <script src="https://unpkg.com/axios/dist/axios.min.js"></script> -->
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <script src="https://cdn.bootcss.com/vConsole/3.3.4/vconsole.min.js"></script>
         <!-- 移动sdk -->
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-        <script type="text/javascript" src=" https://www.cmpassport.com/h5/js/jssdk_auth/jssdk-1.0.0.min.js "></script>
+        <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+        <script type="text/javascript" src="https://www.cmpassport.com/h5/js/jssdk_auth/jssdk-1.0.0.min.js "></script> -->
         <!-- 联通 -->
-        <script src="js/fingerprint2.min.1.5.1.js"></script>
+        <!-- <script src="js/fingerprint2.min.1.5.1.js"></script>
         <script src="js/jquery.js"></script>
-        <script src="js/ispAuthPrefetch.js"></script>
+        <script src="js/ispAuthPrefetch.js"></script> -->
         <!-- 电信 -->
         <meta content="always" name="referrer" />
-        <script src="https://static.e.189.cn/open/login/js/wap/js-sdk/EAccountSDK-fjs-1.5.0.min.js"></script>
-        <meta content="always" name="referrer" />
+        <!-- <script src="https://static.e.189.cn/open/login/js/wap/js-sdk/EAccountSDK-fjs-1.5.0.min.js"></script> -->
         <title>闪验h5</title>
         <script>
             new VConsole();
@@ -91,7 +90,7 @@
                         _config.setPrivacyTwo=setPrivacyTwo;
                     }
                     if(trueRadio){
-                        _config.isModal=trueRadio.checked
+                        _config.setPageType=trueRadio.checked
                     }
                     window.clshanyansdk.setUIConfig(_config,function (data) {
                         document.getElementById('res').innerText = JSON.stringify(data);
