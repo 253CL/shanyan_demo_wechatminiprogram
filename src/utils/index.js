@@ -114,11 +114,7 @@ const auth = (params, callback) => {
         callback = (value) => console.log(value);
     }
     if (isObj(params) === false) {
-        callback({ code: '000500', message: '参数错误' });
-        return false;
-    }
-    if (Boolean(params.appKey) === false) {
-        callback({ code: '000510', message: 'appKey必传' });
+        callback({ code: '000510', message: '参数错误' });
         return false;
     }
     if (Boolean(params.appId) === false) {

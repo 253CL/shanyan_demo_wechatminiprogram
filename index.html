@@ -1,107 +1,164 @@
 <!DOCTYPE html>
 <html lang="zh">
-    <head>
-        <meta charset="UTF-8" />
-        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-        <!-- <script src="https://unpkg.com/axios/dist/axios.min.js"></script> -->
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <script src="https://cdn.bootcss.com/vConsole/3.3.4/vconsole.min.js"></script>
-        <!-- 移动sdk -->
-        <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <!-- <script src="https://unpkg.com/axios/dist/axios.min.js"></script> -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.bootcss.com/vConsole/3.3.4/vconsole.min.js"></script>
+    <!-- 移动sdk -->
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
         <script type="text/javascript" src="https://www.cmpassport.com/h5/js/jssdk_auth/jssdk-1.0.0.min.js "></script> -->
-        <!-- 联通 -->
-        <!-- <script src="js/fingerprint2.min.1.5.1.js"></script>
+    <!-- 联通 -->
+    <!-- <script src="js/fingerprint2.min.1.5.1.js"></script>
         <script src="js/jquery.js"></script>
         <script src="js/ispAuthPrefetch.js"></script> -->
-        <!-- 电信 -->
-        <meta content="always" name="referrer" />
-        <!-- <script src="https://static.e.189.cn/open/login/js/wap/js-sdk/EAccountSDK-fjs-1.5.0.min.js"></script> -->
-        <title>闪验h5</title>
-        <script>
-            new VConsole();
-        </script>
-        <link rel="stylesheet" type="text/css" href="https://www.cmpassport.com/h5/js/jssdk_auth/css/ydrz-layer.css" />
-    </head>
-    <body>
-        <label for="input1">appkey:</label>
-         <input type="text" id="input1" value="YPMXIiau " /><br />
-         <!-- <input type="text" id="input1" value="hYmhmHWV" /><br /> -->
-        <label for="input2">appId:</label>
-        <input type="text" id="input2" value="mnOTaPwX" /><br />
-        <!-- <input type="text" id="input2" value="5FO1pbba" /><br /> -->
-        <br />
-        <br />
-        <label for="input3">setLoginTitle:</label>
-         <input type="text" id="input3"  /><br />
-        <label for="input4">setLoginLogo:</label>
-        <input type="text" id="input4"   /><br />
-        <label for="setPrivacyOneName">setPrivacyOneName:</label>
-         <input type="text" id="setPrivacyOneName"  /><br />
-         <label for="setPrivacyOneUrl">setPrivacyOneUrl:</label>
-         <input type="text" id="setPrivacyOneUrl"  /><br />
-        <label for="setPrivacyTwoName">setPrivacyTwoName:</label>
-        <input type="text" id="setPrivacyTwoName"  /><br />
-        <label for="setPrivacyTwoUrl">setPrivacyTwoUrl:</label>
-        <input type="text" id="setPrivacyTwoUrl"  /><br />
-        是否弹窗
-        <input type="radio" id="trueRadio" name="value" value="true">
+    <!-- 电信 -->
+    <meta content="always" name="referrer" />
+    <!-- <script src="https://static.e.189.cn/open/login/js/wap/js-sdk/EAccountSDK-fjs-1.5.0.min.js"></script> -->
+    <title>闪验h5</title>
+    <script>
+        new VConsole();
+    </script>
+    <link rel="stylesheet" type="text/css" href="https://www.cmpassport.com/h5/js/jssdk_auth/css/ydrz-layer.css" />
+</head>
+
+<body>
+    <label for="input1">appkey:</label>
+    <input type="text" id="input1" value="YPMXIiau " /><br />
+    <!-- <input type="text" id="input1" value="hYmhmHWV" /><br /> -->
+    <label for="input2">appId:</label>
+    <input type="text" id="input2" value="mnOTaPwX" /><br />
+    <!-- <input type="text" id="input2" value="5FO1pbba" /><br /> -->
+    <br />
+    <br />
+    <label for="input3">setLoginTitle:</label>
+    <input type="text" id="input3" /><br />
+    <label for="input4">setLoginLogo:</label>
+    <input type="text" id="input4" /><br />
+    <label for="setPrivacyOneName">setPrivacyOneName:</label>
+    <input type="text" id="setPrivacyOneName" /><br />
+    <label for="setPrivacyOneUrl">setPrivacyOneUrl:</label>
+    <input type="text" id="setPrivacyOneUrl" /><br />
+    <label for="setPrivacyTwoName">setPrivacyTwoName:</label>
+    <input type="text" id="setPrivacyTwoName" /><br />
+    <label for="setPrivacyTwoUrl">setPrivacyTwoUrl:</label>
+    <input type="text" id="setPrivacyTwoUrl" /><br />
+    是否弹窗
+    <input type="radio" id="trueRadio" name="value" value="true">
     <label for="trueRadio">True</label>
     <input type="radio" id="falseRadio" name="value" value="false">
     <label for="falseRadio">False</label><br><br>
-        <div class="example">
-            <button style="height: 50px;" onclick="beginHandle(1)">初始化</button>
-            <button style="height: 50px;" id="j-get-code">启动授权登录</button>
-            <button style="height: 50px;" onclick="beginHandle(3)" >自定义配置</button></button>
-        </div>
-        <span >返回的结果</span>
-        <span style="word-wrap: break-word; word-break: break-all;" id="res"></span>
-        <script src="js/umd/living.min.js?t=10000"></script>
-        <script>
-            function beginHandle(type) {
-                let _config={};
-                const appKey = document.getElementById('input1')?.value;
-                const appId = document.getElementById('input2')?.value;
-                const setLoginTitle = document.getElementById('input3')?.value;
-                const setLoginLogo = document.getElementById('input4')?.value;
-                const setPrivacyOne = [document.getElementById('setPrivacyOneName')?.value,document.getElementById('setPrivacyOneUrl')?.value];
-                const setPrivacyTwo = [document.getElementById('setPrivacyTwoName')?.value,document.getElementById('setPrivacyTwoUrl')?.value];
-                const trueRadio = document.getElementById('trueRadio');
-            const falseRadio = document.getElementById('falseRadio');
-                const config = { appKey, appId };
-                if (type === 1) {
-                    window.clshanyansdk.Init(config, function (data) {
-                        document.getElementById('res').innerText = JSON.stringify(data);
-                    });
-                } else if (type === 2) {
-                    window.clshanyansdk.start(config, function (data) {
-                        document.getElementById('res').innerText = JSON.stringify(data);
-                    });
-                } else if (type === 3) {
-                    if(setLoginTitle){
-                        _config.setLoginTitle=setLoginTitle;
-                    }
-                    if(setLoginLogo){
-                        _config.setLoginLogo=setLoginLogo;
-                    }
-                    if(setPrivacyOne.every((item)=>item)){
-                        _config.setPrivacyOne=setPrivacyOne;
-                    }
-                    if(setPrivacyTwo.every((item)=>item)){
-                        _config.setPrivacyTwo=setPrivacyTwo;
-                    }
-                    if(trueRadio){
-                        _config.setPageType=trueRadio.checked
-                    }
-                    window.clshanyansdk.setUIConfig(_config,function (data) {
-                        document.getElementById('res').innerText = JSON.stringify(data);
-                    });
-                }
-            }
-            // 需要这样监听 直接在按钮加点击事件电信初始化以后会被电信的sdk所吞掉事件
-            const button = document.getElementById('j-get-code');
-            button.addEventListener('click', function () {
-                beginHandle(2);
+    <div class="example">
+        <button style="height: 50px;" onclick="beginHandle(1)">初始化</button>
+        <button style="height: 50px;" id="j-get-code">启动授权登录</button>
+        <button style="height: 50px;" onclick="beginHandle(3)">自定义配置</button></button>
+    </div>
+    <span>返回的结果</span>
+    <span style="word-wrap: break-word; word-break: break-all;" id="res"></span>
+    <script src="js/umd/living.min.js?t=10000"></script>
+    <script>
+        const phoneDecrypt = (content, keys) => {
+            const md5Key = CryptoJS.MD5(keys).toString().substring(0, 16);
+            const md5Iv = CryptoJS.MD5(keys).toString().substring(16);
+            const key = CryptoJS.enc.Utf8.parse(md5Key);
+            const iv = CryptoJS.enc.Utf8.parse(md5Iv);
+            const encryptedHexStr = CryptoJS.enc.Hex.parse(content);
+            const srcs = CryptoJS.enc.Base64.stringify(encryptedHexStr);
+            const decrypt = CryptoJS.AES.decrypt(srcs, key, {
+                iv: iv,
+                mode: CryptoJS.mode.CBC,
+                padding: CryptoJS.pad.Pkcs7
             });
-        </script>
-    </body>
+            const decryptedStr = decrypt.toString(CryptoJS.enc.Utf8);
+            return decryptedStr.toString();
+        };
+
+        const sortAndEncryptObjectProperties = (obj, secretKey) => {
+            const sortedProperties = Object.keys(obj).sort();
+            const concatenatedProperties = sortedProperties.map((key) => `${key}${obj[key]}`).join('');
+            const hash = CryptoJS.HmacSHA256(concatenatedProperties, secretKey);
+            const hashInHex = hash.toString(CryptoJS.enc.Hex);
+            return hashInHex;
+        };
+        const replacementPhoneNumber = (token, appId, appKey, callback) => {
+            let params = { token, appId };
+            const sign = sortAndEncryptObjectProperties(params, appKey);
+            params = { token, appId, sign };
+            let formData = new FormData();
+            for (let key in params) {
+                formData.append(key, params[key]);
+            }
+            axios
+                // .post('https://57.cm253.com:8445/open/web/mobile-query', formData, {
+                .post('https://56.cm253.com:8445/open/web/mobile-query', formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    }
+                })
+                .then(({ data }) => {
+                    if (data.code === '200000') {
+                        const mobile = phoneDecrypt(data.data.mobile, appKey);
+                        callback('解密后的手机号码' + mobile);
+                    } else {
+                        callback(data.message);
+                    }
+                })
+                .catch((error) => {
+                    callback(error);
+                });
+        };
+        function beginHandle(type) {
+            let _config = {};
+            const appKey = document.getElementById('input1')?.value;
+            const appId = document.getElementById('input2')?.value;
+            const setLoginTitle = document.getElementById('input3')?.value;
+            const setLoginLogo = document.getElementById('input4')?.value;
+            const setPrivacyOne = [document.getElementById('setPrivacyOneName')?.value, document.getElementById('setPrivacyOneUrl')?.value];
+            const setPrivacyTwo = [document.getElementById('setPrivacyTwoName')?.value, document.getElementById('setPrivacyTwoUrl')?.value];
+            const trueRadio = document.getElementById('trueRadio');
+            const falseRadio = document.getElementById('falseRadio');
+            const config = { appKey, appId };
+            if (type === 1) {
+                window.clshanyansdk.Init(config, function (data) {
+                    document.getElementById('res').innerText = JSON.stringify(data);
+                });
+            } else if (type === 2) {
+                window.clshanyansdk.start(config, function (data) {
+                    if (data.code === "200000") {
+                        replacementPhoneNumber(data.token, appId, appKey, (mobile) => { document.getElementById('res').innerText = JSON.stringify(mobile); })
+                    } else {
+                        document.getElementById('res').innerText = JSON.stringify(data);
+                    }
+                });
+            } else if (type === 3) {
+                if (setLoginTitle) {
+                    _config.setLoginTitle = setLoginTitle;
+                }
+                if (setLoginLogo) {
+                    _config.setLoginLogo = setLoginLogo;
+                }
+                if (setPrivacyOne.every((item) => item)) {
+                    _config.setPrivacyOne = setPrivacyOne;
+                }
+                if (setPrivacyTwo.every((item) => item)) {
+                    _config.setPrivacyTwo = setPrivacyTwo;
+                }
+                if (trueRadio) {
+                    _config.setPageType = trueRadio.checked
+                }
+                window.clshanyansdk.setUIConfig(_config, function (data) {
+                    document.getElementById('res').innerText = JSON.stringify(data);
+                });
+            }
+        }
+        // 需要这样监听 直接在按钮加点击事件电信初始化以后会被电信的sdk所吞掉事件
+        const button = document.getElementById('j-get-code');
+        button.addEventListener('click', function () {
+            beginHandle(2);
+        });
+    </script>
+</body>
+
 </html>
