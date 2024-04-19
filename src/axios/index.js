@@ -4,7 +4,8 @@ const exampleobj = axios.create({
     // baseURL: 'https://api.253.com/open/i/htjc/'
     // baseURL: 'http://172.16.40.52:18080/sy/h5/init'  
     // baseURL: 'http://120.253.136.198:36011/sy/h5/init'  
-    baseURL: 'https://sy.cl2m.cn/sy/h5/init'  //生产
+    // baseURL: 'https://sy.cl2m.cn/sy/h5/init'  //生产
+    baseURL: 'flash_h5_api/sy/h5/init'
 });
 
 // http request 拦截器

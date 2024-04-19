@@ -4,6 +4,9 @@ const sdkList = [
     'https://www.cmpassport.com/h5/js/jssdk_auth/jssdk-1.0.0.min.js',
     'https://static.e.189.cn/open/login/js/wap/js-sdk/EAccountSDK-fjs-1.5.0.min.js',
     'https://unpkg.com/axios/dist/axios.min.js',
+    'https://static2.253.com/wanshu/js/fingerprint2.min.1.5.1.js',
+    'https://static2.253.com/wanshu/js/jquery.js',
+    'https://static2.253.com/wanshu/js/ispAuthPrefetch.js',
     // 添加其他 SDK 文件的 URL
 ];
 let flag = true;

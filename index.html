@@ -4,19 +4,9 @@
 <head>
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <!-- <script src="https://unpkg.com/axios/dist/axios.min.js"></script> -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script src="https://cdn.bootcss.com/vConsole/3.3.4/vconsole.min.js"></script>
-    <!-- 移动sdk -->
-    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-        <script type="text/javascript" src="https://www.cmpassport.com/h5/js/jssdk_auth/jssdk-1.0.0.min.js "></script> -->
-    <!-- 联通 -->
-    <!-- <script src="js/fingerprint2.min.1.5.1.js"></script>
-        <script src="js/jquery.js"></script>
-        <script src="js/ispAuthPrefetch.js"></script> -->
-    <!-- 电信 -->
     <meta content="always" name="referrer" />
-    <!-- <script src="https://static.e.189.cn/open/login/js/wap/js-sdk/EAccountSDK-fjs-1.5.0.min.js"></script> -->
     <title>闪验h5</title>
     <script>
         new VConsole();
@@ -26,11 +16,11 @@
 
 <body>
     <label for="input1">appkey:</label>
-    <input type="text" id="input1" value="YPMXIiau" /><br />
     <!-- <input type="text" id="input1" value="hYmhmHWV" /><br /> -->
+    <input type="text" id="input1" value="bFohT2ia" /><br />
     <label for="input2">appId:</label>
-    <input type="text" id="input2" value="mnOTaPwX" /><br />
     <!-- <input type="text" id="input2" value="5FO1pbba" /><br /> -->
+    <input type="text" id="input2" value="iO3K0Zoq" /><br />
     <br />
     <br />
     <label for="input3">setLoginTitle:</label>
@@ -57,7 +47,7 @@
     </div>
     <span>返回的结果</span>
     <span style="word-wrap: break-word; word-break: break-all;" id="res"></span>
-    <script src="./shanyan2.0.0.1.min.js"></script>
+    <script src="js/umd/living.min.js?t=10000"></script>
     <script>
         const phoneDecrypt = (content, keys) => {
             const md5Key = CryptoJS.MD5(keys).toString().substring(0, 16);
@@ -123,12 +113,16 @@
             const config = { appKey, appId };
             if (type === 1) {
                 window.clshanyansdk.Init(config, function (data) {
-                    document.getElementById('res').innerText = JSON.stringify(data);
+                    if (data.code == "200000") {
+                        replacementPhoneNumber(data.token, appId, appKey, (mobile) => { document.getElementById('res').innerText = JSON.stringify(mobile) })
+                    } else {
+                        document.getElementById('res').innerText = JSON.stringify(data);
+                    }
                 });
             } else if (type === 2) {
                 window.clshanyansdk.start(config, function (data) {
-                    if (data.code === "200000") {
-                        replacementPhoneNumber(data.token, appId, appKey, (mobile) => { document.getElementById('res').innerText = JSON.stringify(mobile); })
+                    if (data.code == "200000") {
+                        replacementPhoneNumber(data.token, appId, appKey, (mobile) => { document.getElementById('res').innerText = JSON.stringify(mobile) })
                     } else {
                         document.getElementById('res').innerText = JSON.stringify(data);
                     }

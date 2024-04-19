@@ -6,9 +6,7 @@ import { NumberKeyboard, PasscodeInput, Radio, Dialog } from 'antd-mobile';
 import { useNotification } from 'rc-notification';
 import {  cryptographicToken, auth, checkKeysExist, dynamicType, customModalConfigFn, customConfigFn } from './utils/index';
 import { loadAndInitSDKs } from './utils/load';
-import '../js/fingerprint2.min.1.5.1.js';
-import '../js/jquery.js';
-import '../js/ispAuthPrefetch.js';
+
 let domobj = null;
 let rootobj = null;
 let cuccResponseData = {};
@@ -88,6 +86,7 @@ function Main({ params, callback }) {
                 setCuccResponseData(res);
             })
             .catch((err) => {
+                console.log("cuccerr",err);
                 setCallResult((pre) => [...pre, { err, time: new Date().getTime() }]);
             });
     }, []);
@@ -115,6 +114,7 @@ function Main({ params, callback }) {
                 }
             },
             error: function (err) {
+                console.log("cmccerr",err);
                 setCallResult((pre) => [...pre, { err, time: new Date().getTime() }]);
             },
             layerCallback: function (res) {
@@ -311,6 +311,7 @@ function InitLayout({ params, callback }) {
                 // replacementPhoneNumber(token, appId, appKey, callback);
             },
             error: function (err) {
+                console.log("ctccerr",err);
                 ctccFinish = true;
                 // callback(err)
             }
