@@ -26,7 +26,7 @@ const noticeMotion = {
     },
     onLeaveActive: () => ({ height: 0, opacity: 0, margin: 0 })
 };
-
+let appId;
 const destroyHandle = () => {
     uiCongig = {};
     setTimeout(() => {
@@ -50,7 +50,6 @@ function Main({ params, callback }) {
     const [checked, setchecked] = useState(false);
     const [callResult, setCallResult] = useState([]);
     const ref = useRef();
-    const appId = params.appId || '';
     const cuccCancel = () => {
         setCuccView(false);
         setcuccDialogView(false);
@@ -121,7 +120,7 @@ function Main({ params, callback }) {
                 //authPageType等于2时可以通过该回调方法监听，用户输入中间四位号码并勾选协议后触发
             }
         });
-    }, [appId, callback]);
+    }, [ callback]);
 
     const numberKeyboardChange = (e) => {
         setCuccPhoneNumber((pre) => {
@@ -163,7 +162,7 @@ function Main({ params, callback }) {
             callback({ code: '200000', message: '授权成功' ,token})
             // replacementPhoneNumber(token, appId, appKey, callback);
         }
-    }, [_cuccResponseData.accessCode, appId, callback, checked, cuccPhoneNumber, firstThree, lastFour]);
+    }, [_cuccResponseData.accessCode, callback, checked, cuccPhoneNumber, firstThree, lastFour]);
     useEffect(() => {
         if (cuccPhoneNumber.length === 4 && !checked) {
             noticeHandle('请勾选同意服务条款');
@@ -282,12 +281,12 @@ function Main({ params, callback }) {
     );
 }
 function InitLayout({ params, callback }) {
-    const appId = params.appId || '';
+    appId = params.appId || '';
     const _getSign = useCallback(
         (res = {}) => {
             return httpPost('', { appId, data: res.encryValue });
         },
-        [appId]
+        []
     );
     const ctcc = useCallback(() => {
         ctccFinish = false;
@@ -316,7 +315,7 @@ function InitLayout({ params, callback }) {
                 // callback(err)
             }
         });
-    }, [_getSign, appId, callback]);
+    }, [_getSign, callback]);
     const initAjax = useCallback(() => {
         httpPost('', { appId, data: '' })
             .then(({ data, retCode, retMsg }) => {
@@ -334,7 +333,7 @@ function InitLayout({ params, callback }) {
             .catch((err) => {
                 callback({ code: '000400', message: '初始化失败' });
             });
-    }, [appId, callback, ctcc]);
+    }, [ callback, ctcc]);
 
     useEffect(() => {
         initAjax();
@@ -405,6 +404,7 @@ function setUIConfig(config, callback) {
             customConfigFn(uiCongig);
         }
     }
+    
     return callback({ code: '000700', message: "自定义配置成功" });
 }
 const obj = { start, Init, setUIConfig };

@@ -6,21 +6,19 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script src="https://cdn.bootcss.com/vConsole/3.3.4/vconsole.min.js"></script>
+    <!-- <script src="https://static2.253.com/wanshu/js/fingerprint2.min.1.5.1.js"></script>
+    <script src="https://static2.253.com/wanshu/js/jquery.js"></script>
+    <script src="https://static2.253.com/wanshu/js/ispAuthPrefetch.js"></script> -->
     <meta content="always" name="referrer" />
     <title>闪验h5</title>
     <script>
         new VConsole();
     </script>
+
     <link rel="stylesheet" type="text/css" href="https://www.cmpassport.com/h5/js/jssdk_auth/css/ydrz-layer.css" />
 </head>
 
 <body>
-    <label for="input1">appkey:</label>
-    <!-- <input type="text" id="input1" value="hYmhmHWV" /><br /> -->
-    <input type="text" id="input1"  /><br />
-    <label for="input2">appId:</label>
-    <!-- <input type="text" id="input2" value="5FO1pbba" /><br /> -->
-    <input type="text" id="input2" /><br />
     <br />
     <br />
     <label for="input3">setLoginTitle:</label>
@@ -47,7 +45,8 @@
     </div>
     <span>返回的结果</span>
     <span style="word-wrap: break-word; word-break: break-all;" id="res"></span>
-    <script src="js/umd/living.min.js?t=10000"></script>
+    <!-- <script src="./shanyan2.0.0.1.min.js"></script> -->
+    <script src="js/umd/living.min.js"></script>
     <script>
         const phoneDecrypt = (content, keys) => {
             const md5Key = CryptoJS.MD5(keys).toString().substring(0, 16);
@@ -82,8 +81,8 @@
             }
             axios
                 // .post('https://57.cm253.com:8445/open/web/mobile-query', formData, {
-                // .post('https://56.cm253.com:8445/open/web/mobile-query', formData, {
-                .post('https://api.253.com/open/web/mobile-query', formData, {
+                .post('https://56.cm253.com:8445/open/web/mobile-query', formData, {
+                // .post('https://api.253.com/open/web/mobile-query', formData, {
                     headers: {
                         'Content-Type': 'multipart/form-data'
                     }
@@ -102,15 +101,16 @@
         };
         function beginHandle(type) {
             let _config = {};
-            const appKey = document.getElementById('input1')?.value;
-            const appId = document.getElementById('input2')?.value;
             const setLoginTitle = document.getElementById('input3')?.value;
             const setLoginLogo = document.getElementById('input4')?.value;
             const setPrivacyOne = [document.getElementById('setPrivacyOneName')?.value, document.getElementById('setPrivacyOneUrl')?.value];
             const setPrivacyTwo = [document.getElementById('setPrivacyTwoName')?.value, document.getElementById('setPrivacyTwoUrl')?.value];
             const trueRadio = document.getElementById('trueRadio');
             const falseRadio = document.getElementById('falseRadio');
-            const config = { appKey, appId };
+            // const config = { appKey:"FUesKmzK", appId:"dv0BprRd" };
+            const appId="5FO1pbba";
+            const appKey="hYmhmHWV";
+            const config = { appKey, appId};
             if (type === 1) {
                 window.clshanyansdk.Init(config, function (data) {
                     if (data.code == "200000") {
@@ -120,6 +120,7 @@
                     }
                 });
             } else if (type === 2) {
+                console.log("开始授权");
                 window.clshanyansdk.start(config, function (data) {
                     if (data.code == "200000") {
                         replacementPhoneNumber(data.token, appId, appKey, (mobile) => { document.getElementById('res').innerText = JSON.stringify(mobile) })
@@ -151,6 +152,7 @@
         // 需要这样监听 直接在按钮加点击事件电信初始化以后会被电信的sdk所吞掉事件
         const button = document.getElementById('j-get-code');
         button.addEventListener('click', function () {
+            console.log("授权被点击了");
             beginHandle(2);
         });
     </script>
