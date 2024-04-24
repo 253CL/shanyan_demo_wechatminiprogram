@@ -13,41 +13,77 @@
     </script>
     <link rel="stylesheet" type="text/css" href="https://www.cmpassport.com/h5/js/jssdk_auth/css/ydrz-layer.css" />
 </head>
+<style>
+    .demo {
+        padding: 10px;
+    }
+
+    .result {
+        border: 1px solid #000;
+        min-height: 200px;
+        background-color: #f2f2f2;
+        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+    }
+
+   .demo label {
+        font-size: 20px;
+        display: inline-block;
+        width: 100%;
+        margin-bottom: 10px;
+    }
+
+   .demo input[type="text"] {
+        margin-bottom: 10px;
+        padding: 5px;
+        width: 250px;
+    }
+
+    .checkout label {
+        width: auto;
+    }
+
+    .example {
+        margin-bottom: 20px;
+    }
+
+   .demo button {
+        margin-right: 10px;
+    }
+</style>
 
 <body>
-    <label for="input1">appkey:</label>
-    <!-- <input type="text" id="input1" value="hYmhmHWV" /><br /> -->
-    <input type="text" id="input1"  /><br />
-    <label for="input2">appId:</label>
-    <!-- <input type="text" id="input2" value="5FO1pbba" /><br /> -->
-    <input type="text" id="input2" /><br />
-    <br />
-    <br />
-    <label for="input3">setLoginTitle:</label>
-    <input type="text" id="input3" /><br />
-    <label for="input4">setLoginLogo:</label>
-    <input type="text" id="input4" /><br />
-    <label for="setPrivacyOneName">setPrivacyOneName:</label>
-    <input type="text" id="setPrivacyOneName" /><br />
-    <label for="setPrivacyOneUrl">setPrivacyOneUrl:</label>
-    <input type="text" id="setPrivacyOneUrl" /><br />
-    <label for="setPrivacyTwoName">setPrivacyTwoName:</label>
-    <input type="text" id="setPrivacyTwoName" /><br />
-    <label for="setPrivacyTwoUrl">setPrivacyTwoUrl:</label>
-    <input type="text" id="setPrivacyTwoUrl" /><br />
-    是否弹窗
-    <input type="radio" id="trueRadio" name="value" value="true">
-    <label for="trueRadio">True</label>
-    <input type="radio" id="falseRadio" name="value" value="false">
-    <label for="falseRadio">False</label><br><br>
-    <div class="example">
-        <button style="height: 50px;" onclick="beginHandle(1)">初始化</button>
-        <button style="height: 50px;" onclick="beginHandle(3)">自定义配置</button></button>
-        <button style="height: 50px;" id="j-get-code">启动授权登录</button>
+    <div class="demo">
+        <label for="input3">登录页标题:</label>
+        <input type="text" id="input3" /><br />
+        <label for="input4">登录页logo:</label>
+        <input type="text" id="input4" /><br />
+        <label for="setPrivacyOneName">登录页新增协议一名称:</label>
+        <input type="text" id="setPrivacyOneName" /><br />
+        <label for="setPrivacyOneUrl">登录页新增协议一链接:</label>
+        <input type="text" id="setPrivacyOneUrl" /><br />
+        <label for="setPrivacyTwoName">登录页新增协议二名称:</label>
+        <input type="text" id="setPrivacyTwoName" /><br />
+        <label for="setPrivacyTwoUrl">登录页新增协议二链接:</label>
+        <input type="text" id="setPrivacyTwoUrl" /><br />
+        <div class="checkout">
+            <label>是否弹窗</label>
+            <input type="radio" id="trueRadio" name="value" value="true">
+            <label for="trueRadio" style="margin-right: 15px;">True</label>
+            <input type="radio" id="falseRadio" name="value" value="false" checked>
+            <label for="falseRadio">False</label>
+        </div>
+        <div class="example">
+            <button style="height: 40px;" onclick="beginHandle(1)">初始化</button>
+            <button style="height: 40px;" onclick="beginHandle(3)">使用自定义配置</button></button>
+            <button style="height: 40px;" id="j-get-code">启动授权登录</button>
+        </div>
+        <div class="result">
+            <span>返回的结果:</span>
+            <span style="word-wrap: break-word; word-break: break-all;" id="res"></span>
+        </div>
     </div>
-    <span>返回的结果</span>
-    <span style="word-wrap: break-word; word-break: break-all;" id="res"></span>
-    <script src="js/umd/living.min.js?t=10000"></script>
+    <!-- <script src="./shanyan2.0.0.1.min.js"></script> -->
+    <script src="js/umd/living.min.js"></script>
     <script>
         const phoneDecrypt = (content, keys) => {
             const md5Key = CryptoJS.MD5(keys).toString().substring(0, 16);
@@ -102,14 +138,16 @@
         };
         function beginHandle(type) {
             let _config = {};
-            const appKey = document.getElementById('input1')?.value;
-            const appId = document.getElementById('input2')?.value;
             const setLoginTitle = document.getElementById('input3')?.value;
             const setLoginLogo = document.getElementById('input4')?.value;
             const setPrivacyOne = [document.getElementById('setPrivacyOneName')?.value, document.getElementById('setPrivacyOneUrl')?.value];
             const setPrivacyTwo = [document.getElementById('setPrivacyTwoName')?.value, document.getElementById('setPrivacyTwoUrl')?.value];
             const trueRadio = document.getElementById('trueRadio');
             const falseRadio = document.getElementById('falseRadio');
+            const appId = "5FO1pbba";
+            const appKey = "hYmhmHWV";
+            // const appId="dv0BprRd";
+            // const appKey="FUesKmzK";
             const config = { appKey, appId };
             if (type === 1) {
                 window.clshanyansdk.Init(config, function (data) {
