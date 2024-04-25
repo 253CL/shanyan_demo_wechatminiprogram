@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useState, useMemo, useRef } from 'react'
 import { httpPost } from './axios';
 import { NumberKeyboard, PasscodeInput, Radio, Dialog } from 'antd-mobile';
 import { useNotification } from 'rc-notification';
-import {  cryptographicToken, auth, checkKeysExist, dynamicType, customModalConfigFn, customConfigFn } from './utils/index';
+import { cryptographicToken, auth, checkKeysExist, dynamicType, customModalConfigFn, customConfigFn } from './utils/index';
 import { loadAndInitSDKs } from './utils/load';
 
 let domobj = null;
@@ -15,6 +15,7 @@ let ctccResponseData = {};
 let uiCongig = {};
 let ctccFlag = false;
 let ctccFinish = false;
+let logFlag = false;
 const noticeMotion = {
     motionName: 'jm-message-fade',
     motionAppear: true,
@@ -27,6 +28,10 @@ const noticeMotion = {
     onLeaveActive: () => ({ height: 0, opacity: 0, margin: 0 })
 };
 let appId;
+const mylog = (params) => {
+    if (!logFlag) return;
+    console.log(params)
+}
 const destroyHandle = () => {
     uiCongig = {};
     setTimeout(() => {
@@ -85,7 +90,7 @@ function Main({ params, callback }) {
                 setCuccResponseData(res);
             })
             .catch((err) => {
-                console.log("cuccerr",err);
+                mylog("cuccerr", err);
                 setCallResult((pre) => [...pre, { err, time: new Date().getTime() }]);
             });
     }, []);
@@ -108,19 +113,19 @@ function Main({ params, callback }) {
                 // 移动弹窗版本 默认会直接 success 需要判断 是否是授权了的
                 if (!uiCongig.setPageType || (uiCongig.setPageType && res.token)) {
                     const token = cryptographicToken('A1', res, appId);
-                    callback({ code: '200000', message: '授权成功' ,token})
+                    callback({ code: '200000', message: '授权成功', token })
                     // replacementPhoneNumber(token, appId, appKey, callback);
                 }
             },
             error: function (err) {
-                console.log("cmccerr",err);
+                mylog("cmccerr", err);
                 setCallResult((pre) => [...pre, { err, time: new Date().getTime() }]);
             },
             layerCallback: function (res) {
                 //authPageType等于2时可以通过该回调方法监听，用户输入中间四位号码并勾选协议后触发
             }
         });
-    }, [ callback]);
+    }, [callback]);
 
     const numberKeyboardChange = (e) => {
         setCuccPhoneNumber((pre) => {
@@ -159,7 +164,7 @@ function Main({ params, callback }) {
         if (cuccPhoneNumber.length === 4 && checked) {
             const data = { ...cuccResponseData, userInformation: `${firstThree}${cuccPhoneNumber}${lastFour}`, accessCode: _cuccResponseData.accessCode };
             const token = cryptographicToken('A2', data, appId);
-            callback({ code: '200000', message: '授权成功' ,token})
+            callback({ code: '200000', message: '授权成功', token })
             // replacementPhoneNumber(token, appId, appKey, callback);
         }
     }, [_cuccResponseData.accessCode, callback, checked, cuccPhoneNumber, firstThree, lastFour]);
@@ -288,6 +293,13 @@ function InitLayout({ params, callback }) {
         },
         []
     );
+    if (uiCongig.setPageType) {
+        customModalConfigFn(uiCongig);
+    } else {
+        if (checkKeysExist(uiCongig)) {
+            customConfigFn(uiCongig);
+        }
+    }
     const ctcc = useCallback(() => {
         ctccFinish = false;
         window.fjs?.getAccessCode({
@@ -300,17 +312,18 @@ function InitLayout({ params, callback }) {
                     window.fjs.setSign(data.data.ctccSign);
                 });
             },
+            theme: uiCongig.setPageType ? "lite" : undefined,
             ready: function (res) {
                 ctccFinish = true;
                 ctccFlag = true;
             },
             success: function (res) {
                 const token = cryptographicToken('A3', res, appId);
-                callback({ code: '200000', message: '授权成功' ,token})
+                callback({ code: '200000', message: '授权成功', token })
                 // replacementPhoneNumber(token, appId, appKey, callback);
             },
             error: function (err) {
-                console.log("ctccerr",err);
+                mylog("ctccerr", err);
                 ctccFinish = true;
                 // callback(err)
             }
@@ -333,7 +346,7 @@ function InitLayout({ params, callback }) {
             .catch((err) => {
                 callback({ code: '000400', message: '初始化失败' });
             });
-    }, [ callback, ctcc]);
+    }, [callback, ctcc]);
 
     useEffect(() => {
         initAjax();
@@ -357,10 +370,6 @@ function createInitLayout(params, callback) {
     rootobj.render(<InitLayout params={params} callback={callback} />);
 }
 function start(params, callback) {
-    const result = auth(params, callback);
-    if (!result) {
-        return;
-    }
     if (ctccFlag) {
         return;
     }
@@ -397,15 +406,10 @@ function setUIConfig(config, callback) {
     if (uiCongig.setPrivacyOne?.[0].length > 20 || uiCongig.setPrivacyTwo?.[0].length > 20) {
         return callback({ code: '000500', message: "协议长度不能超过20" });
     }
-    if (uiCongig.setPageType) {
-        customModalConfigFn(uiCongig);
-    } else {
-        if (checkKeysExist(config)) {
-            customConfigFn(uiCongig);
-        }
-    }
-    
     return callback({ code: '000700', message: "自定义配置成功" });
 }
-const obj = { start, Init, setUIConfig };
+function setLog(flag) {
+    logFlag = flag;
+}
+const obj = { start, Init, setUIConfig, setLog };
 export default obj;
