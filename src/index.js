@@ -31,7 +31,6 @@ const noticeMotion = {
 let appId;
 const mylog = (params) => {
     if (!logFlag) return;
-    console.log(params);
 };
 const destroyHandle = () => {
     uiCongig = {};
@@ -332,7 +331,9 @@ function InitLayout({ params, callback }) {
     const initAjax = useCallback(
         async () => {
             try {
-                const response = await httpPost(`https://${backupDomains[currentDomainIndex]}/sy/h5/init`, { appId, data: '' });
+                const response = await httpPost("", { appId, data: '' });
+
+                // const response = await httpPost(`https://${backupDomains[currentDomainIndex]}/sy/h5/init`, { appId, data: '' });
                 const { data, retCode, retMsg }=response;
                 if (retCode === '0') {
                     const { cuccAppId, cuccSign, ctccAppId, ctccSign, cmccAppId, cmccSign, traceId, cmccTimestamp, cuccTimestamp } = data;
