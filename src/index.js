@@ -16,7 +16,7 @@ let ctccResponseData = {};
 let uiCongig = {};
 let ctccFlag = false;
 let ctccFinish = false;
-let logFlag = false;
+let logFlag = true;
 const noticeMotion = {
     motionName: 'jm-message-fade',
     motionAppear: true,
@@ -31,6 +31,7 @@ const noticeMotion = {
 let appId;
 const mylog = (params) => {
     if (!logFlag) return;
+    console.log(params);
 };
 const destroyHandle = () => {
     uiCongig = {};
