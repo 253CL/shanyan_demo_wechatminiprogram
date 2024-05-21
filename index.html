@@ -26,14 +26,14 @@
         box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
     }
 
-   .demo label {
+    .demo label {
         font-size: 13px;
         display: inline-block;
         width: 100%;
         margin-bottom: 10px;
     }
 
-   .demo input[type="text"] {
+    .demo input[type="text"] {
         margin-bottom: 10px;
         padding: 5px;
         width: 250px;
@@ -46,17 +46,22 @@
     .example {
         margin-bottom: 20px;
     }
+
     .example button {
         font-size: 13px;
     }
 
-   .demo button {
+    .demo button {
         margin-right: 10px;
     }
 </style>
 
 <body>
     <div class="demo">
+        <label for="input1">appkey:</label>
+        <input type="text" id="input1" value="NIsHsMc3" /><br />
+        <label for="input2">appId:</label>
+        <input type="text" id="input2" value="uZNUlz3B" /><br />
         <label for="input3">登录页标题:</label>
         <input type="text" id="input3" /><br />
         <label for="input4">登录页logo:</label>
@@ -148,8 +153,11 @@
             const setPrivacyTwo = [document.getElementById('setPrivacyTwoName')?.value, document.getElementById('setPrivacyTwoUrl')?.value];
             const trueRadio = document.getElementById('trueRadio');
             const falseRadio = document.getElementById('falseRadio');
-            const appId = "5FO1pbba";
-            const appKey = "hYmhmHWV";
+            const appKey = document.getElementById('input1')?.value || "NIsHsMc3";
+            const appId = document.getElementById('input2')?.value || "uZNUlz3B";
+
+            // const appId = "5FO1pbba";
+            // const appKey = "hYmhmHWV";
             // const appId="dv0BprRd";
             // const appKey="FUesKmzK";
             const config = { appKey, appId };
