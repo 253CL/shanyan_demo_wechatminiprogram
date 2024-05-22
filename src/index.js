@@ -1,10 +1,11 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import './index.less';
 import ReactDOM from 'react-dom/client';
 import React, { useCallback, useEffect, useState, useMemo, useRef } from 'react';
 import { httpPost } from './axios';
 import { NumberKeyboard, PasscodeInput, Radio, Dialog } from 'antd-mobile';
 import { useNotification } from 'rc-notification';
-import {  cryptographicToken, auth, checkKeysExist, dynamicType, customModalConfigFn, customConfigFn } from './utils/index';
+import { cryptographicToken, auth, checkKeysExist, dynamicType, customModalConfigFn, customConfigFn } from './utils/index';
 import { loadAndInitSDKs } from './utils/load';
 
 let domobj = null;
@@ -15,6 +16,7 @@ let ctccResponseData = {};
 let uiCongig = {};
 let ctccFlag = false;
 let ctccFinish = false;
+let logFlag = true;
 const noticeMotion = {
     motionName: 'jm-message-fade',
     motionAppear: true,
@@ -26,7 +28,11 @@ const noticeMotion = {
     },
     onLeaveActive: () => ({ height: 0, opacity: 0, margin: 0 })
 };
-
+let appId;
+const mylog = (params) => {
+    if (!logFlag) return;
+    console.log(params);
+};
 const destroyHandle = () => {
     uiCongig = {};
     setTimeout(() => {
@@ -44,13 +50,12 @@ const destroyHandle = () => {
 function Main({ params, callback }) {
     const [notice, contextHolder] = useNotification({ motion: noticeMotion, prefixCls: 'jm-message', maxCount: 1 });
     const [cuccView, setCuccView] = useState(false);
-    const [cuccDialogView, setcuccDialogView] = useState(false)
+    const [cuccDialogView, setcuccDialogView] = useState(false);
     const [cuccPhoneNumber, setCuccPhoneNumber] = useState('');
     const [_cuccResponseData, setCuccResponseData] = useState({});
     const [checked, setchecked] = useState(false);
     const [callResult, setCallResult] = useState([]);
     const ref = useRef();
-    const appId = params.appId || '';
     const cuccCancel = () => {
         setCuccView(false);
         setcuccDialogView(false);
@@ -73,7 +78,7 @@ function Main({ params, callback }) {
             domobj.classList.add('jm-layout');
             setCuccView(true);
         }
-    }
+    };
     const cucc = useCallback(() => {
         window.LTRZ['getTokenInfo']({
             //1.获取置换码方法
@@ -86,7 +91,7 @@ function Main({ params, callback }) {
                 setCuccResponseData(res);
             })
             .catch((err) => {
-                console.log("cuccerr",err);
+                mylog('cuccerr', err);
                 setCallResult((pre) => [...pre, { err, time: new Date().getTime() }]);
             });
     }, []);
@@ -109,19 +114,19 @@ function Main({ params, callback }) {
                 // 移动弹窗版本 默认会直接 success 需要判断 是否是授权了的
                 if (!uiCongig.setPageType || (uiCongig.setPageType && res.token)) {
                     const token = cryptographicToken('A1', res, appId);
-                    callback({ code: '200000', message: '授权成功' ,token})
+                    callback({ code: '200000', message: '授权成功', token });
                     // replacementPhoneNumber(token, appId, appKey, callback);
                 }
             },
             error: function (err) {
-                console.log("cmccerr",err);
+                mylog('cmccerr', err);
                 setCallResult((pre) => [...pre, { err, time: new Date().getTime() }]);
             },
             layerCallback: function (res) {
                 //authPageType等于2时可以通过该回调方法监听，用户输入中间四位号码并勾选协议后触发
             }
         });
-    }, [appId, callback]);
+    }, [callback]);
 
     const numberKeyboardChange = (e) => {
         setCuccPhoneNumber((pre) => {
@@ -160,10 +165,10 @@ function Main({ params, callback }) {
         if (cuccPhoneNumber.length === 4 && checked) {
             const data = { ...cuccResponseData, userInformation: `${firstThree}${cuccPhoneNumber}${lastFour}`, accessCode: _cuccResponseData.accessCode };
             const token = cryptographicToken('A2', data, appId);
-            callback({ code: '200000', message: '授权成功' ,token})
+            callback({ code: '200000', message: '授权成功', token });
             // replacementPhoneNumber(token, appId, appKey, callback);
         }
-    }, [_cuccResponseData.accessCode, appId, callback, checked, cuccPhoneNumber, firstThree, lastFour]);
+    }, [_cuccResponseData.accessCode, callback, checked, cuccPhoneNumber, firstThree, lastFour]);
     useEffect(() => {
         if (cuccPhoneNumber.length === 4 && !checked) {
             noticeHandle('请勾选同意服务条款');
@@ -219,19 +224,18 @@ function Main({ params, callback }) {
                                     {uiCongig.setPrivacyTwo?.[0] || '《中国联通认证服务协议》'}
                                 </span>
                             )}
-                            <span onClick={() => window.location.href = "https://auth.wosms.cn/html/oauth/protocol2.html"} className="protocol">
+                            <span onClick={() => (window.location.href = 'https://auth.wosms.cn/html/oauth/protocol2.html')} className="protocol">
                                 《中国联通认证服务协议》
                             </span>
                             <span>并使用本机号码登录</span>
                         </div>
-
                     </div>
                 </div>
             )}
             <NumberKeyboard getContainer={null} visible={cuccView || cuccDialogView} showCloseButton={false} onInput={(e) => numberKeyboardChange(e)} onDelete={numberKeyboardDelete} />
             <div ref={ref} className="cucc-modal"></div>
             <Dialog
-                style={{ width: "80vw" }}
+                style={{ width: '80vw' }}
                 getContainer={ref.current}
                 visible={cuccDialogView}
                 content={
@@ -270,7 +274,7 @@ function Main({ params, callback }) {
                                     {uiCongig.setPrivacyTwo?.[0] || '《中国联通认证服务协议》'}
                                 </span>
                             )}
-                            <span onClick={() => window.location.href = "https://auth.wosms.cn/html/oauth/protocol2.html"} className="protocol">
+                            <span onClick={() => (window.location.href = 'https://auth.wosms.cn/html/oauth/protocol2.html')} className="protocol">
                                 《中国联通认证服务协议》
                             </span>
                             <span>并使用本机号码登录</span>
@@ -282,13 +286,20 @@ function Main({ params, callback }) {
     );
 }
 function InitLayout({ params, callback }) {
-    const appId = params.appId || '';
-    const _getSign = useCallback(
-        (res = {}) => {
-            return httpPost('', { appId, data: res.encryValue });
-        },
-        [appId]
-    );
+    const backupDomains = ['sy.cl2m.cn','fs.cl2009.com', 'sy.new253.com', 'sy.cl2009.com'];
+    let currentDomainIndex = 0;
+    let consecutiveFailures = 0;
+    appId = params.appId || '';
+    const _getSign = useCallback((res = {}) => {
+        return httpPost('', { appId, data: res.encryValue });
+    }, []);
+    if (uiCongig.setPageType) {
+        customModalConfigFn(uiCongig);
+    } else {
+        if (checkKeysExist(uiCongig)) {
+            customConfigFn(uiCongig);
+        }
+    }
     const ctcc = useCallback(() => {
         ctccFinish = false;
         window.fjs?.getAccessCode({
@@ -301,40 +312,56 @@ function InitLayout({ params, callback }) {
                     window.fjs.setSign(data.data.ctccSign);
                 });
             },
+            theme: uiCongig.setPageType ? 'lite' : undefined,
             ready: function (res) {
                 ctccFinish = true;
                 ctccFlag = true;
             },
             success: function (res) {
                 const token = cryptographicToken('A3', res, appId);
-                callback({ code: '200000', message: '授权成功' ,token})
+                callback({ code: '200000', message: '授权成功', token });
                 // replacementPhoneNumber(token, appId, appKey, callback);
             },
             error: function (err) {
-                console.log("ctccerr",err);
+                mylog('ctccerr', err);
                 ctccFinish = true;
                 // callback(err)
             }
         });
-    }, [_getSign, appId, callback]);
-    const initAjax = useCallback(() => {
-        httpPost('', { appId, data: '' })
-            .then(({ data, retCode, retMsg }) => {
+    }, [_getSign, callback]);
+    const initAjax = useCallback(
+        async () => {
+            try {
+                const response = await httpPost("", { appId, data: '' });
+
+                // const response = await httpPost(`https://${backupDomains[currentDomainIndex]}/sy/h5/init`, { appId, data: '' });
+                const { data, retCode, retMsg }=response;
                 if (retCode === '0') {
                     const { cuccAppId, cuccSign, ctccAppId, ctccSign, cmccAppId, cmccSign, traceId, cmccTimestamp, cuccTimestamp } = data;
                     cuccResponseData = { appSecret: cuccAppId, sign: cuccSign, timestamp: cuccTimestamp };
                     ctccResponseData = { appId: ctccAppId, sign: ctccSign };
                     cmccResponseData = { appId: cmccAppId, sign: cmccSign, traceId, timestamp: cmccTimestamp };
+                    consecutiveFailures = 0;
                     ctcc();
                     callback({ code: '000000', message: '初始化成功' });
                 } else {
                     callback({ code: '000400', message: retMsg });
                 }
-            })
-            .catch((err) => {
-                callback({ code: '000400', message: '初始化失败' });
-            });
-    }, [appId, callback, ctcc]);
+            } catch (error) {
+                consecutiveFailures = consecutiveFailures + 1;
+                if (consecutiveFailures >= 5) {
+                    currentDomainIndex = currentDomainIndex + 1;
+                    consecutiveFailures = 0;
+                }
+                if (currentDomainIndex < backupDomains.length) {
+                    await initAjax();
+                } else {
+                    callback({ code: '000400', message: '初始化失败' });
+                }
+            }
+        },
+        [callback, ctcc]
+    );
 
     useEffect(() => {
         initAjax();
@@ -358,10 +385,6 @@ function createInitLayout(params, callback) {
     rootobj.render(<InitLayout params={params} callback={callback} />);
 }
 function start(params, callback) {
-    const result = auth(params, callback);
-    if (!result) {
-        return;
-    }
     if (ctccFlag) {
         return;
     }
@@ -389,23 +412,19 @@ async function Init(params, callback) {
         };
         createInitLayout(params, _callBack);
     } catch (error) {
-        callback({ code: '000600', message: "SDK 加载或初始化失败" });
+        callback({ code: '000600', message: 'SDK 加载或初始化失败' });
     }
 }
 
 function setUIConfig(config, callback) {
     uiCongig = config;
     if (uiCongig.setPrivacyOne?.[0].length > 20 || uiCongig.setPrivacyTwo?.[0].length > 20) {
-        return callback({ code: '000500', message: "协议长度不能超过20" });
+        return callback({ code: '000500', message: '协议长度不能超过20' });
     }
-    if (uiCongig.setPageType) {
-        customModalConfigFn(uiCongig);
-    } else {
-        if (checkKeysExist(config)) {
-            customConfigFn(uiCongig);
-        }
-    }
-    return callback({ code: '000700', message: "自定义配置成功" });
+    return callback({ code: '000700', message: '自定义配置成功' });
 }
-const obj = { start, Init, setUIConfig };
+function setLog(flag) {
+    logFlag = flag;
+}
+const obj = { start, Init, setUIConfig, setLog };
 export default obj;

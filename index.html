@@ -86,8 +86,8 @@
             <span style="word-wrap: break-word; word-break: break-all;" id="res"></span>
         </div>
     </div>
-    <script src="js/umd/shanyan2.0.0.1.min.js"></script>
-    <!-- <script src="js/umd/living.min.js"></script> -->
+    <!-- <script src="js/umd/shanyan2.0.0.1.min.js"></script> -->
+    <script src="js/umd/living.min.js"></script>
     <script>
         const phoneDecrypt = (content, keys) => {
             const md5Key = CryptoJS.MD5(keys).toString().substring(0, 16);
@@ -121,9 +121,9 @@
                 formData.append(key, params[key]);
             }
             axios
-                // .post('https://57.cm253.com:8445/open/web/mobile-query', formData, {
+                .post('https://57.cm253.com:8445/open/web/mobile-query', formData, {
                 // .post('https://56.cm253.com:8445/open/web/mobile-query', formData, {
-                .post('https://api.253.com/open/web/mobile-query', formData, {
+                // .post('https://api.253.com/open/web/mobile-query', formData, {
                     headers: {
                         'Content-Type': 'multipart/form-data'
                     }
@@ -150,8 +150,8 @@
             const falseRadio = document.getElementById('falseRadio');
             // const appId = "5FO1pbba";
             // const appKey = "hYmhmHWV";
-            const appId="dv0BprRd";
-            const appKey="FUesKmzK";
+            const appId="J4pFLOzc";
+            const appKey="n0Dclzjq";
             const config = { appKey, appId };
             if (type === 1) {
                 window.clshanyansdk.Init(config, function (data) {
