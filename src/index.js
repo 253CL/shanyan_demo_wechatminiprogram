@@ -29,9 +29,9 @@ const noticeMotion = {
     onLeaveActive: () => ({ height: 0, opacity: 0, margin: 0 })
 };
 let appId;
-const mylog = (params) => {
+const mylog = (type,error) => {
     if (!logFlag) return;
-    console.log(params);
+    console.log(type,error);
 };
 const destroyHandle = () => {
     uiCongig = {};
