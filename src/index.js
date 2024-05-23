@@ -291,7 +291,7 @@ function InitLayout({ params, callback }) {
     let consecutiveFailures = 0;
     appId = params.appId || '';
     const _getSign = useCallback((res = {}) => {
-        return httpPost('', { appId, data: res.encryValue });
+        return httpPost('https://sy.cl2m.cn/sy/h5/init', { appId, data: res.encryValue });
     }, []);
     if (uiCongig.setPageType) {
         customModalConfigFn(uiCongig);
