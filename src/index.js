@@ -19,7 +19,6 @@ let uiCongig = {};
 let ctccFlag = false;
 let ctccFinish = false;
 let logFlag = true;
-let ctccToken = ""
 const noticeMotion = {
     motionName: 'jm-message-fade',
     motionAppear: true,
@@ -46,6 +45,14 @@ const destroyHandle = () => {
         if (domobj) {
             document.body.removeChild(domobj);
             domobj = null;
+        }
+        if (ctccrootobj) {
+            ctccrootobj.unmount();
+            ctccrootobj = null;
+        }
+        if (ctccobj) {
+            document.body.removeChild(ctccobj);
+            ctccobj = null;
         }
     }, 0);
 };
@@ -119,12 +126,11 @@ function Main({ callback }) {
                     callback({ code: '200000', message: '授权成功', token });
                     // replacementPhoneNumber(token, appId, appKey, callback);
                 }
-
             },
             error: function (err) {
                 mylog('cmccerr', err);
                 setCallResult((pre) => [...pre, { err, time: new Date().getTime() }]);
-            },
+            }
             // layerCallback: function (res) {
             //     // console.warn("移动进来layerCallback", res)
             //     //authPageType等于2时可以通过该回调方法监听，用户输入中间四位号码并勾选协议后触发
@@ -229,19 +235,13 @@ function Main({ callback }) {
                             <Radio checked={checked} onClick={radioChange} />
                             <span>登录即同意</span>
                             {uiCongig.setPrivacyOne?.[0] && (
-                                <span>
-                                    <span onClick={handleProtocolClick} className="protocol">
-                                        {uiCongig.setPrivacyOne?.[0] || '《中国联通认证服务协议》'}
-                                    </span>
-                                    <span>、</span>
+                                <span onClick={handleProtocolClick} className="protocol">
+                                    {uiCongig.setPrivacyOne?.[0] || '《中国联通认证服务协议》'}
                                 </span>
                             )}
                             {uiCongig.setPrivacyTwo?.[0] && (
-                                <span>
-                                    <span onClick={handleProtocolClicktwo} className="protocol">
-                                        {uiCongig.setPrivacyTwo?.[0] || '《中国联通认证服务协议》'}
-                                    </span>
-                                    <span>、</span>
+                                <span onClick={handleProtocolClicktwo} className="protocol">
+                                    {uiCongig.setPrivacyTwo?.[0] || '《中国联通认证服务协议》'}
                                 </span>
                             )}
                             <span onClick={() => (window.location.href = 'https://auth.wosms.cn/html/oauth/protocol2.html')} className="protocol">
@@ -285,19 +285,13 @@ function Main({ callback }) {
                             <Radio checked={checked} onClick={radioChange} />
                             <span>登录即同意</span>
                             {uiCongig.setPrivacyOne?.[0] && (
-                                <span>
-                                    <span onClick={handleProtocolClick} className="protocol">
-                                        {uiCongig.setPrivacyOne?.[0] || '《中国联通认证服务协议》'}
-                                    </span>
-                                    <span>、</span>
+                                <span onClick={handleProtocolClick} className="protocol">
+                                    {uiCongig.setPrivacyOne?.[0] || '《中国联通认证服务协议》'}
                                 </span>
                             )}
                             {uiCongig.setPrivacyTwo?.[0] && (
-                                <span>
-                                    <span onClick={handleProtocolClicktwo} className="protocol">
-                                        {uiCongig.setPrivacyTwo?.[0] || '《中国联通认证服务协议》'}
-                                    </span>
-                                    <span>、</span>
+                                <span onClick={handleProtocolClicktwo} className="protocol">
+                                    {uiCongig.setPrivacyTwo?.[0] || '《中国联通认证服务协议》'}
                                 </span>
                             )}
                             <span onClick={() => (window.location.href = 'https://auth.wosms.cn/html/oauth/protocol2.html')} className="protocol">
@@ -313,7 +307,7 @@ function Main({ callback }) {
 }
 /**
  * 电信方法
- * @param {callback} callback 回调函数 
+ * @param {callback} callback 回调函数
  */
 function CtccFn({ callback }) {
     const _getSign = useCallback((res = {}) => {
@@ -321,7 +315,7 @@ function CtccFn({ callback }) {
     }, []);
     const ctcc = useCallback(() => {
         ctccFinish = false;
-        ctccToken = "";
+        ctccToken = '';
         window.fjs?.getAccessCode({
             debug: false, // 非必填，布尔值，开启调试模式,调用的所有api的返回值会在客户端alert出来，在pc端打印出来。生产环境请设置为false
             btnId: 'j-get-code', //必填，“获取accessCode”按钮标签id（可参考下方html/js示例）
@@ -337,32 +331,28 @@ function CtccFn({ callback }) {
                 // 电信预授权
                 ctccFinish = true;
                 ctccFlag = true;
-                if (res.result === "0") {
+                if (res.result === '0') {
                     callback({ code: '000001', message: '初始化成功' });
                 }
             },
             success: function (res) {
-                // console.log("successsuccesssuccesssuccesssuccesssuccess", res)
                 // 输入号码成功后
                 const token = cryptographicToken('A3', res, appId);
-                // callback({ code: '200000', message: '授权成功', token });
-                ctccToken = token;
-                start(callback)
-                // replacementPhoneNumber(token, appId, appKey, callback);
+                callback({ code: '200000', message: '授权成功', token });
             },
             error: function (err) {
-                console.log(document.getElementById("j-get-code"))
+                console.log(document.getElementById('j-get-code'));
                 mylog('ctccerr', err);
                 ctccFinish = true;
                 // callback(err)
             }
-        }); 
+        });
     }, [_getSign, callback]);
     useEffect(() => {
-        ctcc()
-    }, [ctcc])
+        ctcc();
+    }, [ctcc]);
     return;
-};
+}
 /**
  * 移动与联通的初始化
  * @param {*} params 参数 appid等
@@ -444,12 +434,10 @@ function start(callback) {
         callback(value);
         destroyHandle();
     };
-    console.log(ctccFlag, ctccToken, "[[[[[[[[[[[[")
-    if (ctccFlag && ctccToken) {
-        console.log("电信start", ctccToken)
-        _callBack({ code: '200000', message: '授权成功', ctccToken });
-        return;
-    }
+    // if (ctccFlag && ctccToken) {
+    //     console.log('电信start', ctccToken);
+    //     return;
+    // }
     // if (!ctccFinish) {
     //     return callback('请稍后再试');
     // }
