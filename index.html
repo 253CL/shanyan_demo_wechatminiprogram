@@ -141,6 +141,9 @@
                 });
         };
         function beginHandle(type) {
+            /**
+             * 联通移动支持自定义，电信要报备
+            */
             let _config = {};
             const setLoginTitle = document.getElementById('input3')?.value;
             const setLoginLogo = document.getElementById('input4')?.value;
@@ -150,8 +153,12 @@
             const falseRadio = document.getElementById('falseRadio');
             // const appId = "5FO1pbba";
             // const appKey = "hYmhmHWV";
-            const appId="dv0BprRd";
-            const appKey="FUesKmzK";
+            // const appId="dv0BprRd";
+            // const appKey="FUesKmzK";
+            // const appId = "w73InvQE";
+            // const appKey = "SYUyctkX";
+            const appId = "eONLZ1Uf"
+            const appKey = "iYzNxHbS"
             const config = { appKey, appId };
             if (type === 1) {
                 window.clshanyansdk.Init(config, function (data) {
@@ -162,6 +169,9 @@
                     }
                 });
             } else if (type === 2) {
+                /**
+                 * config可以是空对象
+                */
                 window.clshanyansdk.start(config, function (data) {
                     if (data.code == "200000") {
                         replacementPhoneNumber(data.token, appId, appKey, (mobile) => { document.getElementById('res').innerText = JSON.stringify(mobile) })

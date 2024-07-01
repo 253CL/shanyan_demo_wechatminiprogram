@@ -29,12 +29,12 @@ const noticeMotion = {
     onLeaveActive: () => ({ height: 0, opacity: 0, margin: 0 })
 };
 let appId;
-const mylog = (type,error) => {
+const mylog = (type, error) => {
     if (!logFlag) return;
-    console.log(type,error);
+    console.log(type, error);
 };
 const destroyHandle = () => {
-    uiCongig = {};
+    // uiCongig = {};
     setTimeout(() => {
         if (rootobj) {
             rootobj.unmount();
@@ -111,20 +111,36 @@ function Main({ params, callback }) {
                 setReturn: '' // 1：授权页面显示返回键，不传或其他值根据浏览器判断
             },
             success: function (res) {
-                // 移动弹窗版本 默认会直接 success 需要判断 是否是授权了的
+                // console.log(res, 'cmccres', dynamicType(uiCongig)); // 移动弹窗版本 默认会直接 success 需要判断 是否是授权了的
+                // if (!uiCongig.setPageType) {
+                //     const token = cryptographicToken('A1', res, appId);
+                //     callback({ code: '200000', message: '授权成功', token }); // replacementPhoneNumber(token, appId, appKey, callback);
+                // }
                 if (!uiCongig.setPageType || (uiCongig.setPageType && res.token)) {
                     const token = cryptographicToken('A1', res, appId);
                     callback({ code: '200000', message: '授权成功', token });
                     // replacementPhoneNumber(token, appId, appKey, callback);
                 }
+
             },
             error: function (err) {
                 mylog('cmccerr', err);
                 setCallResult((pre) => [...pre, { err, time: new Date().getTime() }]);
             },
-            layerCallback: function (res) {
-                //authPageType等于2时可以通过该回调方法监听，用户输入中间四位号码并勾选协议后触发
-            }
+            // layerCallback: function (res) {
+            //     // console.warn("移动进来layerCallback", res)
+            //     //authPageType等于2时可以通过该回调方法监听，用户输入中间四位号码并勾选协议后触发
+            //     window.YDRZAuthLogin.authGetTokenByLayer(
+            //         function (res) {
+            //             const token = cryptographicToken('A1', res, appId);
+            //             callback({ code: '200000', message: '授权成功', token });
+            //         },
+            //         function (err) {
+            //             mylog('cmccerr', err);
+            //             setCallResult((pre) => [...pre, { err, time: new Date().getTime() }]);
+            //         }
+            //     );
+            // }
         });
     }, [callback]);
 
@@ -286,7 +302,7 @@ function Main({ params, callback }) {
     );
 }
 function InitLayout({ params, callback }) {
-    const backupDomains = ['sy.cl2m.cn','fs.cl2009.com', 'sy.new253.com', 'sy.cl2009.com'];
+    const backupDomains = ['sy.cl2m.cn', 'fs.cl2009.com', 'sy.new253.com', 'sy.cl2009.com'];
     let currentDomainIndex = 0;
     let consecutiveFailures = 0;
     appId = params.appId || '';
@@ -329,38 +345,35 @@ function InitLayout({ params, callback }) {
             }
         });
     }, [_getSign, callback]);
-    const initAjax = useCallback(
-        async () => {
-            try {
-                // const response = await httpPost("", { appId, data: '' });
-                const response = await httpPost(`https://${backupDomains[currentDomainIndex]}/sy/h5/init`, { appId, data: '' });
-                const { data, retCode, retMsg }=response;
-                if (retCode === '0') {
-                    const { cuccAppId, cuccSign, ctccAppId, ctccSign, cmccAppId, cmccSign, traceId, cmccTimestamp, cuccTimestamp } = data;
-                    cuccResponseData = { appSecret: cuccAppId, sign: cuccSign, timestamp: cuccTimestamp };
-                    ctccResponseData = { appId: ctccAppId, sign: ctccSign };
-                    cmccResponseData = { appId: cmccAppId, sign: cmccSign, traceId, timestamp: cmccTimestamp };
-                    consecutiveFailures = 0;
-                    ctcc();
-                    callback({ code: '000000', message: '初始化成功' });
-                } else {
-                    callback({ code: '000400', message: retMsg });
-                }
-            } catch (error) {
-                consecutiveFailures = consecutiveFailures + 1;
-                if (consecutiveFailures >= 5) {
-                    currentDomainIndex = currentDomainIndex + 1;
-                    consecutiveFailures = 0;
-                }
-                if (currentDomainIndex < backupDomains.length) {
-                    await initAjax();
-                } else {
-                    callback({ code: '000400', message: '初始化失败' });
-                }
+    const initAjax = useCallback(async () => {
+        try {
+            // const response = await httpPost("", { appId, data: '' });
+            const response = await httpPost(`https://${backupDomains[currentDomainIndex]}/sy/h5/init`, { appId, data: '' });
+            const { data, retCode, retMsg } = response;
+            if (retCode === '0') {
+                const { cuccAppId, cuccSign, ctccAppId, ctccSign, cmccAppId, cmccSign, traceId, cmccTimestamp, cuccTimestamp } = data;
+                cuccResponseData = { appSecret: cuccAppId, sign: cuccSign, timestamp: cuccTimestamp };
+                ctccResponseData = { appId: ctccAppId, sign: ctccSign };
+                cmccResponseData = { appId: cmccAppId, sign: cmccSign, traceId, timestamp: cmccTimestamp };
+                consecutiveFailures = 0;
+                ctcc();
+                callback({ code: '000000', message: '初始化成功' });
+            } else {
+                callback({ code: '000400', message: retMsg });
             }
-        },
-        [callback, ctcc]
-    );
+        } catch (error) {
+            consecutiveFailures = consecutiveFailures + 1;
+            if (consecutiveFailures >= 5) {
+                currentDomainIndex = currentDomainIndex + 1;
+                consecutiveFailures = 0;
+            }
+            if (currentDomainIndex < backupDomains.length) {
+                await initAjax();
+            } else {
+                callback({ code: '000400', message: '初始化失败' });
+            }
+        }
+    }, [callback, ctcc]);
 
     useEffect(() => {
         initAjax();
@@ -385,6 +398,7 @@ function createInitLayout(params, callback) {
 }
 function start(params, callback) {
     if (ctccFlag) {
+        // console.log("电信start")
         return;
     }
     if (!ctccFinish) {
