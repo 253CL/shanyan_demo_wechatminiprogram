@@ -80,15 +80,15 @@
             <button style="height: 40px;" onclick="beginHandle(1)">初始化</button>
             <button style="height: 40px;" onclick="beginHandle(4)">电信初始化</button>
             <button style="height: 40px;" onclick="beginHandle(3)">使用自定义配置</button></button>
-            <button style="height: 40px;" id="j-get-code">启动授权登录</button>
+            <!-- <button style="height: 40px;" id="j-get-code">启动授权登录</button> -->
         </div>
         <div class="result">
             <span>返回的结果:</span>
             <span style="word-wrap: break-word; word-break: break-all;" id="res"></span>
         </div>
     </div>
-    <script src="js/umd/shanyan2.0.0.2.js"></script>
-    <!-- <script src="js/umd/living.min.js"></script> -->
+    <!-- <script src="js/umd/shanyan2.0.0.2.js"></script> -->
+    <script src="js/umd/living.min.js"></script>
     <script>
         const phoneDecrypt = (content, keys) => {
             const md5Key = CryptoJS.MD5(keys).toString().substring(0, 16);
@@ -171,11 +171,8 @@
                     }
                 });
             } else if (type === 2) {
-                /**
-                 * config可以是空对象
-                */
                 window.clshanyansdk.start(function (data) {
-                    console.log(data, "startstartstartstart")
+                    console.log(data, "startstartstartstart111111111")
                     if (data.code == "200000") {
                         replacementPhoneNumber(data.token, appId, appKey, (mobile) => { document.getElementById('res').innerText = JSON.stringify(mobile) })
                     } else {
@@ -184,8 +181,11 @@
                 });
             } else if (type === 4) {
                 window.clshanyansdk.createCtcc(function (data) {
-                    // console.log("电信初始化", data)
-                    document.getElementById('res').innerText = JSON.stringify(data);
+                    if (data.code == "200000") {
+                        replacementPhoneNumber(data.token, appId, appKey, (mobile) => { document.getElementById('res').innerText = JSON.stringify(mobile) })
+                    } else {
+                        document.getElementById('res').innerText = JSON.stringify(data);
+                    }
                 }); 
             } else if (type === 3) {
                 if (setLoginTitle) {

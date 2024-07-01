@@ -10,6 +10,7 @@ import { loadAndInitSDKs } from './utils/load';
 
 let domobj = null;
 let rootobj = null;
+let ctccrootobj = null;
 let ctccobj = null;
 let cuccResponseData = {};
 let cmccResponseData = {};
@@ -334,20 +335,23 @@ function CtccFn({ callback }) {
             theme: uiCongig.setPageType ? 'lite' : undefined,
             ready: function (res) {
                 // 电信预授权
+                ctccFinish = true;
+                ctccFlag = true;
                 if (res.result === "0") {
                     callback({ code: '000001', message: '初始化成功' });
                 }
-                ctccFinish = true;
-                ctccFlag = true;
             },
             success: function (res) {
+                // console.log("successsuccesssuccesssuccesssuccesssuccess", res)
                 // 输入号码成功后
                 const token = cryptographicToken('A3', res, appId);
                 // callback({ code: '200000', message: '授权成功', token });
                 ctccToken = token;
+                start(callback)
                 // replacementPhoneNumber(token, appId, appKey, callback);
             },
             error: function (err) {
+                console.log(document.getElementById("j-get-code"))
                 mylog('ctccerr', err);
                 ctccFinish = true;
                 // callback(err)
@@ -423,7 +427,10 @@ function createLayout(callback) {
     }
     if (!rootobj) {
         rootobj = ReactDOM.createRoot(domobj);
-        rootobj = ReactDOM.createRoot(ctccobj);
+        // rootobj = ReactDOM.createRoot(ctccobj);
+    }
+    if (!ctccrootobj) {
+        ctccrootobj = ReactDOM.createRoot(ctccobj);
     }
 
     rootobj.render(<Main callback={callback} />);
@@ -437,14 +444,15 @@ function start(callback) {
         callback(value);
         destroyHandle();
     };
+    console.log(ctccFlag, ctccToken, "[[[[[[[[[[[[")
     if (ctccFlag && ctccToken) {
-        console.log("电信start")
+        console.log("电信start", ctccToken)
         _callBack({ code: '200000', message: '授权成功', ctccToken });
         return;
     }
-    if (!ctccFinish) {
-        return callback('请稍后再试');
-    }
+    // if (!ctccFinish) {
+    //     return callback('请稍后再试');
+    // }
     createLayout(_callBack);
 }
 
@@ -468,8 +476,8 @@ async function Init(params, callback) {
     }
 }
 function createCtcc(callback) {
-    rootobj = ReactDOM.createRoot(ctccobj);
-    rootobj.render(<CtccFn callback={callback} />);
+    ctccrootobj = ReactDOM.createRoot(ctccobj);
+    ctccrootobj.render(<CtccFn callback={callback} />);
 }
 function setUIConfig(config, callback) {
     uiCongig = config;
