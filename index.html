@@ -175,6 +175,7 @@
                  * config可以是空对象
                 */
                 window.clshanyansdk.start(function (data) {
+                    console.log(data, "startstartstartstart")
                     if (data.code == "200000") {
                         replacementPhoneNumber(data.token, appId, appKey, (mobile) => { document.getElementById('res').innerText = JSON.stringify(mobile) })
                     } else {
@@ -182,8 +183,9 @@
                     }
                 });
             } else if (type === 4) {
-                window.clshanyansdk.CtccFn(function (data) {
-                    console.log("电信初始化", data)
+                window.clshanyansdk.createCtcc(function (data) {
+                    // console.log("电信初始化", data)
+                    document.getElementById('res').innerText = JSON.stringify(data);
                 }); 
             } else if (type === 3) {
                 if (setLoginTitle) {

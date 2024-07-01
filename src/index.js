@@ -10,6 +10,7 @@ import { loadAndInitSDKs } from './utils/load';
 
 let domobj = null;
 let rootobj = null;
+let ctccobj = null;
 let cuccResponseData = {};
 let cmccResponseData = {};
 let ctccResponseData = {};
@@ -227,13 +228,19 @@ function Main({ callback }) {
                             <Radio checked={checked} onClick={radioChange} />
                             <span>登录即同意</span>
                             {uiCongig.setPrivacyOne?.[0] && (
-                                <span onClick={handleProtocolClick} className="protocol">
-                                    {uiCongig.setPrivacyOne?.[0] || '《中国联通认证服务协议》'}
+                                <span>
+                                    <span onClick={handleProtocolClick} className="protocol">
+                                        {uiCongig.setPrivacyOne?.[0] || '《中国联通认证服务协议》'}
+                                    </span>
+                                    <span>、</span>
                                 </span>
                             )}
                             {uiCongig.setPrivacyTwo?.[0] && (
-                                <span onClick={handleProtocolClicktwo} className="protocol">
-                                    {uiCongig.setPrivacyTwo?.[0] || '《中国联通认证服务协议》'}
+                                <span>
+                                    <span onClick={handleProtocolClicktwo} className="protocol">
+                                        {uiCongig.setPrivacyTwo?.[0] || '《中国联通认证服务协议》'}
+                                    </span>
+                                    <span>、</span>
                                 </span>
                             )}
                             <span onClick={() => (window.location.href = 'https://auth.wosms.cn/html/oauth/protocol2.html')} className="protocol">
@@ -277,13 +284,19 @@ function Main({ callback }) {
                             <Radio checked={checked} onClick={radioChange} />
                             <span>登录即同意</span>
                             {uiCongig.setPrivacyOne?.[0] && (
-                                <span onClick={handleProtocolClick} className="protocol">
-                                    {uiCongig.setPrivacyOne?.[0] || '《中国联通认证服务协议》'}
+                                <span>
+                                    <span onClick={handleProtocolClick} className="protocol">
+                                        {uiCongig.setPrivacyOne?.[0] || '《中国联通认证服务协议》'}
+                                    </span>
+                                    <span>、</span>
                                 </span>
                             )}
                             {uiCongig.setPrivacyTwo?.[0] && (
-                                <span onClick={handleProtocolClicktwo} className="protocol">
-                                    {uiCongig.setPrivacyTwo?.[0] || '《中国联通认证服务协议》'}
+                                <span>
+                                    <span onClick={handleProtocolClicktwo} className="protocol">
+                                        {uiCongig.setPrivacyTwo?.[0] || '《中国联通认证服务协议》'}
+                                    </span>
+                                    <span>、</span>
                                 </span>
                             )}
                             <span onClick={() => (window.location.href = 'https://auth.wosms.cn/html/oauth/protocol2.html')} className="protocol">
@@ -344,6 +357,7 @@ function CtccFn({ callback }) {
     useEffect(() => {
         ctcc()
     }, [ctcc])
+    return;
 };
 /**
  * 移动与联通的初始化
@@ -403,8 +417,13 @@ function createLayout(callback) {
         domobj = document.createElement('div');
         document.body.appendChild(domobj);
     }
+    if (!ctccobj) {
+        ctccobj = document.createElement('div');
+        document.body.appendChild(ctccobj);
+    }
     if (!rootobj) {
         rootobj = ReactDOM.createRoot(domobj);
+        rootobj = ReactDOM.createRoot(ctccobj);
     }
 
     rootobj.render(<Main callback={callback} />);
@@ -419,7 +438,7 @@ function start(callback) {
         destroyHandle();
     };
     if (ctccFlag && ctccToken) {
-        // console.log("电信start")
+        console.log("电信start")
         _callBack({ code: '200000', message: '授权成功', ctccToken });
         return;
     }
@@ -438,6 +457,8 @@ async function Init(params, callback) {
         await loadAndInitSDKs();
         domobj = document.createElement('div');
         document.body.appendChild(domobj);
+        ctccobj = document.createElement('div');
+        document.body.appendChild(ctccobj);
         const _callBack = (value) => {
             callback(value);
         };
@@ -446,7 +467,10 @@ async function Init(params, callback) {
         callback({ code: '000600', message: 'SDK 加载或初始化失败' });
     }
 }
-
+function createCtcc(callback) {
+    rootobj = ReactDOM.createRoot(ctccobj);
+    rootobj.render(<CtccFn callback={callback} />);
+}
 function setUIConfig(config, callback) {
     uiCongig = config;
     if (uiCongig.setPrivacyOne?.[0].length > 20 || uiCongig.setPrivacyTwo?.[0].length > 20) {
@@ -457,5 +481,5 @@ function setUIConfig(config, callback) {
 function setLog(flag) {
     logFlag = flag;
 }
-const obj = { start, Init, setUIConfig, setLog, CtccFn };
+const obj = { start, Init, setUIConfig, setLog, createCtcc };
 export default obj;
