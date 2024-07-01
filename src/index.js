@@ -17,6 +17,7 @@ let uiCongig = {};
 let ctccFlag = false;
 let ctccFinish = false;
 let logFlag = true;
+let ctccToken = ""
 const noticeMotion = {
     motionName: 'jm-message-fade',
     motionAppear: true,
@@ -47,7 +48,7 @@ const destroyHandle = () => {
     }, 0);
 };
 
-function Main({ params, callback }) {
+function Main({ callback }) {
     const [notice, contextHolder] = useNotification({ motion: noticeMotion, prefixCls: 'jm-message', maxCount: 1 });
     const [cuccView, setCuccView] = useState(false);
     const [cuccDialogView, setcuccDialogView] = useState(false);
@@ -111,11 +112,6 @@ function Main({ params, callback }) {
                 setReturn: '' // 1：授权页面显示返回键，不传或其他值根据浏览器判断
             },
             success: function (res) {
-                // console.log(res, 'cmccres', dynamicType(uiCongig)); // 移动弹窗版本 默认会直接 success 需要判断 是否是授权了的
-                // if (!uiCongig.setPageType) {
-                //     const token = cryptographicToken('A1', res, appId);
-                //     callback({ code: '200000', message: '授权成功', token }); // replacementPhoneNumber(token, appId, appKey, callback);
-                // }
                 if (!uiCongig.setPageType || (uiCongig.setPageType && res.token)) {
                     const token = cryptographicToken('A1', res, appId);
                     callback({ code: '200000', message: '授权成功', token });
@@ -301,23 +297,17 @@ function Main({ params, callback }) {
         </React.Fragment>
     );
 }
-function InitLayout({ params, callback }) {
-    const backupDomains = ['sy.cl2m.cn', 'fs.cl2009.com', 'sy.new253.com', 'sy.cl2009.com'];
-    let currentDomainIndex = 0;
-    let consecutiveFailures = 0;
-    appId = params.appId || '';
+/**
+ * 电信方法
+ * @param {callback} callback 回调函数 
+ */
+function CtccFn({ callback }) {
     const _getSign = useCallback((res = {}) => {
         return httpPost('https://sy.cl2m.cn/sy/h5/init', { appId, data: res.encryValue });
     }, []);
-    if (uiCongig.setPageType) {
-        customModalConfigFn(uiCongig);
-    } else {
-        if (checkKeysExist(uiCongig)) {
-            customConfigFn(uiCongig);
-        }
-    }
     const ctcc = useCallback(() => {
         ctccFinish = false;
+        ctccToken = "";
         window.fjs?.getAccessCode({
             debug: false, // 非必填，布尔值，开启调试模式,调用的所有api的返回值会在客户端alert出来，在pc端打印出来。生产环境请设置为false
             btnId: 'j-get-code', //必填，“获取accessCode”按钮标签id（可参考下方html/js示例）
@@ -330,12 +320,18 @@ function InitLayout({ params, callback }) {
             },
             theme: uiCongig.setPageType ? 'lite' : undefined,
             ready: function (res) {
+                // 电信预授权
+                if (res.result === "0") {
+                    callback({ code: '000001', message: '初始化成功' });
+                }
                 ctccFinish = true;
                 ctccFlag = true;
             },
             success: function (res) {
+                // 输入号码成功后
                 const token = cryptographicToken('A3', res, appId);
-                callback({ code: '200000', message: '授权成功', token });
+                // callback({ code: '200000', message: '授权成功', token });
+                ctccToken = token;
                 // replacementPhoneNumber(token, appId, appKey, callback);
             },
             error: function (err) {
@@ -343,8 +339,29 @@ function InitLayout({ params, callback }) {
                 ctccFinish = true;
                 // callback(err)
             }
-        });
+        }); 
     }, [_getSign, callback]);
+    useEffect(() => {
+        ctcc()
+    }, [ctcc])
+};
+/**
+ * 移动与联通的初始化
+ * @param {*} params 参数 appid等
+ * @param {*} callback 回调
+ */
+function InitLayout({ params, callback }) {
+    const backupDomains = ['sy.cl2m.cn', 'fs.cl2009.com', 'sy.new253.com', 'sy.cl2009.com'];
+    let currentDomainIndex = 0;
+    let consecutiveFailures = 0;
+    appId = params.appId || '';
+    if (uiCongig.setPageType) {
+        customModalConfigFn(uiCongig);
+    } else {
+        if (checkKeysExist(uiCongig)) {
+            customConfigFn(uiCongig);
+        }
+    }
     const initAjax = useCallback(async () => {
         try {
             // const response = await httpPost("", { appId, data: '' });
@@ -356,7 +373,7 @@ function InitLayout({ params, callback }) {
                 ctccResponseData = { appId: ctccAppId, sign: ctccSign };
                 cmccResponseData = { appId: cmccAppId, sign: cmccSign, traceId, timestamp: cmccTimestamp };
                 consecutiveFailures = 0;
-                ctcc();
+                // ctcc();
                 callback({ code: '000000', message: '初始化成功' });
             } else {
                 callback({ code: '000400', message: retMsg });
@@ -373,7 +390,7 @@ function InitLayout({ params, callback }) {
                 callback({ code: '000400', message: '初始化失败' });
             }
         }
-    }, [callback, ctcc]);
+    }, [callback]);
 
     useEffect(() => {
         initAjax();
@@ -381,7 +398,7 @@ function InitLayout({ params, callback }) {
 
     return;
 }
-function createLayout(params, callback) {
+function createLayout(callback) {
     if (!domobj) {
         domobj = document.createElement('div');
         document.body.appendChild(domobj);
@@ -390,25 +407,26 @@ function createLayout(params, callback) {
         rootobj = ReactDOM.createRoot(domobj);
     }
 
-    rootobj.render(<Main params={params} callback={callback} />);
+    rootobj.render(<Main callback={callback} />);
 }
 function createInitLayout(params, callback) {
     rootobj = ReactDOM.createRoot(domobj);
     rootobj.render(<InitLayout params={params} callback={callback} />);
 }
-function start(params, callback) {
-    if (ctccFlag) {
+function start(callback) {
+    const _callBack = (value) => {
+        callback(value);
+        destroyHandle();
+    };
+    if (ctccFlag && ctccToken) {
         // console.log("电信start")
+        _callBack({ code: '200000', message: '授权成功', ctccToken });
         return;
     }
     if (!ctccFinish) {
         return callback('请稍后再试');
     }
-    const _callBack = (value) => {
-        callback(value);
-        destroyHandle();
-    };
-    createLayout(params, _callBack);
+    createLayout(_callBack);
 }
 
 async function Init(params, callback) {
@@ -439,5 +457,5 @@ function setUIConfig(config, callback) {
 function setLog(flag) {
     logFlag = flag;
 }
-const obj = { start, Init, setUIConfig, setLog };
+const obj = { start, Init, setUIConfig, setLog, CtccFn };
 export default obj;

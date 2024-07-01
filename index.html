@@ -78,6 +78,7 @@
         </div>
         <div class="example">
             <button style="height: 40px;" onclick="beginHandle(1)">初始化</button>
+            <button style="height: 40px;" onclick="beginHandle(4)">电信初始化</button>
             <button style="height: 40px;" onclick="beginHandle(3)">使用自定义配置</button></button>
             <button style="height: 40px;" id="j-get-code">启动授权登录</button>
         </div>
@@ -162,6 +163,7 @@
             const config = { appKey, appId };
             if (type === 1) {
                 window.clshanyansdk.Init(config, function (data) {
+                    console.log("Init", data)
                     if (data.code == "200000") {
                         replacementPhoneNumber(data.token, appId, appKey, (mobile) => { document.getElementById('res').innerText = JSON.stringify(mobile) })
                     } else {
@@ -172,13 +174,17 @@
                 /**
                  * config可以是空对象
                 */
-                window.clshanyansdk.start(config, function (data) {
+                window.clshanyansdk.start(function (data) {
                     if (data.code == "200000") {
                         replacementPhoneNumber(data.token, appId, appKey, (mobile) => { document.getElementById('res').innerText = JSON.stringify(mobile) })
                     } else {
                         document.getElementById('res').innerText = JSON.stringify(data);
                     }
                 });
+            } else if (type === 4) {
+                window.clshanyansdk.CtccFn(function (data) {
+                    console.log("电信初始化", data)
+                }); 
             } else if (type === 3) {
                 if (setLoginTitle) {
                     _config.setLoginTitle = setLoginTitle;
