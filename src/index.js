@@ -315,7 +315,7 @@ function CtccFn({ callback }) {
     }, []);
     const ctcc = useCallback(() => {
         ctccFinish = false;
-        ctccToken = '';
+        // ctccToken = '';
         window.fjs?.getAccessCode({
             debug: false, // 非必填，布尔值，开启调试模式,调用的所有api的返回值会在客户端alert出来，在pc端打印出来。生产环境请设置为false
             btnId: 'j-get-code', //必填，“获取accessCode”按钮标签id（可参考下方html/js示例）
