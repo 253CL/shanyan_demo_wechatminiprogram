@@ -46,5 +46,5 @@ const _getSign = useCallback((res = {}) => {
 `
 
 3. 涉及到index.html 的地方
-<script src="js/umd/shanyan2.0.0.2.js"></script> // 测试与本地开发
+<script src="js/umd/shanyan版本号.js"></script> // 测试与本地开发
 <!-- <script src="oss地址"></script> --> // 生产

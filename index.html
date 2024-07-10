@@ -87,8 +87,8 @@
             <span style="word-wrap: break-word; word-break: break-all;" id="res"></span>
         </div>
     </div>
-    <!-- <script src="js/umd/shanyan2.0.0.2.js"></script> -->
-    <script src="js/umd/living.min.js"></script>
+    <script src="js/umd/shanyan2.0.0.3.js"></script>
+    <!-- <script src="js/umd/living.min.js"></script> -->
     <script>
         const phoneDecrypt = (content, keys) => {
             const md5Key = CryptoJS.MD5(keys).toString().substring(0, 16);
@@ -154,12 +154,18 @@
             const falseRadio = document.getElementById('falseRadio');
             // const appId = "5FO1pbba";
             // const appKey = "hYmhmHWV";
-            // const appId="dv0BprRd";
-            // const appKey="FUesKmzK";
+            const appId="dv0BprRd";
+            const appKey="FUesKmzK";
             // const appId = "w73InvQE";
             // const appKey = "SYUyctkX";
-            const appId = "eONLZ1Uf"
-            const appKey = "iYzNxHbS"
+            /**
+             * 这里是dev sit 还有生产 每次上线要找测试要
+            */
+            /**
+             * 下面的是本地的appkey 跟appid
+            */
+            // const appId = "eONLZ1Uf"
+            // const appKey = "iYzNxHbS"
             const config = { appKey, appId };
             if (type === 1) {
                 window.clshanyansdk.Init(config, function (data) {
