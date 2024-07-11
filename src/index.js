@@ -311,8 +311,8 @@ function Main({ callback }) {
  */
 function CtccFn({ callback }) {
     const _getSign = useCallback((res = {}) => {
-        return httpPost('', { appId, data: res.encryValue });
-        // return httpPost('https://sy.cl2m.cn/sy/h5/init', { appId, data: res.encryValue });
+        // return httpPost('', { appId, data: res.encryValue });
+        return httpPost('https://sy.cl2m.cn/sy/h5/init', { appId, data: res.encryValue });
     }, []);
     const ctcc = useCallback(() => {
         ctccFinish = false;
@@ -373,8 +373,8 @@ function InitLayout({ params, callback }) {
     }
     const initAjax = useCallback(async () => {
         try {
-            const response = await httpPost("", { appId, data: '' });
-            // const response = await httpPost(`https://${backupDomains[currentDomainIndex]}/sy/h5/init`, { appId, data: '' });
+            // const response = await httpPost("", { appId, data: '' });
+            const response = await httpPost(`https://${backupDomains[currentDomainIndex]}/sy/h5/init`, { appId, data: '' });
             const { data, retCode, retMsg } = response;
             if (retCode === '0') {
                 const { cuccAppId, cuccSign, ctccAppId, ctccSign, cmccAppId, cmccSign, traceId, cmccTimestamp, cuccTimestamp } = data;
