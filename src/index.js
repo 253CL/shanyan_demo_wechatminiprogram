@@ -345,7 +345,7 @@ function CtccFn({ callback }) {
                 console.log(document.getElementById('j-get-code'));
                 mylog('ctccerr', err);
                 ctccFinish = true;
-                // callback(err)
+                callback(err)
             }
         });
     }, [_getSign, callback]);
