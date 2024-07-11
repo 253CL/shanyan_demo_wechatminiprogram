@@ -78,6 +78,7 @@
         </div>
         <div class="example">
             <button style="height: 40px;" onclick="beginHandle(1)">初始化</button>
+            <button style="height: 40px;" onclick="beginHandle(4)">电信初始化</button>
             <button style="height: 40px;" onclick="beginHandle(3)">使用自定义配置</button></button>
             <button style="height: 40px;" id="j-get-code">启动授权登录</button>
         </div>
@@ -86,7 +87,7 @@
             <span style="word-wrap: break-word; word-break: break-all;" id="res"></span>
         </div>
     </div>
-    <script src="js/umd/shanyan2.0.0.2.js"></script>
+    <script src="js/umd/shanyan2.0.0.3.js"></script>
     <!-- <script src="js/umd/living.min.js"></script> -->
     <script>
         const phoneDecrypt = (content, keys) => {
@@ -121,7 +122,7 @@
                 formData.append(key, params[key]);
             }
             axios
-                // .post('https://57.cm253.com:8445/open/web/mobile-query', formData, {
+                // .post('https://api.sit.253.com/open/web/mobile-query', formData, {
                 // .post('https://56.cm253.com:8445/open/web/mobile-query', formData, {
                 .post('https://api.253.com/open/web/mobile-query', formData, {
                     headers: {
@@ -141,6 +142,9 @@
                 });
         };
         function beginHandle(type) {
+            /**
+             * 联通移动支持自定义，电信要报备
+            */
             let _config = {};
             const setLoginTitle = document.getElementById('input3')?.value;
             const setLoginLogo = document.getElementById('input4')?.value;
@@ -152,9 +156,24 @@
             // const appKey = "hYmhmHWV";
             const appId="dv0BprRd";
             const appKey="FUesKmzK";
+            // const appId = "w73InvQE";
+            // const appKey = "SYUyctkX";
+            // const appId = "YZtybRyC";
+            // const appKey = "W5Yj8wAr";
+            // const appId = "a52Of7sj";
+            // const appKey = "WQytRzhM";
+            /**
+             * 这里是dev sit 还有生产 每次上线要找测试要
+            */
+            /**
+             * 下面的是本地的appkey 跟appid
+            */
+            // const appId = "eONLZ1Uf"
+            // const appKey = "iYzNxHbS"
             const config = { appKey, appId };
             if (type === 1) {
                 window.clshanyansdk.Init(config, function (data) {
+                    console.log("Init", data)
                     if (data.code == "200000") {
                         replacementPhoneNumber(data.token, appId, appKey, (mobile) => { document.getElementById('res').innerText = JSON.stringify(mobile) })
                     } else {
@@ -162,13 +181,22 @@
                     }
                 });
             } else if (type === 2) {
-                window.clshanyansdk.start(config, function (data) {
+                window.clshanyansdk.start(function (data) {
                     if (data.code == "200000") {
                         replacementPhoneNumber(data.token, appId, appKey, (mobile) => { document.getElementById('res').innerText = JSON.stringify(mobile) })
                     } else {
                         document.getElementById('res').innerText = JSON.stringify(data);
                     }
                 });
+            } else if (type === 4) {
+                window.clshanyansdk.createCtcc(function (data) {
+                    // 000001 为预取号成功 200000 授权成功 其余均为失败
+                    if (data.code == "200000") {
+                        replacementPhoneNumber(data.token, appId, appKey, (mobile) => { document.getElementById('res').innerText = JSON.stringify(mobile) })
+                    } else {
+                        document.getElementById('res').innerText = JSON.stringify(data);
+                    }
+                }); 
             } else if (type === 3) {
                 if (setLoginTitle) {
                     _config.setLoginTitle = setLoginTitle;
