@@ -122,9 +122,10 @@
                 formData.append(key, params[key]);
             }
             axios
+                .post('https://110.cm253.com:8443/open/web/mobile-query', formData, { // 测试
                 // .post('https://api.sit.253.com/open/web/mobile-query', formData, {
                 // .post('https://56.cm253.com:8445/open/web/mobile-query', formData, {
-                .post('https://api.253.com/open/web/mobile-query', formData, {
+                // .post('https://api.253.com/open/web/mobile-query', formData, {
                     headers: {
                         'Content-Type': 'multipart/form-data'
                     }
@@ -154,14 +155,14 @@
             const falseRadio = document.getElementById('falseRadio');
             // const appId = "5FO1pbba";
             // const appKey = "hYmhmHWV";
-            const appId="dv0BprRd";
-            const appKey="FUesKmzK";
+            // const appId="dv0BprRd";
+            // const appKey="FUesKmzK";
             // const appId = "w73InvQE";
             // const appKey = "SYUyctkX";
             // const appId = "YZtybRyC";
             // const appKey = "W5Yj8wAr";
-            // const appId = "a52Of7sj";
-            // const appKey = "WQytRzhM";
+            const appId = "fUpJvNzJ";
+            const appKey = "XrL6Ds70";
             /**
              * 这里是dev sit 还有生产 每次上线要找测试要
             */
