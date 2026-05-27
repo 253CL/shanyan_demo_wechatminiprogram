@@ -7,8 +7,6 @@ miniprogram_npm/
 # Claude Code workspace
 .claude/
 
-# Empty placeholder directories
-images/
 
 # OS
 .DS_Store

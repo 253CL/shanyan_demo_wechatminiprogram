@@ -20,22 +20,24 @@ Page({
     SDK.setLog(true);
     SDK.init({ appId }, (res) => {
       console.log('Page-Experience SDK init result:', res);
-      if (res.code === '000000') {
-        wx.showToast({ title: '初始化成功', icon: 'success' });
-      } else {
-        wx.showToast({ title: '初始化失败: ' + res.message, icon: 'none' });
-      }
+      // 静默初始化，不展示 toast
     });
   },
 
   onStandardStyle() {
-    wx.showToast({ title: '标准底部弹窗样式', icon: 'none' });
-    // 此处可接入实际的标准样式逻辑
+    wx.showToast({ title: '默认标准底部弹窗样式', icon: 'none' });
   },
 
-  onCustomStyle() {
-    wx.showToast({ title: '自定义底部弹窗样式', icon: 'none' });
-    // 此处可接入实际的自定义样式逻辑
+  onCustomStyle1() {
+    wx.showToast({ title: '自定义底部弹窗样式1', icon: 'none' });
+  },
+
+  onCustomStyle2() {
+    wx.showToast({ title: '自定义底部弹窗样式2', icon: 'none' });
+  },
+
+  onCustomStyle3() {
+    wx.showToast({ title: '自定义底部弹窗样式3', icon: 'none' });
   },
 
   onGoBack() {

@@ -1,6 +1,14 @@
 <view class="container">
-  <!-- 顶部 banner 图 -->
-  <image class="banner" src="https://static2.253.com/wanshu/shanyanh5/shbc.png" mode="widthFix"></image>
+  <!-- 自定义导航栏 -->
+  <view class="navbar" style="height: {{statusBarHeight}}px;"></view>
+  <view class="navbar-fixed" style="top: {{statusBarHeight}}px;">
+    <view class="navbar-content">
+      <view class="navbar-placeholder"></view>
+      <text class="navbar-title">闪验小程序 SDK Demo</text>
+      <view class="navbar-placeholder"></view>
+    </view>
+  </view>
+  <view class="navbar-spacer" style="height: {{statusBarHeight + 44}}px;"></view>
 
   <!-- 两个模式按钮 -->
   <view class="btn-row">
