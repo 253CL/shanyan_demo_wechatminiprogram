@@ -1,0 +1,24 @@
+<view class="container">
+  <!-- 自定义导航栏 -->
+  <view class="navbar" style="height: {{statusBarHeight}}px;"></view>
+  <view class="navbar-fixed" style="top: {{statusBarHeight}}px;">
+    <view class="navbar-content">
+      <view class="navbar-back" bindtap="onGoBack">
+        <text class="back-icon">‹</text>
+      </view>
+      <text class="navbar-title">体验模式</text>
+      <view class="navbar-placeholder"></view>
+    </view>
+  </view>
+  <view class="navbar-spacer" style="height: {{statusBarHeight + 44}}px;"></view>
+
+  <!-- 两个按钮 -->
+  <view class="btn-wrapper">
+    <view class="mode-btn" bindtap="onStandardStyle">
+      <text class="btn-label">标准底部弹窗样式</text>
+    </view>
+    <view class="mode-btn" bindtap="onCustomStyle">
+      <text class="btn-label">自定义底部弹窗样式</text>
+    </view>
+  </view>
+</view>

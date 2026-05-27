@@ -1,0 +1,5 @@
+{
+  "usingComponents": {
+    "onekeylogin": "plugin://auth-plugin/onekeylogin"
+  }
+}

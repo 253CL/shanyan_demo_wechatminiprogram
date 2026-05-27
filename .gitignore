@@ -1,2 +1,29 @@
-/node_modules
+# Dependencies
+node_modules/
+
+# WeChat Mini Program compiled npm packages
+miniprogram_npm/
+
+# Claude Code workspace
+.claude/
+
+# Empty placeholder directories
+images/
+
+# OS
 .DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Env / Secrets
+.env
+.env.*
+*.pem
+
+# Logs
+*.log

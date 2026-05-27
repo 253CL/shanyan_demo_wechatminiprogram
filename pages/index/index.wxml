@@ -1,0 +1,16 @@
+<view class="container">
+  <!-- 顶部 banner 图 -->
+  <image class="banner" src="https://static2.253.com/wanshu/shanyanh5/shbc.png" mode="widthFix"></image>
+
+  <!-- 两个模式按钮 -->
+  <view class="btn-row">
+    <view class="mode-card" bindtap="onExperienceMode">
+      <image class="card-icon" src="https://static2.253.com/wanshu/shanyanh5/yjdl.png" mode="aspectFit"></image>
+      <text class="card-title">体验模式</text>
+    </view>
+    <view class="mode-card" bindtap="onDebugMode">
+      <image class="card-icon" src="https://static2.253.com/wanshu/shanyanh5/bjjy.png" mode="aspectFit"></image>
+      <text class="card-title">调试模式</text>
+    </view>
+  </view>
+</view>

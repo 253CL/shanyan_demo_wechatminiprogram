@@ -1,0 +1,179 @@
+.container {
+  padding: 20rpx;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+.header {
+  text-align: center;
+  padding: 30rpx 0;
+}
+
+.title {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #333;
+  display: block;
+}
+
+.subtitle {
+  font-size: 24rpx;
+  color: #999;
+  margin-top: 10rpx;
+  display: block;
+}
+
+.env-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16rpx;
+  margin-top: 8rpx;
+}
+
+.env-badge {
+  font-size: 22rpx;
+  color: #2b7de0;
+  background: #e8f0fb;
+  border-radius: 6rpx;
+  padding: 4rpx 12rpx;
+}
+
+.btn-group {
+  margin-bottom: 20rpx;
+}
+
+.step-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #2b7de0;
+  color: #fff;
+  padding: 24rpx 30rpx;
+  border-radius: 12rpx;
+  margin-bottom: 16rpx;
+  transition: all 0.2s;
+}
+
+.step-btn.disabled {
+  background: #ccc;
+  opacity: 0.5;
+}
+
+.step-btn.done {
+  background: #4caf50;
+}
+
+.btn-text {
+  font-size: 30rpx;
+  font-weight: 500;
+}
+
+.btn-status {
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.results {
+  background: #fff;
+  border-radius: 12rpx;
+  padding: 20rpx;
+  margin-bottom: 20rpx;
+}
+
+.result-title {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #333;
+  display: block;
+  margin-bottom: 15rpx;
+}
+
+.result-item {
+  display: flex;
+  flex-direction: column;
+  padding: 12rpx 0;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.result-item:last-child {
+  border-bottom: none;
+}
+
+.result-label {
+  font-size: 24rpx;
+  color: #999;
+  margin-bottom: 5rpx;
+}
+
+.result-value {
+  font-size: 26rpx;
+  color: #333;
+  word-break: break-all;
+}
+
+.token-text {
+  font-size: 22rpx;
+  color: #2b7de0;
+  margin-top: 5rpx;
+}
+
+.log-container {
+  background: #1e1e1e;
+  border-radius: 12rpx;
+  overflow: hidden;
+}
+
+.log-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15rpx 20rpx;
+  background: #333;
+}
+
+.log-title {
+  font-size: 26rpx;
+  color: #fff;
+  font-weight: bold;
+}
+
+.log-clear {
+  font-size: 22rpx;
+  color: #4caf50;
+}
+
+.log-scroll {
+  height: 500rpx;
+}
+
+.log-item {
+  display: flex;
+  padding: 8rpx 20rpx;
+  border-bottom: 1rpx solid #2a2a2a;
+}
+
+.log-item.error {
+  background: #2a1a1a;
+}
+
+.log-time {
+  font-size: 20rpx;
+  color: #888;
+  margin-right: 15rpx;
+  flex-shrink: 0;
+}
+
+.log-message {
+  font-size: 24rpx;
+  color: #e0e0e0;
+  flex: 1;
+  word-break: break-all;
+}
+
+.log-empty {
+  padding: 40rpx 20rpx;
+  text-align: center;
+  color: #666;
+  font-size: 24rpx;
+}

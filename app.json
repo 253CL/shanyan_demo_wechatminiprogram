@@ -1,0 +1,18 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/page-experience/page-experience",
+    "pages/page-debug/page-debug"
+  ],
+  "window": {
+    "navigationStyle": "custom"
+  },
+  "plugins": {
+    "auth-plugin": {
+      "version": "2.2.0",
+      "provider": "wx35678fec06d475b4"
+    }
+  },
+  "sitemapLocation": "sitemap.json",
+  "style": "v2"
+}

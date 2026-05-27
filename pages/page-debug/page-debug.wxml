@@ -1,0 +1,78 @@
+<view class="container">
+  <!-- 自定义导航栏 -->
+  <view class="navbar" style="height: {{statusBarHeight}}px;"></view>
+  <view class="navbar-fixed" style="top: {{statusBarHeight}}px;">
+    <view class="navbar-content">
+      <view class="navbar-back" bindtap="onGoBack">
+        <text class="back-icon">‹</text>
+      </view>
+      <text class="navbar-title">调试模式</text>
+      <view class="navbar-placeholder"></view>
+    </view>
+  </view>
+  <view class="navbar-spacer" style="height: {{statusBarHeight + 44}}px;"></view>
+
+  <!-- 一键登录授权页组件（插件） -->
+  <onekeylogin />
+  <view class="header">
+    <text class="title">闪验小程序 SDK Demo</text>
+    <text class="subtitle">按顺序点击按钮测试 SDK 方法</text>
+    <view class="env-row">
+      <text class="env-badge">当前环境：{{envLabel}}</text>
+      <text class="env-badge">appId：{{appId}}</text>
+    </view>
+  </view>
+
+  <!-- Step Buttons -->
+  <view class="btn-group">
+    <view class="step-btn {{stepResults.init ? 'done' : ''}}" bindtap="onStep1Init">
+      <text class="btn-text">第一步：初始化</text>
+      <text class="btn-status" wx:if="{{stepResults.init}}">✓ 完成</text>
+    </view>
+    <view class="step-btn {{stepResults.token ? 'done' : ''}} {{currentStep < 1 ? 'disabled' : ''}}" bindtap="onStep2Token">
+      <text class="btn-text">第二步：启动授权页</text>
+      <text class="btn-status" wx:if="{{stepResults.token}}">✓ 完成</text>
+    </view>
+    <view class="step-btn {{stepResults.mobile ? 'done' : ''}} {{currentStep < 2 ? 'disabled' : ''}}" bindtap="onStep3Mobile">
+      <text class="btn-text">第三步：置换手机号</text>
+      <text class="btn-status" wx:if="{{stepResults.mobile}}">✓ 完成</text>
+    </view>
+  </view>
+
+  <!-- Results -->
+  <view class="results" wx:if="{{hasResults}}">
+    <text class="result-title">执行结果</text>
+    <view class="result-item" wx:if="{{stepResults.init}}">
+      <text class="result-label">初始化：</text>
+      <text class="result-value">{{stepResults.init.code}} - {{stepResults.init.message}}</text>
+    </view>
+    <view class="result-item" wx:if="{{stepResults.token}}">
+      <text class="result-label">授权页：</text>
+      <text class="result-value">{{stepResults.token.code}} - {{stepResults.token.message}}</text>
+      <text class="result-value token-text" wx:if="{{stepResults.token.token}}">token: {{stepResults.token.token}}</text>
+    </view>
+    <view class="result-item" wx:if="{{stepResults.mobile}}">
+      <text class="result-label">手机号：</text>
+      <text class="result-value">{{stepResults.mobile.phone}}</text>
+    </view>
+  </view>
+
+  <!-- Log Area -->
+  <view class="log-container">
+    <view class="log-header">
+      <text class="log-title">执行日志</text>
+      <text class="log-clear" bindtap="onClearLog">清空</text>
+    </view>
+    <scroll-view scroll-y class="log-scroll">
+      <block wx:for="{{logs}}" wx:key="index">
+        <view class="log-item {{item.isError ? 'error' : ''}}">
+          <text class="log-time">{{item.time}}</text>
+          <text class="log-message">{{item.message}}</text>
+        </view>
+      </block>
+      <view wx:if="{{logs.length === 0}}" class="log-empty">
+        <text>暂无日志，请点击上方按钮开始测试</text>
+      </view>
+    </scroll-view>
+  </view>
+</view>
