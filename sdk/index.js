@@ -14,13 +14,13 @@
  *                                             │
  *                                             └── 拉起运营商授权页，用户授权后返回 token
  *                                                       │
- *   开发者服务端 ◀──getMobile(appkey)── 闪验SDK ──请求创蓝服务端──▶ 获取加密手机号
+ *   开发者服务端 ◀──getMobile(appkey)── 业务服务端 ──请求创蓝服务端──▶ 获取加密手机号
  *                                                       │
  *   开发者服务端 ──用 appkey AES 解密──▶ 明文手机号
  *
  * 【重要说明】
- * - init 传入 appId初始化SDK
- * - appkey 仅用于 getMobile 接口签名及解密手机号（建议放到业务服务端调用，而非小程序端）
+ * - init 传入 appId 初始化 SDK
+ * - appkey 用于 getMobile 接口签名及手机号解密，建议在业务服务端调用，小程序端不封装此方法
  * - openLoginAuth 使用的 appId：服务端下发的移动专用 appId（cmccAppId），用于调用微信取号插件
  *   两者不同，不可混用！
  */
@@ -29,19 +29,15 @@ const { SDK_VERSION } = require('./config');
 const config = require('./config');
 const crypto = require('./crypto');
 const {
-  SUCCESS_INIT, SUCCESS_TOKEN, SUCCESS_MOBILE, SUCCESS_CONFIG,
+  SUCCESS_INIT, SUCCESS_TOKEN, SUCCESS_CONFIG,
   ERR_SERVER_EMPTY_RESPONSE, ERR_SERVER_REQUEST_FAILED,
   ERR_NOT_INITIALIZED, ERR_MOBILE_APPID_NOT_INIT,
-  ERR_INVALID_PARAMS, ERR_TOKEN_REQUIRED, ERR_APPID_NOT_INITIALIZED,
-  ERR_ENCRYPTED_PHONE_REQUIRED, ERR_APPKEY_REQUIRED,
-  ERR_MOBILE_DECRYPT_FAILED, ERR_DECRYPT_FAILED,
-  ERR_APPID_REQUIRED, ERR_APPKEY_REQUIRED_MOBILE,
-  ERR_SDK_INIT_ERR, ERR_SDK_ENV_CONFIG_ERR, ERR_SDK_RESPONSE_PROCESS_ERR,
+  ERR_INVALID_PARAMS, ERR_TOKEN_REQUIRED,
+  ERR_APPID_REQUIRED,
+  ERR_SDK_INIT_ERR, ERR_SDK_RESPONSE_PROCESS_ERR,
   ERR_CONFIG_SET_ERR, ERR_TOKEN_SIGN_CALC_ERR, ERR_TOKEN_UUID_GEN_ERR,
   ERR_TOKEN_PROCESS_ERR, ERR_TOKEN_PLUGIN_CALL_ERR,
   ERR_NETWORK_PROCESS_ERR, ERR_NETWORK_CALL_ERR,
-  ERR_MOBILE_SIGN_CALC_ERR, ERR_MOBILE_REQUEST_BUILD_ERR,
-  ERR_MOBILE_RESPONSE_PROCESS_ERR, ERR_DECRYPT_PROCESS_ERR,
   ERR_NETWORK_TYPE_FAILED,
   makeDynamicError,
 } = require('./errors');
@@ -93,7 +89,7 @@ const PROCESS_NAME = {
 
 const state = {
   // === 用户传入的参数 ===
-  appId: '',          // 开发者在创蓝平台注册的应用 ID
+  appId: '',          // 开发者在创蓝平台注册的应用 ID（必填）
 
   // === 服务端接口下发的参数 ===
   traceId: '',        // 请求追踪 ID（服务端返回或本地生成）
@@ -167,11 +163,11 @@ function isFunction(value) {
  *
  * 【流程说明】
  * 1. 校验入参（appId 必填）
- * 2. 请求创蓝服务端接口，获取各运营商（移动/联通/电信）的取号参数
+ * 2. 请求闪验服务端接口，获取各运营商（移动/联通/电信）的取号参数
  * 3. 保存服务端下发的参数，后续 openLoginAuth 时使用
  *
  * 【服务端接口】
- * - URL：根据 init 时传入的 env 参数选择对应环境地址
+ * - URL：调用当前环境初始化接口
  * - Method：POST
  * - Content-Type：application/x-www-form-urlencoded (form-data)
  * - 入参：appId=开发者应用ID&data=
@@ -179,14 +175,22 @@ function isFunction(value) {
  *
  * @param {Object} params - 初始化参数
  * @param {string} params.appId - 创蓝平台分配的应用 ID（必填）
- * @param {string} [params.env='stable'] - 环境标识：'stable'=测试环境，'release'=生产环境
  * @param {Function} callback - 回调函数
  * @param {string} callback.code - 结果码，'000000'=成功
  * @param {string} callback.message - 结果描述
  * @param {string} callback.traceId - 请求追踪 ID
  *
  * @example
- * SDK.init({ appId: '123456' }, (res) => {
+ * // stable 环境
+ * SDK.setEnvironment('stable');
+ * SDK.init({ appId: 'xxx' }, (res) => {
+ *   if (res.code === '000000') {
+ *     console.log('初始化成功');
+ *   }
+ * });
+ *
+ * // release 环境（默认）
+ * SDK.init({ appId: 'xxx' }, (res) => {
  *   if (res.code === '000000') {
  *     console.log('初始化成功');
  *   }
@@ -195,68 +199,28 @@ function isFunction(value) {
 function init(params, callback) {
   log(SEPARATOR);
   log('[ShanYan Init] 开始初始化');
+
   if (isFunction(callback) === false) {
     callback = (res) => log('[ShanYan Init]', res);
   }
 
   // 参数校验
-  if (isObj(params) === false) {
-    error('[ShanYan Init] 参数错误');
-    try {
-      const initUuid = crypto.guid();
-      if (state.reportEnabled && params && params.appId) {
-        reportLog({
-          appId: params.appId,
-          status: REPORT_STATUS.FAIL,
-          telcom: 'Unknown_Operator',
-          processName: PROCESS_NAME.INIT,
-          resCode: ERR_INVALID_PARAMS.code,
-          resDesc: ERR_INVALID_PARAMS.message,
-        }, initUuid);
-      }
-    } catch (e) {
-      error('[ShanYan Init] 日志上报异常:', e.message);
-    }
-    callback({ ...ERR_INVALID_PARAMS });
-    return;
-  }
-  try {
-    const accountInfo = wx.getAccountInfoSync();
-    const miniProgramAppId = accountInfo && accountInfo.miniProgram ? accountInfo.miniProgram.appId : 'unknown';
-    log('[ShanYan Init] appId:', params.appId, miniProgramAppId, SDK_VERSION);
-  } catch (e) {
-    log('[ShanYan Init] 小程序ID: 获取失败', e.message);
-  }
-
-  if (!params.appId) {
+  if (!params || isObj(params) === false || !params.appId) {
     error('[ShanYan Init] appId 必传');
-    try {
-      const initUuid = crypto.guid();
-      if (state.reportEnabled) {
-        reportLog({
-          appId: params.appId || '',
-          status: REPORT_STATUS.FAIL,
-          telcom: 'Unknown_Operator',
-          processName: PROCESS_NAME.INIT,
-          resCode: ERR_APPID_REQUIRED.code,
-          resDesc: ERR_APPID_REQUIRED.message,
-        }, initUuid);
-      }
-    } catch (e) {
-      error('[ShanYan Init] 日志上报异常:', e.message);
-    }
     callback({ ...ERR_APPID_REQUIRED });
     return;
   }
 
-  // 保存用户传入的参数
-  state.appId = params.appId;
+  const useAppId = params.appId;
+
+  // 保存参数
+  state.appId = useAppId;
 
   let uuid;
   let requestData;
   try {
     uuid = crypto.guid();
-    requestData = `appId=${encodeURIComponent(params.appId)}&data=`;
+    requestData = `appId=${encodeURIComponent(useAppId)}&data=`;
   } catch (e) {
     error('[ShanYan Init] 初始化异常:', e.message);
     try {
@@ -278,35 +242,11 @@ function init(params, callback) {
     return;
   }
 
-  // 根据环境选择对应接口地址
-  let initUrl;
-  try {
-    const envConfig = config.ENV_MAP[params.env] || config.ENV_MAP.stable;
-    initUrl = envConfig.initUrl;
-  } catch (e) {
-    error('[ShanYan Init] 环境配置异常:', e.message);
-    try {
-      const initUuid = crypto.guid();
-      if (state.reportEnabled) {
-        reportLog({
-          appId: state.appId,
-          status: REPORT_STATUS.FAIL,
-          telcom: 'Unknown_Operator',
-          processName: PROCESS_NAME.INIT,
-          resCode: ERR_SDK_ENV_CONFIG_ERR.code,
-          resDesc: makeDynamicError(ERR_SDK_ENV_CONFIG_ERR, e.message).message,
-        }, initUuid);
-      }
-    } catch (logError) {
-      error('[ShanYan Init] 日志上报异常:', logError.message);
-    }
-    callback(makeDynamicError(ERR_SDK_ENV_CONFIG_ERR, e.message));
-    return;
-  }
+  // 根据当前环境选择对应接口地址
+  const initUrl = config.ENV[config.currentEnv].initUrl;
 
   logDetail('[ShanYan Init] 请求 URL:', initUrl);
   logDetail('[ShanYan Init] 请求入参:', requestData);
-  logDetail('[ShanYan Init] 环境:', params.env || 'stable');
 
   // 请求创蓝服务端获取配置信息
   wx.request({
@@ -406,7 +346,7 @@ function init(params, callback) {
         try {
           const initUuid = uuid;
           if (state.reportEnabled) {
-              reportLog({
+            reportLog({
               appId: state.appId,
               status: REPORT_STATUS.FAIL,
               telcom: 'Unknown_Operator',
@@ -725,8 +665,8 @@ function openLoginAuth(callback) {
     callback = (res) => log('[ShanYan Token]', res);
   }
 
-  // 使用写死的移动 appId 和签名 key
-  const useAppId = '300013228939';
+  // 使用初始化下发的移动 appId
+  const useAppId = state.cmccAppId;
   const useTraceId = state.traceId;
   const timestamp = state.cmccTimestamp;
 
@@ -756,19 +696,19 @@ function openLoginAuth(callback) {
   let useSign;
   try {
     // 按文档规则计算 sign：MD5(appId + businessType + msgId + timestamp + traceId + version + appkey)
-    const signAppKey = '69270D43E659FF953BC6BDBCFF325FB9';  // sign 计算专用 key
+    const signAppKey = state.cmccAppKey;  // 使用初始化下发的 cmccAppKey
     const signStr = useAppId + state.businessType + msgId + timestamp + useTraceId + state.version + signAppKey;
     useSign = crypto.md5(signStr).toUpperCase();
 
     log(SEPARATOR);
-    log('[ShanYan Token] 开始取号');
-    logDetail('[ShanYan Token] appId(移动下发):', useAppId);
+    log('[ShanYan Token] 开始取号', useAppId);
+    logDetail('[ShanYan Token] cmccId):', useAppId);
     logDetail('[ShanYan Token] businessType:', state.businessType);
     logDetail('[ShanYan Token] msgId:', msgId);
     logDetail('[ShanYan Token] timestamp:', timestamp);
     logDetail('[ShanYan Token] traceId:', useTraceId);
     logDetail('[ShanYan Token] version:', state.version);
-    logDetail('[ShanYan Token] signKey:', signAppKey);
+    logDetail('[ShanYan Token] signKey:', signAppKey ? '***' + signAppKey.slice(-4) : 'undefined');
     logDetail('[ShanYan Token] 签名原文(signStr):', useAppId + state.businessType + msgId + timestamp + useTraceId + state.version + '***');
     logDetail('[ShanYan Token] 计算 sign:', useSign);
     logDetail('[ShanYan Token] authPageType:', state.authPageType);
@@ -1011,181 +951,19 @@ function setDetailLog(flag) {
 }
 
 /**
- * 获取手机号（openLoginAuth 后的下一步）
+ * 设置 SDK 运行环境
  *
- * 【流程说明】
- * 1. 将 token + appId 排序后拼接，用 appkey 做 HMAC-SHA256 生成 sign
- * 2. POST 到 253 服务端 mobile-query 接口
- * 3. 服务端返回加密手机号（data.mobile），用 appkey AES 解密得到明文
+ * 说明：
+ * - 需在 init() 之前调用，否则默认为 production 环境
+ * - 稳定环境用于开发调试，生产环境用于正式使用
  *
- * 【安全建议】
- * 该接口涉及 appkey 签名与手机号解密，建议在业务服务端调用，而非在小程序端直接调用。
- *
- * @param {Object} params - 请求参数
- * @param {string} params.token - openLoginAuth 获取的 token（必填）
- * @param {string} params.appkey - 创蓝平台分配的密钥（必填，用于接口签名与手机号解密）
- * @param {Function} callback - 回调函数
- * @param {string} callback.code - 结果码，'200000'=成功
- * @param {string} callback.phone - 解密后的明文手机号
- *
- * @example
- * SDK.getMobile({ token: res.token, appkey: 'your_appkey' }, (res) => {
- *   if (res.code === '200000') {
- *     console.log('手机号:', res.phone);
- *   }
- * });
+ * @param {string} env - 环境标识：'stable'=稳定环境，'release'=生产环境（默认）
  */
-function getMobile(params, callback) {
-  if (isFunction(callback) === false) {
-    callback = (res) => log('[ShanYan Mobile]', res);
+function setEnvironment(env) {
+  if (env !== 'stable' && env !== 'release') {
+    throw new Error('[ShanYan] setEnvironment: env must be "stable" or "release"');
   }
-
-  if (!state.initialized) {
-    callback({ ...ERR_NOT_INITIALIZED });
-    return;
-  }
-
-  if (!params || !params.token) {
-    callback({ ...ERR_TOKEN_REQUIRED });
-    return;
-  }
-  const appkey = params.appKey || params.appkey;
-  if (!appkey) {
-    callback({ ...ERR_APPKEY_REQUIRED_MOBILE });
-    return;
-  }
-
-  const token = params.token;
-  const useAppId = state.appId;
-
-  if (!useAppId) {
-    callback({ ...ERR_APPID_NOT_INITIALIZED });
-    return;
-  }
-
-  let uuid;
-  let sign;
-  try {
-    uuid = crypto.guid();
-    // 按 shanyanh5 项目参考的签名规则：排序 key，拼接 key+value，HMAC-SHA256
-    const signObj = { token, appId: useAppId };
-    sign = crypto.hmacSHA256Sign(signObj, appkey);
-  } catch (e) {
-    error('[ShanYan Mobile] 签名计算异常:', e.message);
-    callback(makeDynamicError(ERR_MOBILE_SIGN_CALC_ERR, e.message));
-    return;
-  }
-
-  log(SEPARATOR);
-  log('[ShanYan Mobile] 开始获取手机号');
-  logDetail('[ShanYan Mobile] 请求 URL:', config.MOBILE_QUERY_URL);
-  logDetail('[ShanYan Mobile] token:', token);
-  logDetail('[ShanYan Mobile] appId:', useAppId);
-  logDetail('[ShanYan Mobile] sign:', sign);
-
-  // 构建 form-data 请求体（小程序 wx.request 不支持 multipart/form-data，用 URL-encoded 替代）
-  let formData;
-  try {
-    formData = `token=${encodeURIComponent(token)}&appId=${encodeURIComponent(useAppId)}&sign=${encodeURIComponent(sign)}`;
-  } catch (e) {
-    error('[ShanYan Mobile] 请求体构建异常:', e.message);
-    callback(makeDynamicError(ERR_MOBILE_REQUEST_BUILD_ERR, e.message));
-    return;
-  }
-
-  wx.request({
-    url: config.MOBILE_QUERY_URL,
-    method: 'POST',
-    data: formData,
-    header: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    success: (res) => {
-      try {
-        logDetail('[ShanYan Mobile] HTTP 状态码:', res.statusCode);
-        logDetail('[ShanYan Mobile] 服务端响应:', JSON.stringify(res.data));
-
-        if (!res.data) {
-          callback({ ...ERR_SERVER_EMPTY_RESPONSE });
-          return;
-        }
-
-        if (res.data.code === '200000') {
-          try {
-            const encryptedMobile = res.data.data.mobile;
-            const phone = crypto.aesDecrypt(encryptedMobile, appkey);
-            logDetail('[ShanYan Mobile] 解密成功:', phone);
-
-            callback({ ...SUCCESS_MOBILE, phone: phone });
-          } catch (decryptError) {
-            error('[ShanYan Mobile] 解密失败:', decryptError.message);
-            callback({ ...ERR_MOBILE_DECRYPT_FAILED, error: decryptError.message });
-          }
-        } else {
-          const retCode = res.data.code || 'unknown';
-          const retMsg = res.data.message || '获取手机号失败';
-          error('[ShanYan Mobile] 错误码:', retCode, '错误信息:', retMsg);
-
-          callback({ code: retCode, message: retMsg });
-        }
-      } catch (e) {
-        error('[ShanYan Mobile] 响应处理异常:', e.message);
-        callback(makeDynamicError(ERR_MOBILE_RESPONSE_PROCESS_ERR, e.message));
-      }
-    },
-    fail: (err) => {
-      error('[ShanYan Mobile] wx.request 失败:', JSON.stringify(err));
-      callback({ ...ERR_SERVER_REQUEST_FAILED, error: err.errMsg });
-    }
-  });
-}
-
-/**
- * AES 解密手机号
- *
- * 说明：服务端 tokenValidate 接口返回的手机号是 AES 加密的，
- * 需要使用 appkey 解密后才能拿到明文手机号。
- *
- * 注意：通常建议在业务服务端进行解密，小程序端解密存在安全风险。
- *
- * @param {String} encryptedPhone - 服务端返回的加密手机号（AES 加密）
- * @param {String} appkey - 创蓝平台分配的密钥（用于 AES 解密）
- * @param {Function} callback - 回调函数
- * @param {string} callback.code - 结果码
- * @param {string} callback.phone - 解密后的明文手机号
- *
- * @example
- * SDK.decryptPhone('m+FDykYrD1qsjp0cBATZug==', 'B50BBEF6C4CD4FA8', (res) => {
- *   if (res.code === '000000') {
- *     console.log('手机号:', res.phone);
- *   }
- * });
- */
-function decryptPhone(encryptedPhone, appkey, callback) {
-  if (isFunction(callback) === false) {
-    callback = (res) => log('[ShanYan Decrypt]', res);
-  }
-
-  try {
-    if (!encryptedPhone) {
-      callback({ ...ERR_ENCRYPTED_PHONE_REQUIRED });
-      return;
-    }
-
-    if (!appkey) {
-      callback({ ...ERR_APPKEY_REQUIRED });
-      return;
-    }
-
-    try {
-      const phone = crypto.aesDecrypt(encryptedPhone, appkey);
-      callback({ ...SUCCESS_DECRYPT, phone: phone });
-    } catch (e) {
-      error('[ShanYan Decrypt] 解密失败:', e.message);
-      callback({ ...ERR_DECRYPT_FAILED, error: e.message });
-    }
-  } catch (e) {
-    error('[ShanYan Decrypt] 异常:', e.message);
-    callback(makeDynamicError(ERR_DECRYPT_PROCESS_ERR, e.message));
-  }
+  config.currentEnv = env;
 }
 
 // ============================ 导出 ============================
@@ -1194,11 +972,10 @@ module.exports = {
   init,           // 初始化 SDK（请求服务端获取运营商参数）
   setConfig,      // 设置授权页 UI 样式
   openLoginAuth,  // 打开一键登录授权页（拉起运营商授权页）
-  getMobile,      // 获取手机号（token 换取明文手机号）
   getNetworkType, // 获取当前网络类型
-  decryptPhone,   // AES 解密手机号
   getPlugin,      // 获取插件实例（高级用法）
   getState,       // 获取 SDK 状态（调试用）
+  setEnvironment, // 设置 SDK 运行环境（stable=稳定环境，release=生产环境，默认 release）
   setLog,         // 设置 SDK 内部日志输出开关（默认关闭）
   setReport,      // 设置日志上报开关（默认开启）
   setDetailLog,   // 设置日志详情输出开关（默认关闭）

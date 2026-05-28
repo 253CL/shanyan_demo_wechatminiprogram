@@ -14,8 +14,9 @@
 
   <!-- 一键登录授权页组件（插件） -->
   <onekeylogin />
+
+  <!-- 顶部环境信息 -->
   <view class="header">
-    <text class="title">闪验小程序 SDK Demo</text>
     <text class="subtitle">按顺序点击按钮测试 SDK 方法</text>
     <view class="env-row">
       <text class="env-badge">当前环境：{{envLabel}}</text>
@@ -23,7 +24,7 @@
     </view>
   </view>
 
-  <!-- Step Buttons -->
+  <!-- 步骤按钮 -->
   <view class="btn-group">
     <view class="step-btn {{stepResults.init ? 'done' : ''}}" bindtap="onStep1Init">
       <text class="btn-text">第一步：初始化</text>
@@ -33,31 +34,13 @@
       <text class="btn-text">第二步：启动授权页</text>
       <text class="btn-status" wx:if="{{stepResults.token}}">✓ 完成</text>
     </view>
-    <view class="step-btn {{stepResults.mobile ? 'done' : ''}} {{currentStep < 2 ? 'disabled' : ''}}" bindtap="onStep3Mobile">
+    <view class="step-btn {{stepResults.mobile ? 'done' : ''}} {{stepResults.mobile ? 'disabled' : ''}} {{currentStep < 2 ? 'disabled' : ''}}" bindtap="onStep3Mobile">
       <text class="btn-text">第三步：置换手机号</text>
       <text class="btn-status" wx:if="{{stepResults.mobile}}">✓ 完成</text>
     </view>
   </view>
 
-  <!-- Results -->
-  <view class="results" wx:if="{{hasResults}}">
-    <text class="result-title">执行结果</text>
-    <view class="result-item" wx:if="{{stepResults.init}}">
-      <text class="result-label">初始化：</text>
-      <text class="result-value">{{stepResults.init.code}} - {{stepResults.init.message}}</text>
-    </view>
-    <view class="result-item" wx:if="{{stepResults.token}}">
-      <text class="result-label">授权页：</text>
-      <text class="result-value">{{stepResults.token.code}} - {{stepResults.token.message}}</text>
-      <text class="result-value token-text" wx:if="{{stepResults.token.token}}">token: {{stepResults.token.token}}</text>
-    </view>
-    <view class="result-item" wx:if="{{stepResults.mobile}}">
-      <text class="result-label">手机号：</text>
-      <text class="result-value">{{stepResults.mobile.phone}}</text>
-    </view>
-  </view>
-
-  <!-- Log Area -->
+  <!-- 日志区域（占据剩余空间） -->
   <view class="log-container">
     <view class="log-header">
       <text class="log-title">执行日志</text>
