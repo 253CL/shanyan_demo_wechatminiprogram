@@ -4,11 +4,13 @@
   <view class="navbar-fixed" style="top: {{statusBarHeight}}px;">
     <view class="navbar-content">
       <view class="navbar-placeholder"></view>
-      <text class="navbar-title">闪验小程序 SDK Demo</text>
       <view class="navbar-placeholder"></view>
     </view>
   </view>
   <view class="navbar-spacer" style="height: {{statusBarHeight + 44}}px;"></view>
+
+  <!-- 顶部 logo 图 -->
+  <image class="banner" src="https://static2.253.com/wanshu/shanyanh5/shbc.png" mode="widthFix"></image>
 
   <!-- 两个模式按钮 -->
   <view class="btn-row">

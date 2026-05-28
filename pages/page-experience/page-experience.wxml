@@ -19,21 +19,21 @@
   <view class="btn-row">
     <view class="mode-card" bindtap="onStandardStyle">
       <image class="card-icon" src="/images/login_demo_1.png" mode="aspectFit"></image>
-      <text class="card-title">默认标准底部弹窗样式</text>
+      <text class="card-title">默认弹窗样式</text>
     </view>
     <view class="mode-card" bindtap="onCustomStyle1">
       <image class="card-icon" src="/images/login_demo_2.png" mode="aspectFit"></image>
-      <text class="card-title">自定义底部弹窗样式1</text>
+      <text class="card-title">自定义弹窗样式1</text>
     </view>
   </view>
   <view class="btn-row">
     <view class="mode-card" bindtap="onCustomStyle2">
       <image class="card-icon" src="/images/login_demo_3.png" mode="aspectFit"></image>
-      <text class="card-title">自定义底部弹窗样式2</text>
+      <text class="card-title">自定义弹窗样式2</text>
     </view>
     <view class="mode-card" bindtap="onCustomStyle3">
       <image class="card-icon" src="/images/login_demo_4.png" mode="aspectFit"></image>
-      <text class="card-title">自定义底部弹窗样式3</text>
+      <text class="card-title">自定义弹窗样式3</text>
     </view>
   </view>
 </view>
