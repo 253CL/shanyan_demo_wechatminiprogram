@@ -12,8 +12,11 @@
   </view>
   <view class="navbar-spacer" style="height: {{statusBarHeight + 44}}px;"></view>
 
+  <!-- 一键登录授权页组件（插件） -->
+  <onekeylogin />
+
   <!-- Logo，参考首页 banner 位置 -->
-  <image class="banner" src="/images/login_dmeo_experience_logo.png" mode="aspectFit"></image>
+  <image class="banner" src="/images/login_demo_experience_logo.png" mode="aspectFit"></image>
 
   <!-- 四个按钮 2x2 排列 -->
   <view class="btn-row">
@@ -21,19 +24,19 @@
       <image class="card-icon" src="/images/login_demo_1.png" mode="aspectFit"></image>
       <text class="card-title">默认弹窗样式</text>
     </view>
-    <view class="mode-card" bindtap="onCustomStyle1">
+    <view class="mode-card" bindtap="onCustomStyle">
       <image class="card-icon" src="/images/login_demo_2.png" mode="aspectFit"></image>
-      <text class="card-title">自定义弹窗样式1</text>
+      <text class="card-title">全屏样式</text>
     </view>
   </view>
   <view class="btn-row">
-    <view class="mode-card" bindtap="onCustomStyle2">
+    <view class="mode-card" bindtap="onCustomStyle1">
       <image class="card-icon" src="/images/login_demo_3.png" mode="aspectFit"></image>
-      <text class="card-title">自定义弹窗样式2</text>
+      <text class="card-title">自定义弹窗样式1</text>
     </view>
-    <view class="mode-card" bindtap="onCustomStyle3">
+    <view class="mode-card" bindtap="onCustomStyle2">
       <image class="card-icon" src="/images/login_demo_4.png" mode="aspectFit"></image>
-      <text class="card-title">自定义弹窗样式3</text>
+      <text class="card-title">自定义弹窗样式2</text>
     </view>
   </view>
 </view>

@@ -75,8 +75,8 @@ function aesDecrypt(content, seed) {
 }
 
 /**
- * AES-CBC 加密 + JSON 对象
- * 暂未使用，保留以备用
+ * AES-CBC 加密 JSON 对象为 Base64 字符串
+ * 用于生成 cryptographicToken 中的加密 payload
  */
 function aesEncryptObject(str, obj) {
   const md5Key = md5(str);
@@ -98,8 +98,8 @@ function aesEncryptObject(str, obj) {
 }
 
 /**
- * HMAC-SHA256 签名（排序后拼接 + 签名）
- * 暂未使用，保留以备用
+ * HMAC-SHA256 签名（按 key 排序后拼接内容再签名）
+ * 用于调试模式页面的 getMobile 接口签名
  */
 function hmacSHA256Sign(obj, secretKey) {
   const sortedProperties = Object.keys(obj).sort();

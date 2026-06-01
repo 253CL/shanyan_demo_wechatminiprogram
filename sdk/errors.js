@@ -21,7 +21,7 @@
 const SUCCESS_INIT = { code: '000000', message: '初始化成功' };
 const SUCCESS_TOKEN = { code: '200000', message: '获取token成功' };
 const SUCCESS_MOBILE = { code: '200000', message: '获取手机号成功' };
-const SUCCESS_CONFIG = { code: '000700', message: '自定义配置成功' };
+const SUCCESS_CONFIG = { code: '100000', message: '自定义配置成功' };
 
 // ============================ 0004xx - 服务端通信错误 ============================
 

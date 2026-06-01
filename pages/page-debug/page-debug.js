@@ -1,25 +1,27 @@
 const SDK = require('../../sdk/index');
 const crypto = require('../../sdk/crypto');
 const config = require('../../sdk/config');
+const app = getApp();
 
-// 环境配置：根据小程序版本选择 SDK 环境
-const ENV_MAP = {
-  develop: { sdkEnv: 'stable', label: 'stable环境', appId: 'CTbdVdtt', appKey: 'R20fq6CI' },
-  trial: { sdkEnv: 'stable', label: 'stable环境', appId: 'CTbdVdtt', appKey: 'R20fq6CI' },
-  release: { sdkEnv: 'release', label: 'release环境', appId: '9IQdkCRI', appKey: 'CZIp8p8u' },
-};
+const appId = app.globalData.appId;
+const appKey = app.globalData.appKey;
 
-const envConfig = ENV_MAP[__wxConfig.envVersion] || ENV_MAP.develop;
-SDK.setEnvironment(envConfig.sdkEnv);
-
-const appId = envConfig.appId;
-const appKey = envConfig.appKey;
-
+/**
+ * 调试模式页
+ *
+ * 按顺序分步测试 SDK 完整流程：
+ * 1. 初始化：请求服务端获取运营商取号参数
+ * 2. 启动授权页：拉起运营商授权页，获取加密 token
+ * 3. 置换手机号：用 token 请求服务端换取加密手机号并解密
+ *
+ * 每一步完成后显示"✓ 完成"标记，后续步骤自动解锁。
+ * token 一次有效，第三步完成后不可重复点击。
+ */
 Page({
   data: {
     statusBarHeight: 20,
-    appId: appId,
-    envLabel: envConfig.label,
+    appId: app.globalData.appId,
+    envLabel: app.globalData.envLabel,
     logs: [],
     stepResults: {
       init: null,
@@ -37,6 +39,7 @@ Page({
     });
   },
 
+  /** 第一步：初始化 SDK */
   onStep1Init() {
     this.appendToLog('调用 SDK.init()，请求服务端获取配置信息...');
     SDK.setLog(true);
@@ -50,12 +53,13 @@ Page({
     });
   },
 
+  /** 第二步：启动授权页，获取 token */
   onStep2Token() {
     this.appendToLog('调用 SDK.openLoginAuth()，等待拉起授权页...');
     SDK.openLoginAuth((res) => {
       this.appendToLog(`openLoginAuth 回调: ${JSON.stringify(res)}`);
       if (res.code === '200000') {
-        // 拿到新 token 后清除第三步结果
+        // 拿到新 token 后清除第三步结果（token 一次有效）
         this.setData({ 'stepResults.token': res, 'stepResults.mobile': null, currentStep: 2, hasResults: true });
       } else if (res.code === '501') {
         this.appendToLog('用户取消授权（非异常）');
@@ -65,6 +69,7 @@ Page({
     });
   },
 
+  /** 第三步：用 token 换取手机号 */
   onStep3Mobile() {
     const tokenResult = this.data.stepResults.token;
     if (!tokenResult || !tokenResult.token) {
@@ -82,17 +87,12 @@ Page({
     const sign = crypto.hmacSHA256Sign({ appId, token }, appKey);
     const formData = `appId=${encodeURIComponent(appId)}&sign=${encodeURIComponent(sign)}&token=${encodeURIComponent(token)}`;
 
-    console.log('[getMobile] 请求入参:', { token, appId, sign });
-    console.log('[getMobile] 请求体:', formData);
-    console.log('[getMobile] 请求url:', config.ENV[config.currentEnv].mobileQueryUrl);
-
     wx.request({
       url: config.ENV[config.currentEnv].mobileQueryUrl,
       method: 'POST',
       data: formData,
       header: { 'Content-Type': 'application/x-www-form-urlencoded' },
       success: (res) => {
-        console.log('[getMobile] 接口响应:', JSON.stringify(res.data));
         if (!res.data) {
           this.appendToLog('服务端返回为空', true);
           return;
@@ -100,12 +100,10 @@ Page({
         if (res.data.code === '200000') {
           try {
             const encryptedMobile = res.data.data.mobile;
-            console.log('[getMobile] 加密手机号:', encryptedMobile);
             const phone = crypto.aesDecrypt(encryptedMobile, appKey);
             this.setData({ 'stepResults.mobile': { code: '200000', message: '获取成功', phone }, currentStep: 3, hasResults: true });
             this.appendToLog(`获取手机号成功: ${phone}`);
           } catch (e) {
-            console.error('[getMobile] 手机号解密失败:', e);
             this.appendToLog(`手机号解密失败: ${e.message}`, true);
           }
         } else {
@@ -113,16 +111,17 @@ Page({
         }
       },
       fail: (err) => {
-        console.error('[getMobile] 接口请求失败:', err);
         this.appendToLog(`请求失败: ${err.errMsg}`, true);
       }
     });
   },
 
+  /** 清空日志 */
   onClearLog() {
     this.setData({ logs: [] });
   },
 
+  /** 追加日志 */
   appendToLog(message, isError) {
     const now = new Date();
     const time = `${this.pad(now.getHours())}:${this.pad(now.getMinutes())}:${this.pad(now.getSeconds())}`;
@@ -134,6 +133,7 @@ Page({
     return n < 10 ? '0' + n : n;
   },
 
+  /** 返回上一页 */
   onGoBack() {
     wx.navigateBack();
   },

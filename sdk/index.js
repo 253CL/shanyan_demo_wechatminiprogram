@@ -103,10 +103,8 @@ const state = {
   cmccValidateSign: '',   // 移动校验签名（优先使用此字段）
 
   // === 其他状态 ===
-  authPageType: config.DEFAULT_AUTH_PAGE_TYPE,  // 授权页类型：'4'=底部弹窗，'5'=自定义弹窗
   businessType: config.BUSINESS_TYPE,           // 业务类型，固定为 '8'
   version: config.VERSION,                      // 接口版本号，固定为 '1.0'
-  uiConfig: {},         // 自定义 UI 配置（authPageType=5 时使用）
   networkType: '',      // 当前网络类型（wifi/4g/5g/none）
   telcom: 'Unknown_Operator',  // 运营商标识
   initialized: false,   // SDK 是否已初始化
@@ -388,55 +386,6 @@ function init(params, callback) {
 }
 
 /**
- * 设置 UI 配置（用于 authPageType=5 自定义授权弹窗样式）
- *
- * 支持自定义的元素包括：logo、小程序名称、授权栏、号码栏、
- * 取消按钮、登录按钮、协议栏、协议勾选、弹窗样式、蒙层等
- *
- * @param {Object} cfg - UI 配置对象
- * @param {string} cfg.authPageType - 授权页类型，'5'=自定义弹窗
- * @param {Object} cfg.option - 详细 UI 配置（参考接入文档 7.5 节）
- * @param {Function} callback - 回调函数
- *
- * @example
- * SDK.setConfig({
- *   authPageType: '5',
- *   option: {
- *     logo: { logoStyle: { width: '200rpx', height: '200rpx' } },
- *     sureBtnStyle: { text: '一键登录', bgColor: '#2b7de0' },
- *   }
- * }, (res) => console.log(res));
- */
-function setConfig(cfg, callback) {
-  try {
-    if (!state.initialized) {
-      if (isFunction(callback)) {
-        callback({ ...ERR_NOT_INITIALIZED });
-      }
-      return;
-    }
-
-    if (isObj(cfg)) {
-      if (cfg.authPageType) {
-        state.authPageType = cfg.authPageType;
-      }
-      if (cfg.option) {
-        state.uiConfig = cfg.option;
-      }
-    }
-
-    if (isFunction(callback)) {
-      callback({ ...SUCCESS_CONFIG });
-    }
-  } catch (e) {
-    error('[ShanYan Config] setConfig 异常:', e.message);
-    if (isFunction(callback)) {
-      callback(makeDynamicError(ERR_CONFIG_SET_ERR, e.message));
-    }
-  }
-}
-
-/**
  * 获取当前网络类型
  *
  * 使用移动一键登录插件的 getConnection 方法获取当前网络状态。
@@ -621,6 +570,8 @@ function cryptographicToken(res, appId) {
  * 5. 用户点击"授权登录"后通过 success 回调返回 token
  * 6. 用户点击"取消"后通过 error 回调返回 code=501
  *
+ * @param {Object} [cfg] - 可选的授权页配置
+ * @param {Object} [cfg.option] - 自定义 UI 配置（参考接入文档 7.5 节）
  * @param {Function} callback - 回调函数
  * @param {string} callback.code - 结果码，'103000'=取号成功，'501'=用户取消
  * @param {string} callback.message - 结果描述
@@ -628,17 +579,27 @@ function cryptographicToken(res, appId) {
  * @param {string} callback.userInformation - 浏览器加密指纹
  *
  * @example
+ * // 不传配置：使用默认 logo
  * SDK.openLoginAuth((res) => {
  *   if (res.code === '200000') {
- *     // 将 token 发送到业务服务端进行校验
- *     // 服务端调用 tokenValidate 接口换取手机号
  *     console.log('token:', res.token);
- *   } else if (res.code === '501') {
- *     console.log('用户取消授权');
  *   }
  * });
+ *
+ * // 传入自定义 UI 配置（参考接入文档 7.5 节）
+ * SDK.openLoginAuth({
+ *   option: {
+ *     logoStyle: { width: '200rpx', height: '200rpx' },
+ *     sureBtnStyle: { text: '一键登录', bgColor: '#2b7de0' },
+ *   }
+ * }, (res) => { ... });
  */
-function openLoginAuth(callback) {
+function openLoginAuth(cfg, callback) {
+  // cfg 可选，若第一个参数是函数则省略 cfg
+  if (isFunction(cfg)) {
+    callback = cfg;
+    cfg = {};
+  }
   if (!state.initialized) {
     try {
       const tokenUuid = crypto.guid();
@@ -664,6 +625,52 @@ function openLoginAuth(callback) {
   if (isFunction(callback) === false) {
     callback = (res) => log('[ShanYan Token]', res);
   }
+
+  // 处理 UI 配置：单次独立生效，不传配置时使用默认 logo
+  const DEFAULT_LOGO_STYLE = {
+    src: 'https://www.chuanglan.com/images/logo.svg',
+  };
+  let useOption;
+  if (cfg && isObj(cfg.option)) {
+    const userLogo = cfg.option.logoStyle || {};
+    // 用户未传 logoStyle 或未设置 src → 兜底使用默认 logo 路径
+    const logoStyle = userLogo.src ? userLogo : { ...DEFAULT_LOGO_STYLE, ...userLogo };
+    // 用户未传 customControlStyle 时兜底 [{ ifShow: false }]，传了则合并每个 item 的 ifShow
+    const userCustom = cfg.option.customControlStyle || [];
+    const customControlStyle = userCustom.length === 0
+      ? [{ ifShow: false }]
+      : userCustom.map(item => item.ifShow !== undefined ? item : { ...item, ifShow: false });
+    // 用户未传 layerStyle 或未设置 height → 兜底使用默认 height
+    const userLayer = cfg.option.layerStyle || {};
+    const layerStyle = userLayer.height ? userLayer : { height: '800rpx', ...userLayer };
+    // 用户未传 checkBtnStyle 或未设置字段 → 兜底使用默认宽高
+    const userCheck = cfg.option.checkBtnStyle || {};
+    const checkBtnStyle = {
+      width: '30rpx',
+      height: '30rpx',
+      ...userCheck,
+    };
+    useOption = {
+      ...cfg.option,
+      logoStyle: logoStyle,
+      bussinessNameStyle: { text: '创蓝闪验提供认证服务', ...cfg.option.bussinessNameStyle },
+      customControlStyle: customControlStyle,
+      layerStyle: layerStyle,
+      checkBtnStyle: checkBtnStyle,
+    };
+  } else {
+    useOption = {
+      logoStyle: { ...DEFAULT_LOGO_STYLE },
+      bussinessNameStyle: { text: '创蓝闪验提供认证服务' },
+      customControlStyle: [{ ifShow: false }],
+      layerStyle: { height: '800rpx' },
+      checkBtnStyle: {
+        width: '30rpx',
+        height: '30rpx',
+      },
+    };
+  }
+  log('[ShanYan Token] option:', cfg && isObj(cfg.option) ? '用户自定义' : 'SDK默认');
 
   // 使用初始化下发的移动 appId
   const useAppId = state.cmccAppId;
@@ -711,8 +718,7 @@ function openLoginAuth(callback) {
     logDetail('[ShanYan Token] signKey:', signAppKey ? '***' + signAppKey.slice(-4) : 'undefined');
     logDetail('[ShanYan Token] 签名原文(signStr):', useAppId + state.businessType + msgId + timestamp + useTraceId + state.version + '***');
     logDetail('[ShanYan Token] 计算 sign:', useSign);
-    logDetail('[ShanYan Token] authPageType:', state.authPageType);
-    logDetail('[ShanYan Token] option:', JSON.stringify(state.uiConfig));
+    logDetail('[ShanYan Token] option:', JSON.stringify(useOption));
   } catch (e) {
     error('[ShanYan Token] 签名计算异常:', e.message);
     try {
@@ -740,9 +746,9 @@ function openLoginAuth(callback) {
     sign: useSign,
     traceId: useTraceId,
     timestamp: timestamp,
-    authPageType: state.authPageType,
+    authPageType: '5',  // SDK 内部固定传值 5
     version: state.version,
-    option: state.uiConfig,
+    option: useOption,
   };
   logDetail('[ShanYan Token] 完整 data:', JSON.stringify(requestData));
   log(SEPARATOR);
@@ -771,7 +777,6 @@ function openLoginAuth(callback) {
   }
 
   // 调用微信插件的 getTokenInfo 方法
-  // 插件内部会：1) 判断网络  2) 向移动服务端取号  3) 拉起授权页
   try {
     oneKeyLogin.getTokenInfo({
       data: requestData,
@@ -970,8 +975,7 @@ function setEnvironment(env) {
 
 module.exports = {
   init,           // 初始化 SDK（请求服务端获取运营商参数）
-  setConfig,      // 设置授权页 UI 样式
-  openLoginAuth,  // 打开一键登录授权页（拉起运营商授权页）
+  openLoginAuth,  // 打开一键登录授权页（拉起运营商授权页，可传可选配置参数）
   getNetworkType, // 获取当前网络类型
   getPlugin,      // 获取插件实例（高级用法）
   getState,       // 获取 SDK 状态（调试用）

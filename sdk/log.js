@@ -50,7 +50,7 @@ function reportLog(params, uuid) {
     .join('&');
 
   wx.request({
-    url: config.LOG_URL,
+    url: config.ENV[config.currentEnv].logUrl,
     method: 'POST',
     data: formData,
     header: { 'Content-Type': 'application/x-www-form-urlencoded' },

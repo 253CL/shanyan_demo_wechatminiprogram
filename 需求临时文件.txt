@@ -1,0 +1,11 @@
+        uncheck: 'sdk/login_sdk_unchecked.png',
+        checked: 'sdk/login_sdk_checked.png',
+[ project.config.json.json 文件错误] project.config.json: project.config.json
+Expecting 'EOF','}',',',']', got INVALID
+  50 |   "simulatorPluginLibVersion": {},
+  51 |   "editorSetting": {},
+> 52 |   "testRoot": "minitest/"
+     | ^
+  53 | }latorPluginLibVersion": {},
+  54 |   "editorSetting": {}
+  55 | }(env: Windows,mp,2.01.2510280; lib: 2.25.4)        

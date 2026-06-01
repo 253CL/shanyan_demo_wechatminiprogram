@@ -48,5 +48,6 @@
   "projectname": "shanyan-miniprogram-sdk",
   "condition": {},
   "simulatorPluginLibVersion": {},
-  "editorSetting": {}
+  "editorSetting": {},
+  "testRoot": "minitest/"
 }
