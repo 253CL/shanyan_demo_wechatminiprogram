@@ -49,17 +49,20 @@ function reportLog(params, uuid) {
     .map((key) => `${encodeURIComponent(key)}=${encodeURIComponent(sdkLog[key])}`)
     .join('&');
 
+  // 打印日志上报请求信息
+  console.log('[ShanYan Log] 上报 URL:', config.ENV[config.currentEnv].logUrl);
+  console.log('[ShanYan Log] 上报入参:', JSON.stringify(sdkLog));
+
   wx.request({
     url: config.ENV[config.currentEnv].logUrl,
     method: 'POST',
     data: formData,
     header: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    success: () => {
-      console.log('[ShanYan Log] 日志上报成功', params.resDesc);
+    success: (res) => {
+      console.log('[ShanYan Log] 上报响应:', JSON.stringify(res.data));
     },
     fail: (err) => {
-      // 日志上报失败不影响主流程，仅打印错误
-      console.error('[ShanYan Log] 日志上报失败', err);
+      console.error('[ShanYan Log] 上报请求失败:', err);
     }
   });
 }
