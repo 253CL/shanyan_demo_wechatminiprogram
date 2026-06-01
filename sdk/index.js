@@ -523,16 +523,16 @@ function cryptographicToken(res, appId) {
     // 根据 token 前缀判断实际运营商
     let tkPrefix = 'm,';  // 默认移动
     let typePrefix = 'A1'; // 默认移动
-    let telcomName = '中国移动';
+    let telcomName = 'CMCC';
 
     if (rawToken.startsWith('CT')) {
       tkPrefix = 't,';
       typePrefix = 'A3';
-      telcomName = '中国电信';
+      telcomName = 'CTCC';
     } else if (rawToken.startsWith('CU')) {
       tkPrefix = 'u,';
       typePrefix = 'A2';
-      telcomName = '中国联通';
+      telcomName = 'CUCC';
     }
 
     // 更新全局 telcom 标识，供日志上报使用
@@ -805,6 +805,17 @@ function openLoginAuth(cfg, callback) {
 
   // 调用微信插件的 getTokenInfo 方法
   try {
+    // 自动获取网络类型用于日志上报（同步调用）
+    try {
+      const syncNet = wx.getNetworkTypeSync ? wx.getNetworkTypeSync() : null;
+      if (syncNet) {
+        state.networkType = syncNet.networkType || '';
+      }
+    } catch (e) {
+      // 获取失败不影响主流程
+    }
+    logDetail('[ShanYan Token] netType:', state.networkType);
+
     oneKeyLogin.getTokenInfo({
       data: requestData,
       success: res => {
