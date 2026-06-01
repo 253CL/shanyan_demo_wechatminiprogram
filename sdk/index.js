@@ -106,8 +106,9 @@ const state = {
   businessType: config.BUSINESS_TYPE,           // 业务类型，固定为 '8'
   version: config.VERSION,                      // 接口版本号，固定为 '1.0'
   networkType: '',      // 当前网络类型（wifi/4g/5g/none）
-  telcom: 'Unknown_Operator',  // 运营商标识
+  telcom: 'Unknown_Operator',  // 运营商标识（init时未知，取号后根据token前缀自动识别）
   initialized: false,   // SDK 是否已初始化
+  sid: '',              // 会话ID：从init生成，贯穿初始化到获取token的完整流程
   logEnabled: false,    // 日志输出开关：true=输出 SDK 内部 console 日志，false=静默（默认关闭）
   detailLogEnabled: true, // 日志详情输出开关：true=输出接口地址/入参/响应等敏感日志，false=不输出（默认关闭）
   reportEnabled: true,  // 日志上报开关：true=上报到创蓝日志服务器（默认开启），false=不上报
@@ -215,14 +216,18 @@ function init(params, callback) {
   state.appId = useAppId;
 
   let uuid;
+  let sid;
   let requestData;
   try {
     uuid = crypto.guid();
+    sid = crypto.guid();
+    state.sid = sid;
     requestData = `appId=${encodeURIComponent(useAppId)}&data=`;
   } catch (e) {
     error('[ShanYan Init] 初始化异常:', e.message);
     try {
       const initUuid = crypto.guid();
+      const initSid = crypto.guid();
       if (state.reportEnabled) {
         reportLog({
           appId: state.appId,
@@ -231,6 +236,7 @@ function init(params, callback) {
           processName: PROCESS_NAME.INIT,
           resCode: ERR_SDK_INIT_ERR.code,
           resDesc: makeDynamicError(ERR_SDK_INIT_ERR, e.message).message,
+          sid: initSid,
         }, initUuid);
       }
     } catch (logError) {
@@ -269,6 +275,7 @@ function init(params, callback) {
                 processName: PROCESS_NAME.INIT,
                 resCode: ERR_SERVER_EMPTY_RESPONSE.code,
                 resDesc: ERR_SERVER_EMPTY_RESPONSE.message,
+                sid: state.sid,
               }, initUuid);
             }
           } catch (logError) {
@@ -306,6 +313,7 @@ function init(params, callback) {
                 processName: PROCESS_NAME.INIT,
                 resCode: SUCCESS_INIT.code,
                 resDesc: SUCCESS_INIT.message,
+                sid: state.sid,
               }, uuid);
             }
           } catch (e) {
@@ -331,6 +339,7 @@ function init(params, callback) {
                 processName: PROCESS_NAME.INIT,
                 resCode: retCode,
                 resDesc: retMsg,
+                sid: state.sid,
               }, initUuid);
             }
           } catch (logError) {
@@ -351,6 +360,7 @@ function init(params, callback) {
               processName: PROCESS_NAME.INIT,
               resCode: ERR_SDK_RESPONSE_PROCESS_ERR.code,
               resDesc: makeDynamicError(ERR_SDK_RESPONSE_PROCESS_ERR, e.message).message,
+              sid: state.sid,
             }, initUuid);
           }
         } catch (logError) {
@@ -374,6 +384,7 @@ function init(params, callback) {
             processName: PROCESS_NAME.INIT,
             resCode: ERR_SERVER_REQUEST_FAILED.code,
             resDesc: makeDynamicError(ERR_SERVER_REQUEST_FAILED, err.errMsg || '').message,
+            sid: state.sid,
           }, initUuid);
         }
       } catch (logError) {
@@ -512,12 +523,21 @@ function cryptographicToken(res, appId) {
     // 根据 token 前缀判断实际运营商
     let tkPrefix = 'm,';  // 默认移动
     let typePrefix = 'A1'; // 默认移动
+    let telcomName = '中国移动';
 
     if (rawToken.startsWith('CT')) {
       tkPrefix = 't,';
+      typePrefix = 'A3';
+      telcomName = '中国电信';
     } else if (rawToken.startsWith('CU')) {
       tkPrefix = 'u,';
+      typePrefix = 'A2';
+      telcomName = '中国联通';
     }
+
+    // 更新全局 telcom 标识，供日志上报使用
+    state.telcom = telcomName;
+    logDetail('[cryptographicToken] 运营商识别结果:', telcomName);
 
     const randomNumber = crypto.generateRandomBitNumber(32);
     const params = {
@@ -529,7 +549,6 @@ function cryptographicToken(res, appId) {
       fp: res.userInformation || '',
     };
     logDetail('[cryptographicToken] AES 加密入参:', JSON.stringify(params));
-    logDetail('[cryptographicToken] 运营商识别结果:', typePrefix === 'A1' ? '移动' : typePrefix === 'A2' ? '联通' : '电信');
 
     const encrypted = crypto.aesEncryptObject(appId, params);
     if (!encrypted) {
@@ -586,10 +605,10 @@ function cryptographicToken(res, appId) {
  *   }
  * });
  *
- * // 传入自定义 UI 配置（参考接入文档 7.5 节）
+ * // 传入自定义 UI 配置
  * SDK.openLoginAuth({
  *   option: {
- *     logoStyle: { width: '200rpx', height: '200rpx' },
+ *     logo: { logoStyle: { width: '200rpx', height: '200rpx' } },
  *     sureBtnStyle: { text: '一键登录', bgColor: '#2b7de0' },
  *   }
  * }, (res) => { ... });
@@ -611,6 +630,8 @@ function openLoginAuth(cfg, callback) {
           processName: PROCESS_NAME.TOKEN_ERR,
           resCode: ERR_NOT_INITIALIZED.code,
           resDesc: ERR_NOT_INITIALIZED.message,
+          netType: state.networkType,
+          sid: state.sid,
         }, tokenUuid);
       }
     } catch (logError) {
@@ -688,6 +709,8 @@ function openLoginAuth(cfg, callback) {
           processName: PROCESS_NAME.TOKEN_ERR,
           resCode: ERR_MOBILE_APPID_NOT_INIT.code,
           resDesc: ERR_MOBILE_APPID_NOT_INIT.message,
+          netType: state.networkType,
+          sid: state.sid,
         }, tokenUuid);
       }
     } catch (logError) {
@@ -731,6 +754,8 @@ function openLoginAuth(cfg, callback) {
           processName: PROCESS_NAME.TOKEN_ERR,
           resCode: ERR_TOKEN_SIGN_CALC_ERR.code,
           resDesc: makeDynamicError(ERR_TOKEN_SIGN_CALC_ERR, e.message).message,
+          netType: state.networkType,
+          sid: state.sid,
         }, tokenUuid);
       }
     } catch (logError) {
@@ -767,6 +792,8 @@ function openLoginAuth(cfg, callback) {
           processName: PROCESS_NAME.TOKEN_ERR,
           resCode: ERR_TOKEN_UUID_GEN_ERR.code,
           resDesc: makeDynamicError(ERR_TOKEN_UUID_GEN_ERR, e.message).message,
+          netType: state.networkType,
+          sid: state.sid,
         }, '');
       }
     } catch (logError) {
@@ -798,6 +825,8 @@ function openLoginAuth(cfg, callback) {
                 processName: tokenProcessName,
                 resCode: SUCCESS_TOKEN.code,
                 resDesc: res.message || SUCCESS_TOKEN.message,
+                netType: state.networkType,
+                sid: state.sid,
               }, uuid);
             }
           } catch (e) {
@@ -822,6 +851,8 @@ function openLoginAuth(cfg, callback) {
                 processName: PROCESS_NAME.TOKEN_ERR,
                 resCode: ERR_TOKEN_PROCESS_ERR.code,
                 resDesc: makeDynamicError(ERR_TOKEN_PROCESS_ERR, e.message).message,
+                netType: state.networkType,
+                sid: state.sid,
               }, uuid);
             }
           } catch (logError) {
@@ -851,6 +882,8 @@ function openLoginAuth(cfg, callback) {
                 processName: errorProcessName,
                 resCode: res.code || ERR_NETWORK_TYPE_FAILED.code,
                 resDesc: res.message || ERR_NETWORK_TYPE_FAILED.message,
+                netType: state.networkType,
+                sid: state.sid,
               }, uuid);
             }
           } catch (e) {
@@ -873,6 +906,8 @@ function openLoginAuth(cfg, callback) {
                 processName: PROCESS_NAME.TOKEN_ERR,
                 resCode: ERR_TOKEN_PROCESS_ERR.code,
                 resDesc: makeDynamicError(ERR_TOKEN_PROCESS_ERR, e.message).message,
+                netType: state.networkType,
+                sid: state.sid,
               }, uuid);
             }
           } catch (logError) {
@@ -893,6 +928,8 @@ function openLoginAuth(cfg, callback) {
           processName: PROCESS_NAME.TOKEN_ERR,
           resCode: ERR_TOKEN_PLUGIN_CALL_ERR.code,
           resDesc: makeDynamicError(ERR_TOKEN_PLUGIN_CALL_ERR, e.message).message,
+          netType: state.networkType,
+          sid: state.sid,
         }, uuid);
       }
     } catch (logError) {
