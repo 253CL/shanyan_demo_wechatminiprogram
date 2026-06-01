@@ -155,6 +155,23 @@ function isFunction(value) {
   return Object.prototype.toString.call(value).slice(8, -1) === 'Function';
 }
 
+/**
+ * 刷新网络类型到 state.networkType
+ * 异步获取，回调中更新 state，后续 reportLog 可拿到最新值
+ */
+function _refreshNetworkType() {
+  try {
+    wx.getNetworkType({
+      success: (res) => {
+        state.networkType = res.networkType || '';
+        log('[ShanYan Network] 当前网络类型:', state.networkType);
+      }
+    });
+  } catch (e) {
+    // 获取失败不影响主流程
+  }
+}
+
 // ============================ 公开 API ============================
 
 /**
@@ -214,6 +231,22 @@ function init(params, callback) {
 
   // 保存参数
   state.appId = useAppId;
+
+  // 获取当前网络类型
+  _refreshNetworkType();
+
+  // 监听网络变化，保持 state.networkType 实时更新
+  if (!state._networkListenerRegistered) {
+    state._networkListenerRegistered = true;
+    try {
+      wx.onNetworkStatusChange((res) => {
+        state.networkType = res.networkType || '';
+        log('[ShanYan Network] 网络变化:', state.networkType);
+      });
+    } catch (e) {
+      // 监听失败不影响主流程
+    }
+  }
 
   let uuid;
   let sid;
@@ -805,17 +838,7 @@ function openLoginAuth(cfg, callback) {
 
   // 调用微信插件的 getTokenInfo 方法
   try {
-    // 自动获取网络类型用于日志上报（同步调用）
-    try {
-      const syncNet = wx.getNetworkTypeSync ? wx.getNetworkTypeSync() : null;
-      if (syncNet) {
-        state.networkType = syncNet.networkType || '';
-      }
-    } catch (e) {
-      // 获取失败不影响主流程
-    }
     logDetail('[ShanYan Token] netType:', state.networkType);
-
     oneKeyLogin.getTokenInfo({
       data: requestData,
       success: res => {
