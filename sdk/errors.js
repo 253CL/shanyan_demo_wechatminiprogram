@@ -14,14 +14,18 @@
  *   // => { code: '000999', message: 'SDK 初始化异常: actual error' }
  *
  * 注意：服务端返回的错误码（retCode/retMsg）不在本模块预定义，直接透传。
+ *
+ * 成功码说明：
+ * - SUCCESS_INIT.code = '200000'（初始化成功）
+ * - SUCCESS_TOKEN.code = '200000'（获取 token 成功）
+ * - SUCCESS_MOBILE.code = '200000'（获取手机号成功）
  */
 
 // ============================ 成功码 ============================
 
-const SUCCESS_INIT = { code: '000000', message: '初始化成功' };
+const SUCCESS_INIT = { code: '200000', message: '初始化成功' };
 const SUCCESS_TOKEN = { code: '200000', message: '获取token成功' };
 const SUCCESS_MOBILE = { code: '200000', message: '获取手机号成功' };
-const SUCCESS_CONFIG = { code: '100000', message: '自定义配置成功' };
 
 // ============================ 0004xx - 服务端通信错误 ============================
 
@@ -79,7 +83,6 @@ module.exports = {
   SUCCESS_INIT,
   SUCCESS_TOKEN,
   SUCCESS_MOBILE,
-  SUCCESS_CONFIG,
 
   // 服务端通信错误
   ERR_SERVER_EMPTY_RESPONSE,

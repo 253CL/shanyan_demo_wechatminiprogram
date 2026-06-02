@@ -3,6 +3,14 @@
  *
  * 环境配置统一管理：根据小程序版本选择 SDK 环境、appId、appKey。
  * 各页面通过 getApp().globalData 获取统一的配置信息。
+ *
+ * ENV_MAP 说明：
+ * - develop：微信开发者工具（手动创建应用）
+ * - develop1：微信开发者工具（接口创建应用）
+ * - trial：体验版
+ * - release：正式版
+ *
+ * 当前默认使用 develop1 配置（接口创建应用），如需切换可修改 onLaunch 中的 envConfig 取值。
  */
 
 const SDK = require('./sdk/index');
@@ -28,7 +36,7 @@ App({
    * 在此统一设置 SDK 环境，确保各页面使用相同配置
    */
   onLaunch() {
-    const envConfig = ENV_MAP[__wxConfig.envVersion] || ENV_MAP.develop;
+    const envConfig =ENV_MAP.develop1;
 
     // 设置 SDK 运行环境
     SDK.setEnvironment(envConfig.sdkEnv);

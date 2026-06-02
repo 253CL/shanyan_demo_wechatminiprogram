@@ -9,6 +9,8 @@ const app = getApp();
  * - 全屏样式：getFullScreenOption，蓝色品牌定制主题
  * - 自定义弹窗样式1：getMinimalPopupOption，极简单按钮
  * - 自定义弹窗样式2：getBottomPopupOption，双按钮 + 协议栏
+ *
+ * 安全处理：wx.getSystemInfoSync 包裹 try-catch，失败时回退到默认值。
  */
 Page({
   data: {
@@ -16,10 +18,16 @@ Page({
   },
 
   onLoad() {
-    const systemInfo = wx.getSystemInfoSync();
-    this.setData({
-      statusBarHeight: systemInfo.statusBarHeight || 20,
-    });
+    try {
+      const systemInfo = wx.getSystemInfoSync();
+      this.setData({
+        statusBarHeight: systemInfo.statusBarHeight || 20,
+      });
+    } catch (e) {
+      this.setData({
+        statusBarHeight: 20,
+      });
+    }
     this.autoInit();
   },
 
@@ -28,7 +36,7 @@ Page({
     SDK.setLog(true);
     SDK.init({ appId: app.globalData.appId }, (res) => {
       console.log('Page-Experience SDK init result:', res);
-      if (res.code === '000000') {
+      if (res.code === '200000') {
         app.globalData.sdkInitialized = true;
       }
     });

@@ -25,28 +25,33 @@
  *   两者不同，不可混用！
  */
 
-const { SDK_VERSION } = require('./config');
 const config = require('./config');
 const crypto = require('./crypto');
 const {
-  SUCCESS_INIT, SUCCESS_TOKEN, SUCCESS_CONFIG,
+  SUCCESS_INIT, SUCCESS_TOKEN,
   ERR_SERVER_EMPTY_RESPONSE, ERR_SERVER_REQUEST_FAILED,
   ERR_NOT_INITIALIZED, ERR_MOBILE_APPID_NOT_INIT,
-  ERR_INVALID_PARAMS, ERR_TOKEN_REQUIRED,
   ERR_APPID_REQUIRED,
   ERR_SDK_INIT_ERR, ERR_SDK_RESPONSE_PROCESS_ERR,
-  ERR_CONFIG_SET_ERR, ERR_TOKEN_SIGN_CALC_ERR, ERR_TOKEN_UUID_GEN_ERR,
+  ERR_TOKEN_SIGN_CALC_ERR, ERR_TOKEN_UUID_GEN_ERR,
   ERR_TOKEN_PROCESS_ERR, ERR_TOKEN_PLUGIN_CALL_ERR,
   ERR_NETWORK_PROCESS_ERR, ERR_NETWORK_CALL_ERR,
   ERR_NETWORK_TYPE_FAILED,
   makeDynamicError,
 } = require('./errors');
-const { reportLog } = require('./log');
+const { reportLog, setLog: setLogInternal, log, error, logDetail } = require('./log');
 
-// 引入微信一键登录插件
+// 引入微信一键登录插件（安全加载，插件未配置时不崩溃）
 // app.json 中配置： "plugins": { "auth-plugin": { "version": "2.2.0", "provider": "wx35678fec06d475b4" } }
-// requirePlugin 返回的是一个包含插件命名空间的对象，需要解构拿到真正的插件实例
-const { oneKeyLogin } = requirePlugin('auth-plugin');
+// requirePlugin 返回插件命名空间对象，解构 oneKeyLogin 作为插件实例
+let oneKeyLogin;
+try {
+  const plugin = requirePlugin('auth-plugin');
+  oneKeyLogin = plugin && plugin.oneKeyLogin ? plugin.oneKeyLogin : null;
+} catch (e) {
+  error('[ShanYan] 加载 auth-plugin 插件失败:', e.message);
+  oneKeyLogin = null;
+}
 
 /**
  * 格式化时间戳为 yyyyMMddHHmmssSSS（17位）
@@ -105,41 +110,17 @@ const state = {
   // === 其他状态 ===
   businessType: config.BUSINESS_TYPE,           // 业务类型，固定为 '8'
   version: config.VERSION,                      // 接口版本号，固定为 '1.0'
+  did: '',            // 浏览器加密指纹（取号成功后从 JSSDK 响应中获取）
   networkType: '',      // 当前网络类型（wifi/4g/5g/none）
   telcom: 'Unknown_Operator',  // 运营商标识（init时未知，取号后根据token前缀自动识别）
   initialized: false,   // SDK 是否已初始化
   sid: '',              // 会话ID：从init生成，贯穿初始化到获取token的完整流程
   logEnabled: false,    // 日志输出开关：true=输出 SDK 内部 console 日志，false=静默（默认关闭）
-  detailLogEnabled: true, // 日志详情输出开关：true=输出接口地址/入参/响应等敏感日志，false=不输出（默认关闭）
   reportEnabled: true,  // 日志上报开关：true=上报到创蓝日志服务器（默认开启），false=不上报
+  fullReportEnabled: true, // 完整日志上报开关：true=获取device/deviceName/osVersion/netType字段（默认开启），false=不获取
 };
 
 // ============================ 工具函数 ============================
-
-/**
- * SDK 内部日志输出封装，受 setLog 开关控制
- */
-function log() {
-  if (state.logEnabled) {
-    console.log.apply(console, arguments);
-  }
-}
-
-function error() {
-  if (state.logEnabled) {
-    console.error.apply(console, arguments);
-  }
-}
-
-/**
- * SDK 内部日志详情输出封装，受 setDetailLog 开关控制
- * 用于输出接口地址、入参、响应等敏感信息
- */
-function logDetail() {
-  if (state.logEnabled && state.detailLogEnabled) {
-    console.log.apply(console, arguments);
-  }
-}
 
 /**
  * 检查是否为 Object 类型
@@ -186,13 +167,15 @@ function _refreshNetworkType() {
  * - URL：调用当前环境初始化接口
  * - Method：POST
  * - Content-Type：application/x-www-form-urlencoded (form-data)
- * - 入参：appId=开发者应用ID&data=
- * - 出参：{ retCode: "0", data: { cmccAppId, cmccSign, cmccTimestamp, cmccValidateSign, traceId, ... } }
+ * - 入参：appId=开发者应用ID&appPlatform=平台类型&data=&random=UUID&sdkVersion=SDK版本&sign=HMAC-SHA1签名
+ * - 签名算法：hmacSHA1Encrypt(按字母顺序拼接字段值, md5(appId))
+ *   签名原文：appId{appId}appPlatform{appPlatform}data{data}random{random}sdkVersion{sdkVersion}
+ * - 出参：{ retCode: "0", data: { cmccAppId, cmccAppKey, cmccSign, cmccTimestamp, cmccValidateSign, traceId, ... } }
  *
  * @param {Object} params - 初始化参数
  * @param {string} params.appId - 创蓝平台分配的应用 ID（必填）
  * @param {Function} callback - 回调函数
- * @param {string} callback.code - 结果码，'000000'=成功
+ * @param {string} callback.code - 结果码，'200000'=成功
  * @param {string} callback.message - 结果描述
  * @param {string} callback.traceId - 请求追踪 ID
  *
@@ -200,21 +183,21 @@ function _refreshNetworkType() {
  * // stable 环境
  * SDK.setEnvironment('stable');
  * SDK.init({ appId: 'xxx' }, (res) => {
- *   if (res.code === '000000') {
+ *   if (res.code === '200000') {
  *     console.log('初始化成功');
  *   }
  * });
  *
  * // release 环境（默认）
  * SDK.init({ appId: 'xxx' }, (res) => {
- *   if (res.code === '000000') {
+ *   if (res.code === '200000') {
  *     console.log('初始化成功');
  *   }
  * });
  */
 function init(params, callback) {
   log(SEPARATOR);
-  log('[ShanYan Init] 开始初始化');
+  log('[ShanYan Init] 开始初始化', params);
 
   if (isFunction(callback) === false) {
     callback = (res) => log('[ShanYan Init]', res);
@@ -223,6 +206,7 @@ function init(params, callback) {
   // 参数校验
   if (!params || isObj(params) === false || !params.appId) {
     error('[ShanYan Init] appId 必传');
+    log('[ShanYan Init] 回调:', JSON.stringify(ERR_APPID_REQUIRED));
     callback({ ...ERR_APPID_REQUIRED });
     return;
   }
@@ -232,30 +216,41 @@ function init(params, callback) {
   // 保存参数
   state.appId = useAppId;
 
-  // 获取当前网络类型
-  _refreshNetworkType();
+  // 完整模式下才获取网络类型
+  if (state.fullReportEnabled) {
+    _refreshNetworkType();
 
-  // 监听网络变化，保持 state.networkType 实时更新
-  if (!state._networkListenerRegistered) {
-    state._networkListenerRegistered = true;
-    try {
-      wx.onNetworkStatusChange((res) => {
-        state.networkType = res.networkType || '';
-        log('[ShanYan Network] 网络变化:', state.networkType);
-      });
-    } catch (e) {
-      // 监听失败不影响主流程
+    // 监听网络变化，保持 state.networkType 实时更新
+    if (!state._networkListenerRegistered) {
+      state._networkListenerRegistered = true;
+      try {
+        wx.onNetworkStatusChange((res) => {
+          state.networkType = res.networkType || '';
+          log('[ShanYan Network] 网络变化:', state.networkType);
+        });
+      } catch (e) {
+        // 监听失败不影响主流程
+      }
     }
   }
 
   let uuid;
   let sid;
   let requestData;
+  let sign;
   try {
     uuid = crypto.guid();
     sid = crypto.guid();
     state.sid = sid;
-    requestData = `appId=${encodeURIComponent(useAppId)}&data=`;
+
+    // 构建签名原文（按字母顺序：appId, appPlatform, data, random, sdkVersion）
+    const useData = ''; // data 固定为空
+    const signText = `appId${useAppId}appPlatform${config.APP_PLATFORM}data${useData}random${uuid}sdkVersion${config.SDK_VERSION}`;
+    const signKey = crypto.md5(useAppId);
+    sign = crypto.hmacSHA1Encrypt(signText, signKey);
+
+    // 构建表单数据
+    requestData = `appId=${encodeURIComponent(useAppId)}&appPlatform=${encodeURIComponent(config.APP_PLATFORM)}&data=${encodeURIComponent(useData)}&random=${encodeURIComponent(uuid)}&sdkVersion=${encodeURIComponent(config.SDK_VERSION)}&sign=${encodeURIComponent(sign)}`;
   } catch (e) {
     error('[ShanYan Init] 初始化异常:', e.message);
     try {
@@ -269,13 +264,20 @@ function init(params, callback) {
           processName: PROCESS_NAME.INIT,
           resCode: ERR_SDK_INIT_ERR.code,
           resDesc: makeDynamicError(ERR_SDK_INIT_ERR, e.message).message,
+          innerCode: ERR_SDK_INIT_ERR.code,
+          innerDesc: makeDynamicError(ERR_SDK_INIT_ERR, e.message).message,
+          netType: state.networkType,
+          did: '',
+          fullReport: state.fullReportEnabled,
           sid: initSid,
         }, initUuid);
       }
     } catch (logError) {
       error('[ShanYan Init] 日志上报异常:', logError.message);
     }
-    callback(makeDynamicError(ERR_SDK_INIT_ERR, e.message));
+    const result = makeDynamicError(ERR_SDK_INIT_ERR, e.message);
+    log('[ShanYan Init] 回调:', JSON.stringify(result));
+    callback(result);
     return;
   }
 
@@ -308,12 +310,18 @@ function init(params, callback) {
                 processName: PROCESS_NAME.INIT,
                 resCode: ERR_SERVER_EMPTY_RESPONSE.code,
                 resDesc: ERR_SERVER_EMPTY_RESPONSE.message,
+                innerCode: ERR_SERVER_EMPTY_RESPONSE.code,
+                innerDesc: ERR_SERVER_EMPTY_RESPONSE.message,
+                netType: state.networkType,
+                did: '',
+                fullReport: state.fullReportEnabled,
                 sid: state.sid,
               }, initUuid);
             }
           } catch (logError) {
             error('[ShanYan Init] 日志上报异常:', logError.message);
           }
+          log('[ShanYan Init] 回调:', JSON.stringify(ERR_SERVER_EMPTY_RESPONSE));
           callback({ ...ERR_SERVER_EMPTY_RESPONSE });
           return;
         }
@@ -321,6 +329,35 @@ function init(params, callback) {
         // 成功时返回 retCode === '0'
         if (res.data.retCode === '0') {
           const data = res.data.data;
+          if (!data || typeof data !== 'object') {
+            error('[ShanYan Init] 服务端返回数据格式异常');
+            try {
+              const initUuid = uuid;
+              if (state.reportEnabled) {
+                reportLog({
+                  appId: state.appId,
+                  status: REPORT_STATUS.FAIL,
+                  telcom: 'Unknown_Operator',
+                  processName: PROCESS_NAME.INIT,
+                  resCode: ERR_SERVER_EMPTY_RESPONSE.code,
+                  resDesc: '服务端返回数据为空或格式异常',
+                  innerCode: ERR_SERVER_EMPTY_RESPONSE.code,
+                  innerDesc: '服务端返回数据为空或格式异常',
+                  netType: state.networkType,
+                  did: '',
+                  fullReport: state.fullReportEnabled,
+                  sid: state.sid,
+                }, initUuid);
+              }
+            } catch (logError) {
+              error('[ShanYan Init] 日志上报异常:', logError.message);
+            }
+            const result = { code: ERR_SERVER_EMPTY_RESPONSE.code, message: '服务端返回数据格式异常' };
+            log('[ShanYan Init] 回调:', JSON.stringify(result));
+            callback(result);
+            return;
+          }
+
           log('[ShanYan Init] retCode 校验通过');
 
           // 保存服务端下发的移动参数
@@ -346,6 +383,11 @@ function init(params, callback) {
                 processName: PROCESS_NAME.INIT,
                 resCode: SUCCESS_INIT.code,
                 resDesc: SUCCESS_INIT.message,
+                innerCode: SUCCESS_INIT.code,
+                innerDesc: SUCCESS_INIT.message,
+                netType: state.networkType,
+                did: '',
+                fullReport: state.fullReportEnabled,
                 sid: state.sid,
               }, uuid);
             }
@@ -353,6 +395,7 @@ function init(params, callback) {
             error('[ShanYan Init] 日志上报异常:', e.message);
           }
 
+          log('[ShanYan Init] 回调:', JSON.stringify({ ...SUCCESS_INIT, traceId: state.traceId }));
           callback({ ...SUCCESS_INIT, traceId: state.traceId });
         } else {
           // 服务端返回错误
@@ -372,6 +415,11 @@ function init(params, callback) {
                 processName: PROCESS_NAME.INIT,
                 resCode: retCode,
                 resDesc: retMsg,
+                innerCode: retCode,
+                innerDesc: retMsg,
+                netType: state.networkType,
+                did: '',
+                fullReport: state.fullReportEnabled,
                 sid: state.sid,
               }, initUuid);
             }
@@ -379,6 +427,7 @@ function init(params, callback) {
             error('[ShanYan Init] 日志上报异常:', logError.message);
           }
 
+          log('[ShanYan Init] 回调:', JSON.stringify({ code: retCode, message: retMsg }));
           callback({ code: retCode, message: retMsg });
         }
       } catch (e) {
@@ -393,13 +442,20 @@ function init(params, callback) {
               processName: PROCESS_NAME.INIT,
               resCode: ERR_SDK_RESPONSE_PROCESS_ERR.code,
               resDesc: makeDynamicError(ERR_SDK_RESPONSE_PROCESS_ERR, e.message).message,
+              innerCode: ERR_SDK_RESPONSE_PROCESS_ERR.code,
+              innerDesc: makeDynamicError(ERR_SDK_RESPONSE_PROCESS_ERR, e.message).message,
+              netType: state.networkType,
+              did: '',
+              fullReport: state.fullReportEnabled,
               sid: state.sid,
             }, initUuid);
           }
         } catch (logError) {
           error('[ShanYan Init] 日志上报异常:', logError.message);
         }
-        callback(makeDynamicError(ERR_SDK_RESPONSE_PROCESS_ERR, e.message));
+        const result = makeDynamicError(ERR_SDK_RESPONSE_PROCESS_ERR, e.message);
+        log('[ShanYan Init] 回调:', JSON.stringify(result));
+        callback(result);
       }
     },
     fail: (err) => {
@@ -417,6 +473,11 @@ function init(params, callback) {
             processName: PROCESS_NAME.INIT,
             resCode: ERR_SERVER_REQUEST_FAILED.code,
             resDesc: makeDynamicError(ERR_SERVER_REQUEST_FAILED, err.errMsg || '').message,
+            innerCode: ERR_SERVER_REQUEST_FAILED.code,
+            innerDesc: makeDynamicError(ERR_SERVER_REQUEST_FAILED, err.errMsg || '').message,
+            netType: state.networkType,
+            did: '',
+            fullReport: state.fullReportEnabled,
             sid: state.sid,
           }, initUuid);
         }
@@ -424,7 +485,9 @@ function init(params, callback) {
         error('[ShanYan Init] 日志上报异常:', logError.message);
       }
 
-      callback(makeDynamicError(ERR_SERVER_REQUEST_FAILED, err.errMsg || ''));
+      const result = makeDynamicError(ERR_SERVER_REQUEST_FAILED, err.errMsg || '');
+      log('[ShanYan Init] 回调:', JSON.stringify(result));
+      callback(result);
     }
   });
 }
@@ -432,10 +495,11 @@ function init(params, callback) {
 /**
  * 获取当前网络类型
  *
- * 使用移动一键登录插件的 getConnection 方法获取当前网络状态。
+ * 优先使用移动一键登录插件的 getConnection 方法获取。
+ * 若插件未加载或未初始化，降级使用微信原生 wx.getNetworkType API。
  * 注意：一键登录需要在蜂窝网络（4G/5G）下才能取号，WiFi 环境下无法获取手机号。
  *
- * @param {Function} callback - 回调函数
+ * @param {Function} [callback] - 回调函数（可选），不传时默认输出到日志
  * @param {string} callback.networkType - 网络类型（wifi/4g/5g/none）
  */
 function getNetworkType(callback) {
@@ -456,6 +520,12 @@ function getNetworkType(callback) {
 
     log('[ShanYan Network] 使用插件获取网络状态:', pluginAppId);
 
+    if (!oneKeyLogin) {
+      log('[ShanYan Network] 插件未加载，降级使用 wx');
+      _getNetworkTypeByWx(callback);
+      return;
+    }
+
     oneKeyLogin.getConnection({
       appId: pluginAppId,
       success: (res) => {
@@ -463,12 +533,13 @@ function getNetworkType(callback) {
           const networkType = res.netType || 'unknown';
           state.networkType = networkType;
           log('[ShanYan Network] 插件返回网络类型:', networkType);
-          logDetail('[ShanYan Network] getConnection 完整返回:', JSON.stringify(res));
-
+          log('[ShanYan Network] 回调:', JSON.stringify({ networkType: networkType }));
           callback({ networkType: networkType });
         } catch (e) {
           error('[ShanYan Network] 插件响应处理异常:', e.message);
-          callback(makeDynamicError(ERR_NETWORK_PROCESS_ERR, e.message));
+          const result = makeDynamicError(ERR_NETWORK_PROCESS_ERR, e.message);
+          log('[ShanYan Network] 回调:', JSON.stringify(result));
+          callback(result);
         }
       },
       fail: (err) => {
@@ -496,16 +567,20 @@ function _getNetworkTypeByWx(callback) {
         state.networkType = networkType;
         log('[ShanYan Network] wx 返回:', networkType);
 
+        log('[ShanYan Network] 回调:', JSON.stringify({ networkType: networkType }));
         callback({ networkType: networkType });
       },
       fail: (err) => {
         error('[ShanYan Network] wx 失败:', JSON.stringify(err));
+        log('[ShanYan Network] 回调:', JSON.stringify({ ...ERR_NETWORK_TYPE_FAILED }));
         callback({ ...ERR_NETWORK_TYPE_FAILED, error: err });
       }
     });
   } catch (e) {
     error('[ShanYan Network] wx 调用异常:', e.message);
-    callback(makeDynamicError(ERR_NETWORK_CALL_ERR, e.message));
+    const result = makeDynamicError(ERR_NETWORK_CALL_ERR, e.message);
+    log('[ShanYan Network] 回调:', JSON.stringify(result));
+    callback(result);
   }
 }
 
@@ -538,6 +613,11 @@ function _getNetworkTypeByWx(callback) {
  */
 function cryptographicToken(res, appId) {
   try {
+    if (!res || typeof res !== 'object') {
+      error('[cryptographicToken] 运营商返回数据为空或格式异常');
+      return '';
+    }
+
     logDetail('[cryptographicToken] 开始生成加密 token');
     logDetail('[cryptographicToken] appId:', appId);
 
@@ -625,10 +705,10 @@ function cryptographicToken(res, appId) {
  * @param {Object} [cfg] - 可选的授权页配置
  * @param {Object} [cfg.option] - 自定义 UI 配置（参考接入文档 7.5 节）
  * @param {Function} callback - 回调函数
- * @param {string} callback.code - 结果码，'103000'=取号成功，'501'=用户取消
+ * @param {string} callback.code - 结果码，'200000'=取号成功，'501'=用户取消
  * @param {string} callback.message - 结果描述
  * @param {string} callback.token - 取号凭证（用于服务端校验换取手机号）
- * @param {string} callback.userInformation - 浏览器加密指纹
+ * @param {string} callback.msgId - 消息ID
  *
  * @example
  * // 不传配置：使用默认 logo
@@ -652,6 +732,10 @@ function openLoginAuth(cfg, callback) {
     callback = cfg;
     cfg = {};
   }
+  if (isFunction(callback) === false) {
+    callback = (res) => log('[ShanYan Token]', res);
+  }
+
   if (!state.initialized) {
     try {
       const tokenUuid = crypto.guid();
@@ -663,7 +747,11 @@ function openLoginAuth(cfg, callback) {
           processName: PROCESS_NAME.TOKEN_ERR,
           resCode: ERR_NOT_INITIALIZED.code,
           resDesc: ERR_NOT_INITIALIZED.message,
+          innerCode: '',
+          innerDesc: '',
           netType: state.networkType,
+          did: state.did,
+          fullReport: state.fullReportEnabled,
           sid: state.sid,
         }, tokenUuid);
       }
@@ -671,15 +759,11 @@ function openLoginAuth(cfg, callback) {
       error('[ShanYan Token] 日志上报异常:', logError.message);
     }
     if (isFunction(callback)) {
+      log('[ShanYan Token] 回调:', JSON.stringify(ERR_NOT_INITIALIZED));
       callback({ ...ERR_NOT_INITIALIZED });
     }
     return;
   }
-
-  if (isFunction(callback) === false) {
-    callback = (res) => log('[ShanYan Token]', res);
-  }
-
   // 处理 UI 配置：单次独立生效，不传配置时使用默认 logo
   const DEFAULT_LOGO_STYLE = {
     src: 'https://www.chuanglan.com/images/logo.svg',
@@ -742,13 +826,18 @@ function openLoginAuth(cfg, callback) {
           processName: PROCESS_NAME.TOKEN_ERR,
           resCode: ERR_MOBILE_APPID_NOT_INIT.code,
           resDesc: ERR_MOBILE_APPID_NOT_INIT.message,
+          innerCode: '',
+          innerDesc: '',
           netType: state.networkType,
+          did: state.did,
+          fullReport: state.fullReportEnabled,
           sid: state.sid,
         }, tokenUuid);
       }
     } catch (logError) {
       error('[ShanYan Token] 日志上报异常:', logError.message);
     }
+    log('[ShanYan Token] 回调:', JSON.stringify(ERR_MOBILE_APPID_NOT_INIT));
     callback({ ...ERR_MOBILE_APPID_NOT_INIT });
     return;
   }
@@ -774,7 +863,7 @@ function openLoginAuth(cfg, callback) {
     logDetail('[ShanYan Token] signKey:', signAppKey ? '***' + signAppKey.slice(-4) : 'undefined');
     logDetail('[ShanYan Token] 签名原文(signStr):', useAppId + state.businessType + msgId + timestamp + useTraceId + state.version + '***');
     logDetail('[ShanYan Token] 计算 sign:', useSign);
-    logDetail('[ShanYan Token] option:', JSON.stringify(useOption));
+    log('[ShanYan Token] option:', JSON.stringify(useOption));
   } catch (e) {
     error('[ShanYan Token] 签名计算异常:', e.message);
     try {
@@ -787,14 +876,20 @@ function openLoginAuth(cfg, callback) {
           processName: PROCESS_NAME.TOKEN_ERR,
           resCode: ERR_TOKEN_SIGN_CALC_ERR.code,
           resDesc: makeDynamicError(ERR_TOKEN_SIGN_CALC_ERR, e.message).message,
+          innerCode: '',
+          innerDesc: '',
           netType: state.networkType,
+          did: state.did,
+          fullReport: state.fullReportEnabled,
           sid: state.sid,
         }, tokenUuid);
       }
     } catch (logError) {
       error('[ShanYan Token] 日志上报异常:', logError.message);
     }
-    callback(makeDynamicError(ERR_TOKEN_SIGN_CALC_ERR, e.message));
+    const result = makeDynamicError(ERR_TOKEN_SIGN_CALC_ERR, e.message);
+    log('[ShanYan Token] 回调:', JSON.stringify(result));
+    callback(result);
     return;
   }
 
@@ -825,18 +920,52 @@ function openLoginAuth(cfg, callback) {
           processName: PROCESS_NAME.TOKEN_ERR,
           resCode: ERR_TOKEN_UUID_GEN_ERR.code,
           resDesc: makeDynamicError(ERR_TOKEN_UUID_GEN_ERR, e.message).message,
+          innerCode: '',
+          innerDesc: '',
           netType: state.networkType,
+          did: state.did,
+          fullReport: state.fullReportEnabled,
           sid: state.sid,
         }, '');
       }
     } catch (logError) {
       error('[ShanYan Token] 日志上报异常:', logError.message);
     }
-    callback(makeDynamicError(ERR_TOKEN_UUID_GEN_ERR, e.message));
+    const result = makeDynamicError(ERR_TOKEN_UUID_GEN_ERR, e.message);
+    log('[ShanYan Token] 回调:', JSON.stringify(result));
+    callback(result);
     return;
   }
 
   // 调用微信插件的 getTokenInfo 方法
+  if (!oneKeyLogin) {
+    try {
+      const tokenUuid = crypto.guid();
+      if (state.reportEnabled) {
+        reportLog({
+          appId: state.appId,
+          status: REPORT_STATUS.FAIL,
+          telcom: state.telcom,
+          processName: PROCESS_NAME.TOKEN_ERR,
+          resCode: ERR_TOKEN_PLUGIN_CALL_ERR.code,
+          resDesc: 'auth-plugin 插件未加载',
+          innerCode: '',
+          innerDesc: '',
+          netType: state.networkType,
+          did: state.did,
+          fullReport: state.fullReportEnabled,
+          sid: state.sid,
+        }, tokenUuid);
+      }
+    } catch (logError) {
+      error('[ShanYan Token] 日志上报异常:', logError.message);
+    }
+    const result = { code: ERR_TOKEN_PLUGIN_CALL_ERR.code, message: 'auth-plugin 插件未加载' };
+    log('[ShanYan Token] 回调:', JSON.stringify(result));
+    callback(result);
+    return;
+  }
+
   try {
     logDetail('[ShanYan Token] netType:', state.networkType);
     oneKeyLogin.getTokenInfo({
@@ -847,6 +976,9 @@ function openLoginAuth(cfg, callback) {
 
           // 生成二次封装的加密 token（根据 token 前缀自动识别运营商）
           const encryptedToken = cryptographicToken(res, state.appId);
+
+          // 保存浏览器加密指纹
+          state.did = res.userInformation || '';
 
           // 日志上报（code=103000/501 时 processName='4'，其他 processName='3'）
           const tokenProcessName = (res.code === '103000' || res.code === '501') ? PROCESS_NAME.TOKEN_OK : PROCESS_NAME.TOKEN_ERR;
@@ -859,7 +991,11 @@ function openLoginAuth(cfg, callback) {
                 processName: tokenProcessName,
                 resCode: SUCCESS_TOKEN.code,
                 resDesc: res.message || SUCCESS_TOKEN.message,
+                innerCode: res.code || '',
+                innerDesc: res.msgId || '',
                 netType: state.networkType,
+                did: state.did,
+                fullReport: state.fullReportEnabled,
                 sid: state.sid,
               }, uuid);
             }
@@ -867,13 +1003,14 @@ function openLoginAuth(cfg, callback) {
             error('[ShanYan Token] 日志上报异常:', e.message);
           }
 
-          callback({
+          const cbResult = {
             ...SUCCESS_TOKEN,
             message: res.message || 'success',
             token: encryptedToken,
-            userInformation: res.userInformation,
             msgId: res.msgId,
-          });
+          };
+          log('[ShanYan Token] 回调:', JSON.stringify(cbResult));
+          callback(cbResult);
         } catch (e) {
           error('[ShanYan Token] success 处理异常:', e.message);
           try {
@@ -885,14 +1022,20 @@ function openLoginAuth(cfg, callback) {
                 processName: PROCESS_NAME.TOKEN_ERR,
                 resCode: ERR_TOKEN_PROCESS_ERR.code,
                 resDesc: makeDynamicError(ERR_TOKEN_PROCESS_ERR, e.message).message,
+                innerCode: '',
+                innerDesc: '',
                 netType: state.networkType,
+                did: state.did,
+                fullReport: state.fullReportEnabled,
                 sid: state.sid,
               }, uuid);
             }
           } catch (logError) {
             error('[ShanYan Token] 日志上报异常:', logError.message);
           }
-          callback(makeDynamicError(ERR_TOKEN_PROCESS_ERR, e.message));
+          const result = makeDynamicError(ERR_TOKEN_PROCESS_ERR, e.message);
+          log('[ShanYan Token] 回调:', JSON.stringify(result));
+          callback(result);
         }
       },
       error: res => {
@@ -916,7 +1059,11 @@ function openLoginAuth(cfg, callback) {
                 processName: errorProcessName,
                 resCode: res.code || ERR_NETWORK_TYPE_FAILED.code,
                 resDesc: res.message || ERR_NETWORK_TYPE_FAILED.message,
+                innerCode: res.code || '',
+                innerDesc: res.msgId || '',
                 netType: state.networkType,
+                did: state.did,
+                fullReport: state.fullReportEnabled,
                 sid: state.sid,
               }, uuid);
             }
@@ -924,11 +1071,13 @@ function openLoginAuth(cfg, callback) {
             error('[ShanYan Token] 日志上报异常:', e.message);
           }
 
-          callback({
+          const cbResult = {
             code: res.code || ERR_NETWORK_TYPE_FAILED.code,
             message: res.message || ERR_NETWORK_TYPE_FAILED.message,
             msgId: res.msgId,
-          });
+          };
+          log('[ShanYan Token] 回调:', JSON.stringify(cbResult));
+          callback(cbResult);
         } catch (e) {
           error('[ShanYan Token] error 处理异常:', e.message);
           try {
@@ -940,14 +1089,20 @@ function openLoginAuth(cfg, callback) {
                 processName: PROCESS_NAME.TOKEN_ERR,
                 resCode: ERR_TOKEN_PROCESS_ERR.code,
                 resDesc: makeDynamicError(ERR_TOKEN_PROCESS_ERR, e.message).message,
+                innerCode: '',
+                innerDesc: '',
                 netType: state.networkType,
+                did: state.did,
+                fullReport: state.fullReportEnabled,
                 sid: state.sid,
               }, uuid);
             }
           } catch (logError) {
             error('[ShanYan Token] 日志上报异常:', logError.message);
           }
-          callback(makeDynamicError(ERR_TOKEN_PROCESS_ERR, e.message));
+          const result = makeDynamicError(ERR_TOKEN_PROCESS_ERR, e.message);
+          log('[ShanYan Token] 回调:', JSON.stringify(result));
+          callback(result);
         }
       }
     });
@@ -962,14 +1117,20 @@ function openLoginAuth(cfg, callback) {
           processName: PROCESS_NAME.TOKEN_ERR,
           resCode: ERR_TOKEN_PLUGIN_CALL_ERR.code,
           resDesc: makeDynamicError(ERR_TOKEN_PLUGIN_CALL_ERR, e.message).message,
+          innerCode: '',
+          innerDesc: '',
           netType: state.networkType,
+          did: state.did,
+          fullReport: state.fullReportEnabled,
           sid: state.sid,
         }, uuid);
       }
     } catch (logError) {
       error('[ShanYan Token] 日志上报异常:', logError.message);
     }
-    callback(makeDynamicError(ERR_TOKEN_PLUGIN_CALL_ERR, e.message));
+    const result = makeDynamicError(ERR_TOKEN_PLUGIN_CALL_ERR, e.message);
+    log('[ShanYan Token] 回调:', JSON.stringify(result));
+    callback(result);
   }
 }
 
@@ -982,6 +1143,9 @@ function openLoginAuth(cfg, callback) {
  * @returns {Object} 插件实例对象
  */
 function getPlugin() {
+  if (!oneKeyLogin) {
+    error('[ShanYan] getPlugin: auth-plugin 插件未加载');
+  }
   return oneKeyLogin;
 }
 
@@ -1003,6 +1167,7 @@ function getState() {
  */
 function setLog(flag) {
   state.logEnabled = !!flag;
+  setLogInternal(flag);
 }
 
 /**
@@ -1015,25 +1180,25 @@ function setReport(flag) {
 }
 
 /**
- * 设置 SDK 日志详情输出开关
+ * 设置日志上报是否获取 device/deviceName/osVersion/netType 字段
  *
- * 控制接口地址、入参、响应等敏感日志是否输出。
- * 需同时开启 setLog(true) 且 setDetailLog(true) 时才会输出详情日志。
+ * 关闭后不再获取这几个字段，减少系统 API 调用。
+ * 默认开启（获取）。
  *
- * @param {Boolean} flag - true=输出详情日志，false=不输出（默认）
+ * @param {Boolean} flag - true=获取上述字段（默认），false=不获取
  */
-function setDetailLog(flag) {
-  state.detailLogEnabled = !!flag;
+function setFullReport(flag) {
+  state.fullReportEnabled = !!flag;
 }
 
 /**
  * 设置 SDK 运行环境
  *
  * 说明：
- * - 需在 init() 之前调用，否则默认为 production 环境
- * - 稳定环境用于开发调试，生产环境用于正式使用
+ * - 需在 init() 之前调用，否则默认为 release 环境
+ * - stable 用于开发调试，release 用于正式上线
  *
- * @param {string} env - 环境标识：'stable'=稳定环境，'release'=生产环境（默认）
+ * @param {string} env - 环境标识：'stable'=测试环境，'release'=生产环境（默认）
  */
 function setEnvironment(env) {
   if (env !== 'stable' && env !== 'release') {
@@ -1053,5 +1218,5 @@ module.exports = {
   setEnvironment, // 设置 SDK 运行环境（stable=稳定环境，release=生产环境，默认 release）
   setLog,         // 设置 SDK 内部日志输出开关（默认关闭）
   setReport,      // 设置日志上报开关（默认开启）
-  setDetailLog,   // 设置日志详情输出开关（默认关闭）
+  setFullReport,  // 设置日志上报是否获取设备/网络信息字段（默认开启）
 };

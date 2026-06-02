@@ -1,11 +1,3 @@
-        uncheck: 'sdk/login_sdk_unchecked.png',
-        checked: 'sdk/login_sdk_checked.png',
-[ project.config.json.json 文件错误] project.config.json: project.config.json
-Expecting 'EOF','}',',',']', got INVALID
-  50 |   "simulatorPluginLibVersion": {},
-  51 |   "editorSetting": {},
-> 52 |   "testRoot": "minitest/"
-     | ^
-  53 | }latorPluginLibVersion": {},
-  54 |   "editorSetting": {}
-  55 | }(env: Windows,mp,2.01.2510280; lib: 2.25.4)        
+按照以下需求修改日志上报：
+1.日志上报接口新增innerCode字段，初始化时传值与resCode相同，获取token传运营商返回的原始code的值。
+2.日志上报接口新增innerDesc字段，初始化时传值与resDesc相同，获取token传运营商返回的原始msgId的值。
