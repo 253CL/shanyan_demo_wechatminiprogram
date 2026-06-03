@@ -1,4 +1,5 @@
 const SDK = require('../../sdk/index');
+const dlog = require('../../demo-log');
 const app = getApp();
 
 /**
@@ -9,6 +10,8 @@ const app = getApp();
  * - 全屏样式：getFullScreenOption，蓝色品牌定制主题
  * - 自定义弹窗样式1：getMinimalPopupOption，极简单按钮
  * - 自定义弹窗样式2：getBottomPopupOption，双按钮 + 协议栏
+ *
+ * 授权完成后跳转到结果页，展示登录成功/失败状态。
  *
  * 安全处理：wx.getSystemInfoSync 包裹 try-catch，失败时回退到默认值。
  */
@@ -35,43 +38,59 @@ Page({
   autoInit() {
     SDK.setLog(true);
     SDK.init({ appId: app.globalData.appId }, (res) => {
-      console.log('Page-Experience SDK init result:', res);
+      dlog.log('[Page-Experience] SDK init result:', JSON.stringify(res));
       if (res.code === '200000') {
         app.globalData.sdkInitialized = true;
+      } else {
+        dlog.warn('[Page-Experience] SDK init failed, but continuing for experience');
       }
     });
   },
 
   /**
-   * 通用方法：使用指定 UI 预设打开授权页
+   * 通用方法：使用指定 UI 预设打开授权页，完成后跳转到结果页
    * @param {Function} getPreset - UI 预设配置函数
-   * @param {string} label - 样式名称（用于 toast 提示）
+   * @param {string} label - 样式名称（用于结果页显示）
    */
   openAuthWithStyle(getPreset, label) {
     const option = getPreset();
     SDK.openLoginAuth({ option: option }, (authRes) => {
-      console.log('openLoginAuth result:', authRes);
-      if (authRes.code === '200000') {
-        wx.showToast({ title: '授权成功', icon: 'success' });
-      } else if (authRes.code === '501') {
+      dlog.log('[Page-Experience] openLoginAuth result:', JSON.stringify(authRes));
+      if (authRes.code === '501') {
         wx.showToast({ title: '用户取消授权', icon: 'none' });
-      } else {
-        wx.showToast({ title: `授权失败: ${authRes.message}`, icon: 'none' });
+        return;
       }
+      this.navigateToResult(label, authRes);
+    });
+  },
+
+  /** 跳转到授权结果页 */
+  navigateToResult(styleName, authRes) {
+    dlog.log('[Page-Experience] navigateToResult:', styleName, JSON.stringify(authRes));
+    const params = [
+      `styleName=${encodeURIComponent(styleName)}`,
+      `code=${authRes.code}`,
+      `message=${encodeURIComponent(authRes.message || '')}`,
+    ];
+    if (authRes.token) {
+      params.push(`token=${encodeURIComponent(authRes.token)}`);
+    }
+    const url = `/pages/page-result/page-result?${params.join('&')}`;
+    dlog.log('[Page-Experience] navigateTo url:', url);
+    wx.navigateTo({
+      url: url,
     });
   },
 
   /** 默认弹窗样式：不传 option，SDK 使用默认配置 */
   onStandardStyle() {
     SDK.openLoginAuth((authRes) => {
-      console.log('openLoginAuth result:', authRes);
-      if (authRes.code === '200000') {
-        wx.showToast({ title: '授权成功', icon: 'success' });
-      } else if (authRes.code === '501') {
+      dlog.log('[Page-Experience] openLoginAuth result:', JSON.stringify(authRes));
+      if (authRes.code === '501') {
         wx.showToast({ title: '用户取消授权', icon: 'none' });
-      } else {
-        wx.showToast({ title: `授权失败: ${authRes.message}`, icon: 'none' });
+        return;
       }
+      this.navigateToResult('默认弹窗样式', authRes);
     });
   },
 

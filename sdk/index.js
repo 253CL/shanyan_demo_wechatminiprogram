@@ -30,6 +30,7 @@ const crypto = require('./crypto');
 const {
   SUCCESS_INIT, SUCCESS_TOKEN,
   ERR_SERVER_EMPTY_RESPONSE, ERR_SERVER_REQUEST_FAILED,
+  ERR_INIT_TIMEOUT,
   ERR_NOT_INITIALIZED, ERR_MOBILE_APPID_NOT_INIT,
   ERR_APPID_REQUIRED,
   ERR_SDK_INIT_ERR, ERR_SDK_RESPONSE_PROCESS_ERR,
@@ -90,6 +91,10 @@ const PROCESS_NAME = {
   TOKEN_ERR: '3', // openLoginAuth 异常（非用户主动取消）
 };
 
+// ============================ 缓存键 ============================
+
+const CACHE_KEY = 'shanyan_init_cache';
+
 // ============================ SDK 内部状态 ============================
 
 const state = {
@@ -118,6 +123,9 @@ const state = {
   logEnabled: false,    // 日志输出开关：true=输出 SDK 内部 console 日志，false=静默（默认关闭）
   reportEnabled: true,  // 日志上报开关：true=上报到创蓝日志服务器（默认开启），false=不上报
   fullReportEnabled: true, // 完整日志上报开关：true=获取device/deviceName/osVersion/netType字段（默认开启），false=不获取
+
+  // === 超时配置 ===
+  initTimeoutMs: 6000,       // init 默认超时时间 6 秒
 };
 
 // ============================ 工具函数 ============================
@@ -216,6 +224,53 @@ function init(params, callback) {
   // 保存参数
   state.appId = useAppId;
 
+  // 尝试从本地缓存加载初始化结果
+  try {
+    const cached = wx.getStorageSync(CACHE_KEY);
+    if (cached && cached.appId === useAppId && cached.env === config.currentEnv && cached.cmccAppId) {
+      log('[ShanYan Init] 使用本地初始化');
+      state.cmccAppId = cached.cmccAppId;
+      state.cmccAppKey = cached.cmccAppKey;
+      state.cmccSign = cached.cmccSign;
+      state.cmccTimestamp = cached.cmccTimestamp;
+      state.cmccValidateSign = cached.cmccValidateSign;
+      state.traceId = cached.traceId;
+      state.timestamp = cached.timestamp;
+      state.initialized = true;
+
+      log('[ShanYan Init] 本地初始化完成:', state.traceId);
+      log(SEPARATOR);
+
+      // 日志上报（缓存命中）
+      try {
+        const cacheUuid = crypto.guid();
+        if (state.reportEnabled) {
+          reportLog({
+            appId: state.appId,
+            status: REPORT_STATUS.SUCCESS,
+            telcom: 'Unknown_Operator',
+            processName: PROCESS_NAME.INIT,
+            resCode: SUCCESS_INIT.code,
+            resDesc: SUCCESS_INIT.message,
+            innerCode: '0',
+            innerDesc: 'cache',
+            netType: state.networkType,
+            did: '',
+            fullReport: state.fullReportEnabled,
+            sid: state.sid,
+          }, cacheUuid);
+        }
+      } catch (e) {
+        error('[ShanYan Init] 本地初始化日志上报异常:', e.message);
+      }
+
+      callback({ ...SUCCESS_INIT, traceId: state.traceId });
+      return;
+    }
+  } catch (e) {
+    // 缓存读取失败不影响主流程
+  }
+
   // 完整模式下才获取网络类型
   if (state.fullReportEnabled) {
     _refreshNetworkType();
@@ -246,6 +301,8 @@ function init(params, callback) {
     // 构建签名原文（按字母顺序：appId, appPlatform, data, random, sdkVersion）
     const useData = ''; // data 固定为空
     const signText = `appId${useAppId}appPlatform${config.APP_PLATFORM}data${useData}random${uuid}sdkVersion${config.SDK_VERSION}`;
+  logDetail('[ShanYan Init] 初始化签名字段:', signText);
+
     const signKey = crypto.md5(useAppId);
     sign = crypto.hmacSHA1Encrypt(signText, signKey);
 
@@ -287,13 +344,46 @@ function init(params, callback) {
   logDetail('[ShanYan Init] 请求 URL:', initUrl);
   logDetail('[ShanYan Init] 请求入参:', requestData);
 
+  let initTimeoutFired = false;
+  const initTimeoutId = setTimeout(() => {
+    initTimeoutFired = true;
+    error('[ShanYan Init] 超时（', state.initTimeoutMs, 'ms）');
+    log(SEPARATOR);
+    try {
+      const initUuid = uuid || crypto.guid();
+      if (state.reportEnabled) {
+        reportLog({
+          appId: state.appId,
+          status: REPORT_STATUS.FAIL,
+          telcom: 'Unknown_Operator',
+          processName: PROCESS_NAME.INIT,
+          resCode: ERR_INIT_TIMEOUT.code,
+          resDesc: ERR_INIT_TIMEOUT.message,
+          innerCode: ERR_INIT_TIMEOUT.code,
+          innerDesc: '超时',
+          netType: state.networkType,
+          did: '',
+          fullReport: state.fullReportEnabled,
+          sid: state.sid,
+        }, initUuid);
+      }
+    } catch (logError) {
+      error('[ShanYan Init] 超时日志上报异常:', logError.message);
+    }
+    log('[ShanYan Init] 回调:', JSON.stringify(ERR_INIT_TIMEOUT));
+    callback({ ...ERR_INIT_TIMEOUT });
+  }, state.initTimeoutMs);
+
   // 请求创蓝服务端获取配置信息
   wx.request({
     url: initUrl,
     method: 'POST',
     data: requestData,
     header: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    timeout: state.initTimeoutMs,
     success: (res) => {
+      if (initTimeoutFired) return;
+      clearTimeout(initTimeoutId);
       try {
         logDetail('[ShanYan Init] HTTP 状态码:', res.statusCode);
         logDetail('[ShanYan Init] 服务端响应:', JSON.stringify(res.data));
@@ -370,6 +460,24 @@ function init(params, callback) {
           state.timestamp = data.cmccTimestamp || formatTimestamp();
           state.initialized = true;
 
+          // 缓存初始化结果到本地
+          try {
+            wx.setStorageSync(CACHE_KEY, {
+              appId: useAppId,
+              env: config.currentEnv,
+              cmccAppId: state.cmccAppId,
+              cmccAppKey: state.cmccAppKey,
+              cmccSign: state.cmccSign,
+              cmccTimestamp: state.cmccTimestamp,
+              cmccValidateSign: state.cmccValidateSign,
+              traceId: state.traceId,
+              timestamp: state.timestamp,
+            });
+            log('[ShanYan Init] 本地初始化完成');
+          } catch (e) {
+            // 缓存写入失败不影响主流程
+          }
+
           log('[ShanYan Init] 初始化完成:', state.traceId);
           log(SEPARATOR);
 
@@ -399,8 +507,16 @@ function init(params, callback) {
           callback({ ...SUCCESS_INIT, traceId: state.traceId });
         } else {
           // 服务端返回错误
-          const retCode = res.data.retCode || 'unknown';
-          const retMsg = res.data.retMsg || '初始化失败';
+          let retCode = res.data.retCode || 'unknown';
+          let retMsg = res.data.retMsg || '初始化失败';
+          let innerDesc = retMsg;
+
+          // HTTP 非 200 状态码（如 502 Bad Gateway），res.data 可能为 HTML 字符串
+          if (retCode === 'unknown' && typeof res.data === 'string') {
+            retCode = String(res.statusCode || 500);
+            innerDesc = res.data;
+            retMsg = '初始化失败';
+          }
           error('[ShanYan Init] retCode:', retCode, 'retMsg:', retMsg);
           logDetail('[ShanYan Init] 完整响应:', JSON.stringify(res.data));
           log(SEPARATOR);
@@ -416,7 +532,7 @@ function init(params, callback) {
                 resCode: retCode,
                 resDesc: retMsg,
                 innerCode: retCode,
-                innerDesc: retMsg,
+                innerDesc: innerDesc,
                 netType: state.networkType,
                 did: '',
                 fullReport: state.fullReportEnabled,
@@ -459,8 +575,15 @@ function init(params, callback) {
       }
     },
     fail: (err) => {
+      if (initTimeoutFired) return;
+      clearTimeout(initTimeoutId);
       error('[ShanYan Init] wx.request 失败');
       error('[ShanYan Init] 错误信息:', JSON.stringify(err));
+
+      // 微信超时也会走 fail 回调，但已被 setTimeout 处理
+      if (err && err.errMsg && err.errMsg.indexOf('timeout') !== -1) {
+        return;
+      }
       log(SEPARATOR);
 
       try {
@@ -759,7 +882,7 @@ function openLoginAuth(cfg, callback) {
       error('[ShanYan Token] 日志上报异常:', logError.message);
     }
     if (isFunction(callback)) {
-      log('[ShanYan Token] 回调:', JSON.stringify(ERR_NOT_INITIALIZED));
+      log('[ShanYan Token] 回调1:', JSON.stringify(ERR_NOT_INITIALIZED));
       callback({ ...ERR_NOT_INITIALIZED });
     }
     return;
@@ -837,7 +960,7 @@ function openLoginAuth(cfg, callback) {
     } catch (logError) {
       error('[ShanYan Token] 日志上报异常:', logError.message);
     }
-    log('[ShanYan Token] 回调:', JSON.stringify(ERR_MOBILE_APPID_NOT_INIT));
+    log('[ShanYan Token] 回调2:', JSON.stringify(ERR_MOBILE_APPID_NOT_INIT));
     callback({ ...ERR_MOBILE_APPID_NOT_INIT });
     return;
   }
@@ -888,7 +1011,7 @@ function openLoginAuth(cfg, callback) {
       error('[ShanYan Token] 日志上报异常:', logError.message);
     }
     const result = makeDynamicError(ERR_TOKEN_SIGN_CALC_ERR, e.message);
-    log('[ShanYan Token] 回调:', JSON.stringify(result));
+    log('[ShanYan Token] 回调3:', JSON.stringify(result));
     callback(result);
     return;
   }
@@ -932,7 +1055,7 @@ function openLoginAuth(cfg, callback) {
       error('[ShanYan Token] 日志上报异常:', logError.message);
     }
     const result = makeDynamicError(ERR_TOKEN_UUID_GEN_ERR, e.message);
-    log('[ShanYan Token] 回调:', JSON.stringify(result));
+    log('[ShanYan Token] 回调4:', JSON.stringify(result));
     callback(result);
     return;
   }
@@ -961,13 +1084,14 @@ function openLoginAuth(cfg, callback) {
       error('[ShanYan Token] 日志上报异常:', logError.message);
     }
     const result = { code: ERR_TOKEN_PLUGIN_CALL_ERR.code, message: 'auth-plugin 插件未加载' };
-    log('[ShanYan Token] 回调:', JSON.stringify(result));
+    log('[ShanYan Token] 回调5:', JSON.stringify(result));
     callback(result);
     return;
   }
 
   try {
     logDetail('[ShanYan Token] netType:', state.networkType);
+
     oneKeyLogin.getTokenInfo({
       data: requestData,
       success: res => {
@@ -1009,7 +1133,7 @@ function openLoginAuth(cfg, callback) {
             token: encryptedToken,
             msgId: res.msgId,
           };
-          log('[ShanYan Token] 回调:', JSON.stringify(cbResult));
+          log('[ShanYan Token] 回调6:', JSON.stringify(cbResult));
           callback(cbResult);
         } catch (e) {
           error('[ShanYan Token] success 处理异常:', e.message);
@@ -1034,7 +1158,7 @@ function openLoginAuth(cfg, callback) {
             error('[ShanYan Token] 日志上报异常:', logError.message);
           }
           const result = makeDynamicError(ERR_TOKEN_PROCESS_ERR, e.message);
-          log('[ShanYan Token] 回调:', JSON.stringify(result));
+          log('[ShanYan Token] 回调7:', JSON.stringify(result));
           callback(result);
         }
       },
@@ -1042,12 +1166,12 @@ function openLoginAuth(cfg, callback) {
         try {
           logDetail('[ShanYan Token] error 回调:', JSON.stringify(res));
 
-          // 用户取消授权视为正常流程，status=1（非异常）
-          const isUserCancel = res.code === '501' || (res.message && res.message.includes('取消'));
+          // 用户取消授权/选择其他登录方式视为正常流程，status=1（非异常）
+          const isUserCancel = res.code === '501' ||res.code === '502' || (res.message && res.message.includes('取消'));
           const status = isUserCancel ? 1 : 0;
 
-          // 日志上报（code=103000/501 时 processName='4'，其他 processName='3'）
-          const errorProcessName = (res.code === '103000' || res.code === '501') ? PROCESS_NAME.TOKEN_OK : PROCESS_NAME.TOKEN_ERR;
+          // 日志上报（code=103000/501/502 时 processName='4'，其他 processName='3'）
+          const errorProcessName = (res.code === '103000' || res.code === '501'|| res.code === '502') ? PROCESS_NAME.TOKEN_OK : PROCESS_NAME.TOKEN_ERR;
 
           // 日志上报
           try {
@@ -1076,7 +1200,7 @@ function openLoginAuth(cfg, callback) {
             message: res.message || ERR_NETWORK_TYPE_FAILED.message,
             msgId: res.msgId,
           };
-          log('[ShanYan Token] 回调:', JSON.stringify(cbResult));
+          log('[ShanYan Token] 回调8:', JSON.stringify(cbResult));
           callback(cbResult);
         } catch (e) {
           error('[ShanYan Token] error 处理异常:', e.message);
@@ -1101,7 +1225,7 @@ function openLoginAuth(cfg, callback) {
             error('[ShanYan Token] 日志上报异常:', logError.message);
           }
           const result = makeDynamicError(ERR_TOKEN_PROCESS_ERR, e.message);
-          log('[ShanYan Token] 回调:', JSON.stringify(result));
+          log('[ShanYan Token] 回调9:', JSON.stringify(result));
           callback(result);
         }
       }
@@ -1129,7 +1253,7 @@ function openLoginAuth(cfg, callback) {
       error('[ShanYan Token] 日志上报异常:', logError.message);
     }
     const result = makeDynamicError(ERR_TOKEN_PLUGIN_CALL_ERR, e.message);
-    log('[ShanYan Token] 回调:', JSON.stringify(result));
+    log('[ShanYan Token] 回调10:', JSON.stringify(result));
     callback(result);
   }
 }
@@ -1147,17 +1271,6 @@ function getPlugin() {
     error('[ShanYan] getPlugin: auth-plugin 插件未加载');
   }
   return oneKeyLogin;
-}
-
-/**
- * 获取 SDK 当前内部状态
- *
- * 用于调试，可查看当前保存的所有参数
- *
- * @returns {Object} SDK 内部状态对象
- */
-function getState() {
-  return { ...state };
 }
 
 /**
@@ -1187,8 +1300,22 @@ function setReport(flag) {
  *
  * @param {Boolean} flag - true=获取上述字段（默认），false=不获取
  */
-function setFullReport(flag) {
+function setDetailReport(flag) {
   state.fullReportEnabled = !!flag;
+}
+
+/**
+ * 清理初始化接口缓存
+ *
+ * 调用后下次 init 将重新请求服务端获取参数。
+ */
+function clearScripCache() {
+  try {
+    wx.removeStorageSync(CACHE_KEY);
+    log('[ShanYan Cache] 已清理本地初始化');
+  } catch (e) {
+    error('[ShanYan Cache] 清理本地初始化失败:', e.message);
+  }
 }
 
 /**
@@ -1207,6 +1334,19 @@ function setEnvironment(env) {
   config.currentEnv = env;
 }
 
+/**
+ * 设置 init 接口超时时间
+ *
+ * 默认 6 秒。超时后返回 code='001023', message='超时'，并上报日志。
+ *
+ * @param {number} ms - 超时时间（毫秒），默认 6000
+ */
+function setInitTimeout(ms) {
+  if (typeof ms === 'number' && ms > 0) {
+    state.initTimeoutMs = ms;
+  }
+}
+
 // ============================ 导出 ============================
 
 module.exports = {
@@ -1214,9 +1354,10 @@ module.exports = {
   openLoginAuth,  // 打开一键登录授权页（拉起运营商授权页，可传可选配置参数）
   getNetworkType, // 获取当前网络类型
   getPlugin,      // 获取插件实例（高级用法）
-  getState,       // 获取 SDK 状态（调试用）
   setEnvironment, // 设置 SDK 运行环境（stable=稳定环境，release=生产环境，默认 release）
   setLog,         // 设置 SDK 内部日志输出开关（默认关闭）
   setReport,      // 设置日志上报开关（默认开启）
-  setFullReport,  // 设置日志上报是否获取设备/网络信息字段（默认开启）
+  setDetailReport,  // 设置日志上报是否获取设备/网络信息字段（默认开启）
+  clearScripCache,  // 清理初始化缓存
+  setInitTimeout,   // 设置 init 接口超时时间（默认 6000ms）
 };

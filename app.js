@@ -29,6 +29,7 @@ App({
     appId: '',              // 当前环境 appId
     appKey: '',             // 当前环境 appKey
     envLabel: '',           // 环境标识
+    demoLogEnabled: false,  // demo 层日志开关（默认关闭）
   },
 
   /**
@@ -36,11 +37,10 @@ App({
    * 在此统一设置 SDK 环境，确保各页面使用相同配置
    */
   onLaunch() {
-    const envConfig =ENV_MAP.develop1;
+    const envConfig = ENV_MAP.develop1;
 
     // 设置 SDK 运行环境
     SDK.setEnvironment(envConfig.sdkEnv);
-
     this.globalData.appId = envConfig.appId;
     this.globalData.appKey = envConfig.appKey;
     this.globalData.envLabel = envConfig.label;

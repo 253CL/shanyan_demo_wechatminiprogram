@@ -1,6 +1,7 @@
 {
+  "navigationStyle": "custom",
+  "navigationBarTextStyle": "black",
   "usingComponents": {
     "onekeylogin": "plugin://auth-plugin/onekeylogin"
-  },
-  "navigationBarTextStyle": "black"
+  }
 }

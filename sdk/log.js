@@ -13,7 +13,7 @@ const { hmacSHA1Encrypt, md5 } = require('./crypto');
 // 日志输出开关（由 index.js 的 setLog 同步设置，受外部开关控制）
 let _logEnabled = false;
 // 日志详情内部开关：仅 SDK 内部控制，不对外暴露
-let _detailLogEnabled = true;
+let _detailLogEnabled = false;
 
 /**
  * SDK 内部日志输出封装，受外部 setLog 开关控制
@@ -102,7 +102,7 @@ function getDeviceInfo() {
  * @param {string} uuid - 本次上报的唯一标识（random 字段）
  */
 function reportLog(params, uuid) {
-  log('[ShanYan Log] 日志状态：', params.status,params.processName);
+  log('[ShanYan Log] 日志状态：', params.status, params.processName);
   // 获取设备信息和 wxId（仅完整模式）
   const wxId = getWxId();
   let device = '';
@@ -144,7 +144,7 @@ function reportLog(params, uuid) {
 
   // 构建加密文本（用于签名校验）：按字母顺序拼接所有上报字段
   const encryptText = `appId${sdkLog.appId}appPlatform${sdkLog.appPlatform}device${sdkLog.device}deviceName${sdkLog.deviceName}did${sdkLog.did}innerCode${sdkLog.innerCode}innerDesc${sdkLog.innerDesc}method${sdkLog.method}netType${sdkLog.netType}osVersion${sdkLog.osVersion}processName${sdkLog.processName}random${sdkLog.random}resCode${sdkLog.resCode}resDesc${sdkLog.resDesc}sdkVersion${sdkLog.sdkVersion}sid${sdkLog.sid}status${sdkLog.status}telcom${sdkLog.telcom}wxId${sdkLog.wxId}`;
-
+  logDetail('[ShanYan Log] 日志签名字段:', encryptText);
   const encryptKey = md5(params.appId);
   sdkLog.sign = hmacSHA1Encrypt(encryptText, encryptKey);
 
@@ -170,16 +170,16 @@ function reportLog(params, uuid) {
       try {
         logDetail('[ShanYan Log] 上报响应:', JSON.stringify(res.data));
         if (res.data && typeof res.data === 'object' && res.data.retCode === '0') {
-          log('[ShanYan Log] 日志结果1');
+          log('[ShanYan Log] 日志结果 1', params.processName);
         } else {
-          log('[ShanYan Log] 日志结果0', res.data);
+          log('[ShanYan Log] 日志结果 0', res.data, params.processName);
         }
       } catch (e) {
-        error('[ShanYan Log] 上报响应处理异常:', e.message);
+        error('[ShanYan Log] 日志结果 0:', e.message, params.processName);
       }
     },
     fail: (err) => {
-      log('[ShanYan Log] 日志结果0', err);
+      log('[ShanYan Log] 日志结果 0', err, params.processName);
     }
   });
 }

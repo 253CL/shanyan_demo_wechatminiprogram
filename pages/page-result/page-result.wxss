@@ -1,0 +1,198 @@
+/* ========== 页面容器 ========== */
+.container {
+  min-height: 100vh;
+  box-sizing: border-box;
+  background: #FFFFFF;
+}
+
+/* ========== 自定义导航栏 ========== */
+.navbar {
+  width: 100%;
+  background: transparent;
+}
+
+.navbar-fixed {
+  position: fixed;
+  left: 0;
+  right: 0;
+  z-index: 1;
+  background: #FFFFFF;
+}
+
+.navbar-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 88rpx;
+  padding: 0 24rpx;
+}
+
+.navbar-back {
+  width: 60rpx;
+  height: 60rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.back-icon {
+  font-size: 60rpx;
+  color: #333;
+  line-height: 1;
+}
+
+.navbar-title {
+  flex: 1;
+  text-align: center;
+  font-size: 34rpx;
+  font-weight: 600;
+  color: #333;
+}
+
+.navbar-placeholder {
+  width: 60rpx;
+}
+
+.navbar-spacer {
+  width: 100%;
+}
+
+/* ========== 滚动容器 ========== */
+
+.scroll-content {
+  height: calc(100vh - 88px);
+}
+
+/* === 成功区域 === */
+.result-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 40rpx;
+}
+
+.result-icon {
+  width: 160rpx;
+  height: 160rpx;
+  margin-top: 120rpx;
+}
+
+.result-phone {
+  margin-top: 20rpx;
+  font-size: 36rpx;
+  color: #4F7AFD;
+  text-align: center;
+}
+
+.result-telecom {
+  margin-top: 20rpx;
+  font-size: 22rpx;
+  color: #878EA4;
+  text-align: center;
+}
+
+.result-status {
+  margin-top: 20rpx;
+  font-size: 42rpx;
+  color: #495170;
+  text-align: center;
+  font-weight: 600;
+}
+
+/* === 失败区域 === */
+.result-fail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 40rpx;
+}
+
+.fail-icon {
+  width: 160rpx;
+  height: 160rpx;
+  margin-top: 120rpx;
+}
+
+.fail-title {
+  margin-top: 24rpx;
+  font-size: 42rpx;
+  color: #495170;
+  font-weight: 600;
+}
+
+.fail-error-box {
+  margin-top: 60rpx;
+  margin-left: 50rpx;
+  margin-right: 50rpx;
+  background: #f8f8f8;
+  border-radius: 12rpx;
+  padding: 30rpx;
+}
+
+.fail-error-label {
+  font-size: 24rpx;
+  color: #777f9c;
+  line-height: 1.6;
+}
+
+.fail-error-text {
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  color: #777f9c;
+  line-height: 1.6;
+  word-break: break-all;
+}
+
+/* === 再次体验按钮 === */
+.try-again-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 40rpx 40rpx 0;
+  height: 96rpx;
+  background: linear-gradient(135deg, #4F7AFD, #2b7de0);
+  border-radius: 48rpx;
+}
+
+.btn-icon {
+  width: 40rpx;
+  height: 40rpx;
+}
+
+.btn-text {
+  margin-left: 16rpx;
+  font-size: 36rpx;
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
+/* === 分隔线 + 提示文字 === */
+.divider-section {
+  margin-top: 60rpx;
+  padding: 0 40rpx;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.divider-line {
+  flex: 1;
+  height: 2rpx;
+  opacity: 0.3;
+}
+
+.divider-text {
+  margin: 0 20rpx;
+  font-size: 28rpx;
+  color: #999;
+  white-space: nowrap;
+}
+
+/* === 产品介绍图 === */
+.intro-image {
+  width: 100%;
+  margin-top: 60rpx;
+}

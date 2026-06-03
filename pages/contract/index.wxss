@@ -1,0 +1,80 @@
+/* ========== 重置 page 全局样式 ========== */
+page {
+  background-color: #fff;
+  margin: 0;
+  padding: 0;
+}
+
+/* ========== 页面容器 ========== */
+.container {
+  min-height: 100vh;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ========== 自定义导航栏 ========== */
+.navbar {
+  background: #fff;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+}
+
+.navbar-inner {
+  display: flex;
+  align-items: center;
+  height: 44px;
+  padding: 0 16rpx 0 24rpx;
+}
+
+.back-icon {
+  font-size: 56rpx;
+  color: #333;
+  line-height: 1;
+  margin-right: 16rpx;
+}
+
+.navbar-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333;
+  flex: 1;
+  text-align: center;
+  margin-right: 72rpx;
+}
+
+/* ========== 内容区 ========== */
+.content {
+  padding: 0 30rpx 60rpx;
+  box-sizing: border-box;
+  height: calc(100vh - 44px); /* statusBarHeight handled inline */
+}
+
+.spacer-bottom {
+  height: 60rpx;
+}
+
+/* rich-text 内部元素样式 */
+.content h2 {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #333;
+  margin: 24rpx 0 12rpx;
+  line-height: 1.6;
+}
+
+.content p {
+  font-size: 28rpx;
+  color: #666;
+  line-height: 1.8;
+  margin: 4rpx 0;
+  word-break: break-all;
+}
+
+.content strong {
+  font-weight: 700;
+  color: #333;
+}

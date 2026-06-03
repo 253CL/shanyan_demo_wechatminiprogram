@@ -47,7 +47,7 @@ function getBottomPopupOption() {
       'fontFamily': '24',        // 提示栏字体
       'fontColor': 'rgba(13, 153, 53, 1)', // 提示栏字体颜色
       'fontSize': '22rpx',     // 提示栏字体大小
-      'top':'250rpx'
+      'top': '250rpx'
     },
     // === 取消授权按钮 cancleBtnStyle ===
     cancleBtnStyle: {
@@ -101,9 +101,9 @@ function getBottomPopupOption() {
     },
     // === 协议名称 agreeStyle ===
     agreeStyle: {
-      'contracts': [           // 定义协议数组 [{name:"协议名称",url:"协议链接"}]
-        { name: '《服务协议》', url: '/pages/contract/index' },
-        { name: '《隐私政策》', url: '/pages/contract/index' }
+      'contracts': [           // 定义协议数组 [{name:"协议名称",url:"小程序页面路径"}]
+        { name: '《服务协议》', url: '/pages/contract/index?type=service' },
+        { name: '《隐私政策》', url: '/pages/contract/index?type=privacy' }
       ],
       'fontFamily': '',        // 协议名称字体
       'fontColor': 'rgba(213, 134, 21, 1)' // 协议名称字体颜色
@@ -123,7 +123,6 @@ function getBottomPopupOption() {
         'bgColor': '',         // 自定义控件背景颜色
         'textAlign': 'left',   // 自定义控件文本对齐选项
         'radius': '0',         // 自定义控件圆角
-        'url': '/pages/otherlogin/index' // 自定义控件跳转 URL
       }
     ],
   };
@@ -174,18 +173,15 @@ function getFullScreenOption() {
     },
     // === 取消授权按钮 cancleBtnStyle ===
     cancleBtnStyle: {
-      'text': '‹',          // 按钮文案
-      'textAlign': 'left',   // 文本对齐方式
-      'fontFamily': '',        // 按钮字体
-      'fontColor': '#000000',  // 按钮字体颜色
-      'fontSize': '60rpx',     // 按钮字体大小
-      'top': '80rpx',         // 按钮距离页面上边框距离
-      'left': '40rpx',         // 按钮距离页面左边框距离
-      'width': '88rpx',       // 按钮宽度
-      'height': '68rpx',      // 按钮高度
-      'bgColor': "#rgba(0, 0, 0, 0)",
-      'borderColor': '#rgba(0, 0, 0, 0)',
-      'borderWidth': "0px"
+      'text': '其他登录方式>', // 自定义控件显示文案
+      'fontColor': '#FFFFFF',  // 按钮字体颜色
+      'fontSize': '30rpx',     // 按钮字体大小
+      'width': '80%',       // 按钮宽度
+      'height': '88rpx',       // 按钮高度
+      'bgColor': '#2b7de0',    // 按钮背景颜色
+      'radius': '44rpx',       // 按钮圆角
+      'left': 'center',
+      'top': '58%'
     },
     // === 登录授权按钮 sureBtnStyle ===
     sureBtnStyle: {
@@ -224,8 +220,8 @@ function getFullScreenOption() {
     // === 协议名称 agreeStyle ===
     agreeStyle: {
       'contracts': [           // 定义协议数组
-        { name: '《用户协议》', url: 'https://doc.chuanglan.com/document/UP4EOHG8BM2UCWLK' },
-        { name: '《隐私政策》', url: 'https://doc.chuanglan.com/document/KDJSBGJD2MO603O0' }
+        { name: '《用户协议》', url: '/pages/contract/index?type=service' },
+        { name: '《隐私政策》', url: '/pages/contract/index?type=privacy' }
       ],
       'fontFamily': '',        // 协议名称字体
       'fontColor': '#2b7de0'   // 协议名称字体颜色
@@ -234,16 +230,19 @@ function getFullScreenOption() {
     customControlStyle: [
       {
         'ifShow': true,        // 是否展示自定义控件（Boolean，默认 FALSE）
-        'name': '其他登录方式>', // 自定义控件显示文案
-        'fontColor': '#FFFFFF',  // 按钮字体颜色
-        'fontSize': '30rpx',     // 按钮字体大小
-        'width': '80%',       // 按钮宽度
-        'height': '88rpx',       // 按钮高度
-        'bgColor': '#2b7de0',    // 按钮背景颜色
-        'radius': '44rpx',       // 按钮圆角
-        'textAlign': 'center',
-        'left': 'center',
-        'top': '58%'
+        'name': '‹',          // 按钮文案
+        'openType': "navigateBack",
+        'textAlign': 'left',   // 文本对齐方式
+        'fontFamily': '',        // 按钮字体
+        'fontColor': '#000000',  // 按钮字体颜色
+        'fontSize': '60rpx',     // 按钮字体大小
+        'top': '80rpx',         // 按钮距离页面上边框距离
+        'left': '40rpx',         // 按钮距离页面左边框距离
+        'width': '88rpx',       // 按钮宽度
+        'height': '68rpx',      // 按钮高度
+        'bgColor': 'transparent',
+        'borderColor': 'transparent',
+        'borderWidth': "0px"
       }
     ],
   };
@@ -282,7 +281,7 @@ function getMinimalPopupOption() {
       'left': 'center'         // 号码栏水平位置
     },
     authTextStyle: {
-      'fontSize':'25rpx'
+      'fontSize': '25rpx'
     },
     authTipStyle: {
       'ifShow': false
@@ -338,7 +337,7 @@ function getMinimalPopupOption() {
     // === 协议名称 agreeStyle ===
     agreeStyle: {
       'contracts': [           // 定义协议数组
-        { name: '《服务协议》', url: '/pages/contract/index' }
+        { name: '《服务协议》', url: '/pages/contract/index?type=service' }
       ],
       'fontFamily': '',        // 协议名称字体
       'fontColor': '#2b7de0'   // 协议名称字体颜色

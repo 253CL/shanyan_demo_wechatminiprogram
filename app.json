@@ -2,10 +2,14 @@
   "pages": [
     "pages/index/index",
     "pages/page-experience/page-experience",
-    "pages/page-debug/page-debug"
+    "pages/page-debug/page-debug",
+    "pages/page-result/page-result",
+    "pages/contract/index"
   ],
   "window": {
-    "navigationStyle": "custom"
+    "navigationStyle": "default",
+    "navigationBarBackgroundColor": "#FFFFFF",
+    "navigationBarTextStyle": "black"
   },
   "plugins": {
     "auth-plugin": {

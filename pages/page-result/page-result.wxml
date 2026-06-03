@@ -1,0 +1,52 @@
+<view class="container">
+  <!-- 自定义导航栏 -->
+  <view class="navbar" style="height: {{statusBarHeight}}px;"></view>
+  <view class="navbar-fixed" style="top: {{statusBarHeight}}px;">
+    <view class="navbar-content">
+      <view class="navbar-back" bindtap="onGoBack">
+        <text class="back-icon">‹</text>
+      </view>
+      <text class="navbar-title">授权结果</text>
+      <view class="navbar-placeholder"></view>
+    </view>
+  </view>
+  <view class="navbar-spacer" style="height: {{statusBarHeight + 44}}px;"></view>
+
+  <scroll-view scroll-y class="scroll-content">
+    <!-- 成功区域 -->
+    <view class="result-success" wx:if="{{isSuccess}}">
+      <image class="result-icon" src="/images/login_demo_result_sucess.gif" mode="aspectFit"></image>
+      <text class="result-phone" wx:if="{{phone}}">{{phone}}</text>
+      <text class="result-telecom" wx:if="{{telecomText}}">{{telecomText}}</text>
+      <text class="result-status">{{statusText}}</text>
+    </view>
+
+    <!-- 失败区域 -->
+    <view class="result-fail" wx:if="{{!isSuccess}}">
+      <image class="fail-icon" src="/images/login_demo_login_fail.png" mode="aspectFit"></image>
+      <text class="fail-title">登录失败</text>
+      <view class="fail-error-box">
+        <text class="fail-error-label">请按以下指引排除原因：</text>
+        <text class="fail-error-text">{{errorText}}</text>
+      </view>
+    </view>
+
+    <!-- 再次体验按钮 -->
+    <view class="try-again-btn" bindtap="onTryAgain">
+      <image class="btn-icon" src="/images/login_demo_result_refresh.png" mode="aspectFit"></image>
+      <text class="btn-text">再次体验</text>
+    </view>
+
+    <!-- 上滑了解产品详情 -->
+    <view class="divider-section">
+      <view class="divider">
+        <image class="divider-line" src="/images/login_demo_line_bg.png" mode="aspectFit"></image>
+        <text class="divider-text">上滑了解产品详情</text>
+        <image class="divider-line" src="/images/login_demo_line_bg.png" mode="aspectFit"></image>
+      </view>
+    </view>
+
+    <!-- 产品介绍图 -->
+    <image class="intro-image" src="/images/login_demo_result_introduce.png" mode="widthFix"></image>
+  </scroll-view>
+</view>

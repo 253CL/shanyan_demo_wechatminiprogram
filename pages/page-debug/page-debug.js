@@ -1,6 +1,7 @@
 const SDK = require('../../sdk/index');
 const crypto = require('../../sdk/crypto');
 const config = require('../../sdk/config');
+const dlog = require('../../demo-log');
 const app = getApp();
 
 const appId = app.globalData.appId;
@@ -118,8 +119,8 @@ Page({
     const mobileUrl = config.ENV[config.currentEnv].mobileQueryUrl;
 
     // 打印请求信息
-    console.log('[page-debug getMobile] 请求 URL:', mobileUrl);
-    console.log('[page-debug getMobile] 请求入参:', formData);
+    dlog.log('[page-debug getMobile] 请求 URL:', mobileUrl);
+    dlog.log('[page-debug getMobile] 请求入参:', formData);
 
     wx.request({
       url: mobileUrl,
@@ -129,14 +130,14 @@ Page({
       success: (res) => {
         try {
           // 打印响应信息
-          console.log('[page-debug getMobile] HTTP 状态码:', res.statusCode);
-          console.log('[page-debug getMobile] 响应数据:', JSON.stringify(res.data));
+          dlog.log('[page-debug getMobile] HTTP 状态码:', res.statusCode);
+          dlog.log('[page-debug getMobile] 响应数据:', JSON.stringify(res.data));
 
           if (!res.data) {
             this.appendToLog('服务端返回为空', true);
             return;
           }
-          if (res.data.code === '200000') {
+          if (typeof res.data === 'object' && res.data.code === '200000') {
             try {
               const encryptedMobile = res.data.data && res.data.data.mobile;
               if (!encryptedMobile) {
@@ -148,21 +149,24 @@ Page({
                 this.appendToLog('手机号解密返回为空', true);
                 return;
               }
-              console.log('[page-debug getMobile] 解密手机号:', phone);
+              dlog.log('[page-debug getMobile] 解密手机号:', phone);
               this.setData({ 'stepResults.mobile': { code: '200000', message: '获取成功', phone }, currentStep: 3, hasResults: true });
               this.appendToLog(`获取手机号成功: ${phone}`);
             } catch (e) {
               this.appendToLog(`手机号解密失败: ${e.message}`, true);
             }
           } else {
-            this.appendToLog(`获取手机号失败: ${res.data.message || res.data.code || '未知错误'}`, true);
+            const failMsg = res.data && typeof res.data === 'object'
+              ? (res.data.message || res.data.code || '未知错误')
+              : JSON.stringify(res.data);
+            this.appendToLog(`获取手机号失败: ${failMsg}`, true);
           }
         } catch (e) {
           this.appendToLog(`获取手机号响应处理异常: ${e.message}`, true);
         }
       },
       fail: (err) => {
-        console.error('[page-debug getMobile] 请求失败:', JSON.stringify(err));
+        dlog.error('[page-debug getMobile] 请求失败:', JSON.stringify(err));
         this.appendToLog(`请求失败: ${err.errMsg}`, true);
       }
     });

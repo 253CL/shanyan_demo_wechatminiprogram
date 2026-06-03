@@ -1,3 +1,4 @@
+/* ========== 页面容器 ========== */
 .container {
   min-height: 100vh;
   display: flex;
@@ -7,6 +8,7 @@
   background: #f5f5f5;
 }
 
+/* ========== 自定义导航栏 ========== */
 .navbar {
   width: 100%;
   background: transparent;
@@ -42,12 +44,14 @@
   width: 100%;
 }
 
+/* ========== 顶部 Banner ========== */
 .banner {
   width: 100%;
   border-radius: 16rpx;
   margin-bottom: 60rpx;
 }
 
+/* ========== 模式按钮行 ========== */
 .btn-row {
   width: 100%;
   display: flex;
@@ -56,6 +60,7 @@
   box-sizing: border-box;
 }
 
+/* ========== 模式卡片 ========== */
 .mode-card {
   flex: 1;
   background: rgba(255, 255, 255, 0.95);
