@@ -270,6 +270,8 @@ function getMinimalPopupOption() {
       'top': '15rpx',
     },
     bussinessNameStyle: {
+      'text': '一键登录demo',
+      "fontFamily": 'monospace',
       'top': '15rpx',
     },
     // === 号码栏 phoneStyle ===
