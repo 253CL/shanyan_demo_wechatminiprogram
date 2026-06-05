@@ -18,7 +18,7 @@ const SDK = require('./sdk/index');
 // 环境配置映射：根据小程序版本自动选择对应环境
 const ENV_MAP = {
   develop: { sdkEnv: 'stable', appId: 'CTbdVdtt', appKey: 'R20fq6CI', label: 'stable环境' },//手动创建应用
-  develop1: { sdkEnv: 'stable', appId: 'xfbnjAr8', appKey: 'jVdlA4YL', label: 'stable环境' },//接口创建应用
+  develop1: { sdkEnv: 'stable', appId: 'hfaqtYRe', appKey: 'BS5N82tT', label: 'stable环境' },//接口创建应用
   trial: { sdkEnv: 'release', appId: '9IQdkCRI', appKey: 'CZIp8p8u', label: 'release环境' },
   release: { sdkEnv: 'release', appId: '9IQdkCRI', appKey: 'CZIp8p8u', label: 'release环境' },
 };

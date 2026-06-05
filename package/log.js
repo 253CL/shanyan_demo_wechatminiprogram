@@ -70,11 +70,11 @@ function getWxId() {
  */
 function getDeviceInfo() {
   try {
-    const systemInfo = wx.getSystemInfoSync();
+    const deviceInfo = wx.getDeviceInfo();
     return {
-      device: systemInfo.model || '',
-      deviceName: systemInfo.brand || '',
-      osVersion: systemInfo.system || '',
+      device: deviceInfo.model || '',
+      deviceName: deviceInfo.brand || '',
+      osVersion: deviceInfo.system || '',
     };
   } catch (e) {
     return { device: '', deviceName: '', osVersion: '' };

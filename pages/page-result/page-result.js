@@ -25,9 +25,9 @@ Page({
     dlog.log('[Page-Result] globalData appId:', app.globalData.appId, 'appKey:', app.globalData.appKey, 'env:', app.globalData.envLabel);
 
     try {
-      const systemInfo = wx.getSystemInfoSync();
+      const windowInfo = wx.getWindowInfo();
       this.setData({
-        statusBarHeight: systemInfo.statusBarHeight || 20,
+        statusBarHeight: windowInfo.statusBarHeight || 20,
       });
     } catch (e) {
       this.setData({

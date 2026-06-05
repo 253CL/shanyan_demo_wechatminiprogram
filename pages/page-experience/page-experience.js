@@ -13,7 +13,7 @@ const app = getApp();
  *
  * 授权完成后跳转到结果页，展示登录成功/失败状态。
  *
- * 安全处理：wx.getSystemInfoSync 包裹 try-catch，失败时回退到默认值。
+ * 安全处理：wx.getWindowInfo 包裹 try-catch，失败时回退到默认值。
  */
 Page({
   data: {
@@ -22,9 +22,9 @@ Page({
 
   onLoad() {
     try {
-      const systemInfo = wx.getSystemInfoSync();
+      const windowInfo = wx.getWindowInfo();
       this.setData({
-        statusBarHeight: systemInfo.statusBarHeight || 20,
+        statusBarHeight: windowInfo.statusBarHeight || 20,
       });
     } catch (e) {
       this.setData({

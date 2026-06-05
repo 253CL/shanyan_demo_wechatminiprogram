@@ -325,8 +325,8 @@ Page({
   },
 
   onLoad(options) {
-    const systemInfo = wx.getSystemInfoSync();
-    const statusBarHeight = systemInfo.statusBarHeight;
+    const windowInfo = wx.getWindowInfo();
+    const statusBarHeight = windowInfo.statusBarHeight;
     const navBarHeight = statusBarHeight + 44; // statusBar + 44px nav bar height
 
     this.setData({ statusBarHeight, navBarHeight });

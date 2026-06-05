@@ -38,9 +38,9 @@ Page({
 
   onLoad() {
     try {
-      const systemInfo = wx.getSystemInfoSync();
+      const windowInfo = wx.getWindowInfo();
       this.setData({
-        statusBarHeight: systemInfo.statusBarHeight || 20,
+        statusBarHeight: windowInfo.statusBarHeight || 20,
       });
     } catch (e) {
       this.setData({
