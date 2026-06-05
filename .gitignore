@@ -7,7 +7,6 @@ miniprogram_npm/
 # Claude Code workspace
 .claude/
 
-
 # OS
 .DS_Store
 Thumbs.db

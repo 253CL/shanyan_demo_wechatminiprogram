@@ -45,9 +45,8 @@
   "compileType": "miniprogram",
   "libVersion": "3.3.4",
   "appid": "wxae73f63d6ef4b286",
-  "projectname": "shanyan-miniprogram-sdk",
+  "projectname": "shanyan-miniprogram-demo",
   "condition": {},
   "simulatorPluginLibVersion": {},
-  "editorSetting": {},
-  "testRoot": "minitest/"
+  "editorSetting": {}
 }

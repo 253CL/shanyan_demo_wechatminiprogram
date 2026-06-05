@@ -1,6 +1,5 @@
-const SDK = require('../../sdk/index');
-const crypto = require('../../sdk/crypto');
-const config = require('../../sdk/config');
+const SDK = require('shanyan-miniprogram-sdk');
+const demoUtils = require('../../demo-utils');
 const dlog = require('../../demo-log');
 const app = getApp();
 
@@ -83,7 +82,7 @@ Page({
    * 第三步：用 token 请求服务端换取手机号
    *
    * 请求参数：
-   * - URL：config.ENV[currentEnv].mobileQueryUrl
+   * - URL：demoUtils.getMobileQueryUrl(envLabel)
    * - Method：POST（application/x-www-form-urlencoded）
    * - 入参：appId + sign(HMAC-SHA256) + token
    *
@@ -110,13 +109,13 @@ Page({
     const token = tokenResult.token;
     let sign;
     try {
-      sign = crypto.hmacSHA256Sign({ appId, token }, appKey);
+      sign = demoUtils.hmacSHA256Sign({ appId, token }, appKey);
     } catch (e) {
       this.appendToLog(`签名计算异常: ${e.message}`, true);
       return;
     }
     const formData = `appId=${encodeURIComponent(appId)}&sign=${encodeURIComponent(sign)}&token=${encodeURIComponent(token)}`;
-    const mobileUrl = config.ENV[config.currentEnv].mobileQueryUrl;
+    const mobileUrl = demoUtils.getMobileQueryUrl(app.globalData.envLabel);
 
     // 打印请求信息
     dlog.log('[page-debug getMobile] 请求 URL:', mobileUrl);
@@ -144,7 +143,7 @@ Page({
                 this.appendToLog('服务端返回的手机号为空', true);
                 return;
               }
-              const phone = crypto.aesDecrypt(encryptedMobile, appKey);
+              const phone = demoUtils.aesDecrypt(encryptedMobile, appKey);
               if (!phone) {
                 this.appendToLog('手机号解密返回为空', true);
                 return;

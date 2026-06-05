@@ -1,4 +1,0 @@
-为防止网络故障或插件内部代码异常导致没有回调方法给到小程序开发者，需要为SDK内部流程方法初始化init、启动授权页openLoginAuth方法做优化：
-1.为初始化init、启动授权页openLoginAuth方法分别增加设置超时时间的导出方法setInitTimeout、setOpenLoginAuthTimeout，在配置的超时时间内，无论接口是否返回结果，无论插件内部是否有异常而导致无回调返回，SDK都要在规定时间内给小程序回调。
-2.初始化init、启动授权页openLoginAuth方法默认超时时间6秒，超时后返回结果给小程序并上报日志，返回信息为“超时”，状态码为001023
-3.errors.js文件里面失败的的状态码code不允许有重复的，每个message需要对应一个固定的code，成功的code可以都使用200000不用修改。

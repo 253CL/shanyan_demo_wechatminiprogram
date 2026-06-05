@@ -13,7 +13,7 @@
  * 当前默认使用 develop1 配置（接口创建应用），如需切换可修改 onLaunch 中的 envConfig 取值。
  */
 
-const SDK = require('./sdk/index');
+const SDK = require('shanyan-miniprogram-sdk');
 
 // 环境配置映射：根据小程序版本自动选择对应环境
 const ENV_MAP = {

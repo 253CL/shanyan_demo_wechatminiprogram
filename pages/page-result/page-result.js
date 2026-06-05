@@ -1,5 +1,4 @@
-const crypto = require('../../sdk/crypto');
-const config = require('../../sdk/config');
+const demoUtils = require('../../demo-utils');
 const dlog = require('../../demo-log');
 const app = getApp();
 
@@ -74,14 +73,13 @@ Page({
         token: token,
         timestamp: timestamp,
       };
-      const sign = crypto.hmacSHA256Sign(params, appKey);
+      const sign = demoUtils.hmacSHA256Sign(params, appKey);
 
       dlog.log('[Page-Result] 签名入参:', JSON.stringify(params));
       dlog.log('[Page-Result] sign:', sign);
 
-      const mobileQueryUrl = config.ENV[config.currentEnv].mobileQueryUrl;
+      const mobileQueryUrl = demoUtils.getMobileQueryUrl(app.globalData.envLabel);
       dlog.log('[Page-Result] mobileQueryUrl:', mobileQueryUrl);
-      dlog.log('[Page-Result] currentEnv:', config.currentEnv);
 
       const requestData = `appId=${encodeURIComponent(appId)}&token=${encodeURIComponent(token)}&timestamp=${encodeURIComponent(timestamp)}&sign=${encodeURIComponent(sign)}`;
       dlog.log('[Page-Result] wx.request data (form):', requestData);
@@ -106,10 +104,10 @@ Page({
               const mobileName = data.data ? data.data.mobile : '';
               dlog.log('[Page-Result] encrypted mobileName:', mobileName);
 
-              const key = crypto.md5(appKey);
+              const key = demoUtils.md5(appKey);
               dlog.log('[Page-Result] md5(appKey):', key);
 
-              const phone = crypto.aesDecrypt(mobileName, appKey);
+              const phone = demoUtils.aesDecrypt(mobileName, appKey);
               dlog.log('[Page-Result] 解密手机号:', phone);
 
               this.setData({

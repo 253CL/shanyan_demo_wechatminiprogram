@@ -1,4 +1,4 @@
-const SDK = require('../../sdk/index');
+const SDK = require('shanyan-miniprogram-sdk');
 const dlog = require('../../demo-log');
 const app = getApp();
 
