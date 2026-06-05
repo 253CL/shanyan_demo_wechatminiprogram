@@ -1,0 +1,124 @@
+function getBottomPopupOption() {
+  return {
+    // 蒙层
+    maskStyle: {
+      'ifShowMask': true,
+      'bgColor': "rgba(0,0,0,0.5)",
+      'opacity': "0.5"
+    },
+    // 弹窗
+    layerStyle: {
+      'height': "639rpx",
+      'radius': "40rpx 80rpx 0px 0px",
+      'bgColor': "rgba(255, 255, 255, 1)"
+    },
+    //号码栏
+    phoneStyle: {
+      'fontFamily': "",
+      'fontColor': "rgba(153, 15, 153, 1)",
+      'fontSize': "52rpx",
+      'top': "130rpx",
+      "left": "center"
+    },
+    // 授权栏
+    authTipStyle: {
+      'fontFamily': "",
+      'fontColor': "rgba(6, 96, 166, 1)",
+      'fontSize': "28rpx",
+      'top': "24rpx",
+      "left": "center"
+    },
+    //提示栏
+    tipStyle: {
+      'fontFamily': "",
+      'fontColor': "rgba(13, 153, 53, 1)",
+      'fontSize': "22rpx",
+      'top': "-6rpx",
+      "left": "0"
+    },
+    //取消授权按钮
+    cancleBtnStyle: {
+      'text': "取消授权",
+      'textAlign': "",
+      'fontFamily': "",
+      'fontColor': "rgba(53, 134, 241, 1)",
+      'fontSize': "32rpx",
+      'top': "323rpx",
+      "left": "96rpx",
+      'width': "224rpx",
+      'height': "90rpx",
+      'bgColor': "#FFFFFF",
+      'radius': "45rpx",
+      'borderColor': "rgba(53, 134, 241, 1)",
+      'borderWidth': "2rpx"
+    },
+    //登录授权按钮
+    sureBtnStyle: {
+      'text': "确认登录",
+      'textAlign': "center",
+      'fontFamily': "",
+      'fontColor': "#FFFFFF",
+      'fontSize': "32rpx",
+      'top': "323rpx",
+      "left": "404rpx",
+      'width': "270rpx",
+      'height': "90rpx",
+      'bgColor': "rgba(3, 134, 41, 1)",
+      'radius': "45rpx",
+      'borderColor': "rgba(3, 134, 41, 1)",
+      'borderWidth': "2rpx"
+    },
+    //协议栏
+    agreeLineStyle: {
+      'textAlign': "left",
+      'fontFamily': "",
+      'fontColor': "rgba(93, 8, 253, 1)",
+      'fontSize': "20rpx",
+      'top': "446rpx",
+      "left": "center",
+      'width': "85%",
+      'height': ""
+    },
+    //协议勾选按钮
+    checkBtnStyle: {
+      'uncheck': "../../assets/images/unchecked.png",
+      'checked': "../../assets/images/close.png",
+      'width': "32rpx",
+      'height': "32rpx"
+    },
+    //协议名称
+    agreeStyle: {
+      "contracts": [{
+        name: "《服务协议》",
+        url: "/pages/contract/index",
+      },{
+        name: "《服务协议1》",
+        url: "/pages/contract/index",
+      }],
+      'fontFamily': "",
+      'fontColor': "rgba(213, 134, 21, 1)"
+    },
+    //自定义按钮控件
+    customControlStyle: [{
+        'ifShow': true,
+        'name': '其他登录方式>',
+        'width': '200rpx',
+        'height': '',
+        'top': "560rpx",
+        "left": "center",
+        'fontFamily': "",
+        "fontSize": "28rpx",
+        'fontColor': "rgba(53, 14, 41, 1)",
+        'bgColor': "",
+        'textAlign': "left",
+        'radius': "0",
+        'url': "/pages/otherlogin/index"
+      }
+    ],
+
+  };
+};
+
+module.exports = {
+  getBottomPopupOption
+}

@@ -145,6 +145,7 @@ function getFullScreenOption() {
       'bgColor': 'rgba(255, 255, 255, 1)' // 弹窗背景颜色
     },
     logoStyle: {
+      'src': 'https://www.chuanglan.com/images/logo.svg',
       'top': '20%',
       'left': 'center',
       width: "300rpx",

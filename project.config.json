@@ -43,7 +43,7 @@
     "disableSWC": true
   },
   "compileType": "miniprogram",
-  "libVersion": "2.25.4",
+  "libVersion": "3.3.4",
   "appid": "wxae73f63d6ef4b286",
   "projectname": "shanyan-miniprogram-sdk",
   "condition": {},
