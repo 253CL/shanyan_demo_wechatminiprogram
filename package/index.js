@@ -276,7 +276,6 @@ function _doInitRequest(url, requestData, uuid, sid, onResult) {
       }
     },
     fail: (err) => {
-      error('[ShanYan Init] wx.request 失败');
       error('[ShanYan Init] 错误信息:', JSON.stringify(err));
       if (err && err.errMsg && err.errMsg.indexOf('timeout') !== -1) {
         return;
@@ -432,7 +431,7 @@ function _processInitQueue() {
  */
 function init(params, callback) {
   log(SEPARATOR);
-  log('[ShanYan Init] 开始初始化', params);
+  log('[ShanYan Init] 开始初始化', params, config.SDK_VERSION);
 
   if (isFunction(callback) === false) {
     callback = (res) => log('[ShanYan Init]', res);
@@ -446,6 +445,29 @@ function init(params, callback) {
   }
 
   const useAppId = params.appId;
+
+  // appId 变化时自动清理上次初始化的状态和缓存
+  if (state.appId && state.appId !== useAppId) {
+    log('[ShanYan Init] appId 已变化，清理上次初始化状态', state.appId, useAppId);
+    state.traceId = '';
+    state.timestamp = '';
+    state.cmccAppId = '';
+    state.cmccAppKey = '';
+    state.cmccSign = '';
+    state.cmccTimestamp = '';
+    state.cmccValidateSign = '';
+    state.initialized = false;
+    state.initState = 'none';
+    state.did = '';
+    state.sid = '';
+    state.telcom = 'Unknown_Operator';
+    try {
+      wx.removeStorageSync(CACHE_KEY);
+    } catch (e) {
+      // 缓存清理失败不影响主流程
+    }
+  }
+
   state.appId = useAppId;
 
   try {
@@ -602,7 +624,7 @@ function init(params, callback) {
       initDone = true;
       _completeInit(true, data, null, callback, uuid, false);
     } else {
-      log('[ShanYan Init] 首次请求失败，尝试备用域名重试');
+      log('[ShanYan Init] 初始化内部重试');
       if (initDone) return;
 
       const backupUrl = config.BACKUP_INIT_URL;
@@ -633,6 +655,7 @@ function init(params, callback) {
  * @param {string} callback.networkType - 网络类型（wifi/4g/5g/none）
  */
 function getNetworkType(callback) {
+  log('[ShanYan getNetworkType] 开始执行:');
   if (isFunction(callback) === false) {
     callback = (res) => log('[ShanYan Network]', res);
   }
@@ -1245,6 +1268,7 @@ function _executeOpenLoginAuth(cfg, callback) {
  * @param {Function} callback - 结果回调
  */
 function openLoginAuth(cfg, callback) {
+  log('[ShanYan Token] openLoginAuth:', config.SDK_VERSION);
   // cfg 可选，若第一个参数是函数则省略 cfg
   if (isFunction(cfg)) {
     callback = cfg;
@@ -1330,6 +1354,7 @@ function _retryInit() {
   }
 
   const initUrl = config.ENV[config.currentEnv].initUrl;
+  log('[ShanYan Init] 重试请求 URL:', initUrl);
   let initDone = false;
 
   const timeoutId = setTimeout(() => {
@@ -1346,16 +1371,17 @@ function _retryInit() {
     if (success) {
       clearTimeout(timeoutId);
       initDone = true;
-      _completeInit(true, data, null, () => {}, uuid, false);
+      _completeInit(true, data, null, () => { }, uuid, false);
     } else {
-      log('[ShanYan Init] 重试首次请求失败，尝试备用域名');
+      log('[ShanYan Init] 首次请求失败，重试');
       if (initDone) return;
 
+      logDetail('[ShanYan Init] 重试备用域名 URL:', config.BACKUP_INIT_URL);
       _doInitRequest(config.BACKUP_INIT_URL, requestData, uuid, sid, (retrySuccess, retryData, retryErrorInfo) => {
         if (initDone) return;
         clearTimeout(timeoutId);
         initDone = true;
-        _completeInit(retrySuccess, retryData, retryErrorInfo, () => {}, uuid, true);
+        _completeInit(retrySuccess, retryData, retryErrorInfo, () => { }, uuid, true);
       });
     }
   });
@@ -1381,6 +1407,7 @@ function _retryInit() {
  * }
  */
 function getPlugin() {
+  log('[ShanYan getPlugin] ');
   if (!oneKeyLogin) {
     error('[ShanYan] getPlugin: auth-plugin 插件未加载');
   }
@@ -1393,6 +1420,7 @@ function getPlugin() {
  * @param {Boolean} flag - true=开启 SDK 内部 console 日志输出，false=关闭（默认）
  */
 function setLog(flag) {
+  console.log(flag);
   state.logEnabled = !!flag;
   setLogInternal(flag);
 }
@@ -1410,6 +1438,7 @@ function setLog(flag) {
  * SDK.setReport(false);  // 关闭日志上报
  */
 function setReport(flag) {
+  log('[ShanYan setReport] ', flag);
   state.reportEnabled = !!flag;
 }
 
@@ -1430,6 +1459,7 @@ function setReport(flag) {
  * SDK.setDetailReport(false);  // 不采集设备信息
  */
 function setDetailReport(flag) {
+  log('[ShanYan setDetailReport] ', flag);
   state.fullReportEnabled = !!flag;
 }
 
@@ -1440,6 +1470,7 @@ function setDetailReport(flag) {
  */
 function clearScripCache() {
   try {
+    log('[ShanYan clearScripCache] 启动');
     wx.removeStorageSync(CACHE_KEY);
     log('[ShanYan Cache] 已清理本地初始化');
   } catch (e) {
@@ -1457,6 +1488,7 @@ function clearScripCache() {
  * @param {string} env - 环境标识：'stable'=测试环境，'release'=生产环境（默认）
  */
 function setEnvironment(env) {
+  log('[ShanYan setEnvironment] 环境配置:', env);
   if (env !== 'stable' && env !== 'release') {
     throw new Error('[ShanYan] setEnvironment: env must be "stable" or "release"');
   }
@@ -1477,6 +1509,7 @@ function setEnvironment(env) {
  * SDK.setInitTimeout(10000);  // 设置超时为 10 秒
  */
 function setInitTimeout(ms) {
+  log('[ShanYan setInitTimeout] 超时时间：', ms);
   if (typeof ms === 'number' && ms > 0) {
     state.initTimeoutMs = ms;
   }
