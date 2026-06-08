@@ -16,7 +16,13 @@ let _logEnabled = false;
 let _detailLogEnabled = false;
 
 /**
- * SDK 内部日志输出封装，受外部 setLog 开关控制
+ * SDK 内部常规日志输出
+ *
+ * 受外部开关 _logEnabled 控制。当 SDK.setLog(true) 时输出。
+ * 用于 SDK 流程日志、关键步骤进度等信息。
+ *
+ * @example
+ * log('[ShanYan Init] 初始化完成:', traceId);
  */
 function log() {
   if (_logEnabled) {
@@ -25,7 +31,13 @@ function log() {
 }
 
 /**
- * SDK 内部错误日志输出封装，受外部 setLog 开关控制
+ * SDK 内部错误日志输出
+ *
+ * 受外部开关 _logEnabled 控制。当 SDK.setLog(true) 时输出。
+ * 用于 SDK 异常、错误信息等，以便调试。
+ *
+ * @example
+ * error('[ShanYan Init] 初始化失败:', e.message);
  */
 function error() {
   if (_logEnabled) {
@@ -34,8 +46,18 @@ function error() {
 }
 
 /**
- * 日志详情输出封装，需同时满足外部 setLog 和内部 _detailLogEnabled 双开关
- * 用于输出接口地址、入参、响应等敏感信息，默认开启
+ * SDK 内部详细日志输出（敏感信息）
+ *
+ * 受两个开关控制：
+ * 1. 外部开关 _logEnabled（由 SDK.setLog() 同步设置）
+ * 2. 内部开关 _detailLogEnabled（默认 false，不对外暴露）
+ *
+ * 仅当两个开关都开启时才输出，避免不小心泄露敏感信息。
+ * 用于输出接口地址、请求参数、响应数据等。
+ *
+ * @example
+ * logDetail('[ShanYan Init] 初始化签名字段:', signText);
+ * logDetail('[ShanYan Init] 请求入参:', requestData);
  */
 function logDetail() {
   if (_logEnabled && _detailLogEnabled) {
@@ -103,7 +125,7 @@ function getDeviceInfo() {
  */
 function reportLog(params, uuid) {
   log('[ShanYan Log] 日志状态：', params.status, params.processName);
-  // 获取设备信息和 wxId（仅完整模式）
+  // 获取设备信息和 wxId（仅完整日志模式下获取）
   const wxId = getWxId();
   let device = '';
   let deviceName = '';
@@ -118,7 +140,8 @@ function reportLog(params, uuid) {
     netType = params.netType || '';
   }
 
-  // 构建上报字段
+  // 构建日志上报对象
+  // 各字段的说明详见函数参数文档
   const sdkLog = {
     appId: params.appId,            // 应用 ID
     sign: '',                       // 先占位，签名计算后填入
@@ -142,14 +165,14 @@ function reportLog(params, uuid) {
     sid: params.sid || '',          // 会话 ID
   };
 
-  // 构建加密文本（用于签名校验）：按字母顺序拼接所有上报字段
+  // 构建加密文本：按字母顺序拼接所有上报字段（用于服务端签名校验）
   const encryptText = `appId${sdkLog.appId}appPlatform${sdkLog.appPlatform}device${sdkLog.device}deviceName${sdkLog.deviceName}did${sdkLog.did}innerCode${sdkLog.innerCode}innerDesc${sdkLog.innerDesc}method${sdkLog.method}netType${sdkLog.netType}osVersion${sdkLog.osVersion}processName${sdkLog.processName}random${sdkLog.random}resCode${sdkLog.resCode}resDesc${sdkLog.resDesc}sdkVersion${sdkLog.sdkVersion}sid${sdkLog.sid}status${sdkLog.status}telcom${sdkLog.telcom}wxId${sdkLog.wxId}`;
   logDetail('[ShanYan Log] 日志签名字段:', encryptText);
   const encryptKey = md5(params.appId);
   sdkLog.sign = hmacSHA1Encrypt(encryptText, encryptKey);
 
   // 转换为 URL-encoded 表单数据（application/x-www-form-urlencoded）
-  // 所有字段确保为字符串，避免 null/undefined 被编码为 "null"/"undefined"
+  // 【重要】所有字段确保为字符串，避免 null/undefined 被编码为 "null"/"undefined" 字符串
   const formData = Object.keys(sdkLog)
     .map((key) => {
       const val = sdkLog[key] != null ? String(sdkLog[key]) : '';

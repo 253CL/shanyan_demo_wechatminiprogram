@@ -3,6 +3,12 @@ const config = require('../../sdk/config');
 const dlog = require('../../demo-log');
 const app = getApp();
 
+// 手机号查询接口地址（demo层维护，不属于SDK）
+const MOBILE_QUERY_URLS = {
+  stable: 'https://110.cm253.com:8445/open/web/wxprog-mobile-query',
+  release: 'https://api.253.com/open/web/wxprog-mobile-query',
+};
+
 /**
  * 授权结果页
  *
@@ -79,7 +85,7 @@ Page({
       dlog.log('[Page-Result] 签名入参:', JSON.stringify(params));
       dlog.log('[Page-Result] sign:', sign);
 
-      const mobileQueryUrl = config.ENV[config.currentEnv].mobileQueryUrl;
+      const mobileQueryUrl = MOBILE_QUERY_URLS[config.currentEnv];
       dlog.log('[Page-Result] mobileQueryUrl:', mobileQueryUrl);
       dlog.log('[Page-Result] currentEnv:', config.currentEnv);
 
