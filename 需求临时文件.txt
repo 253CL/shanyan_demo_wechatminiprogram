@@ -1,25 +1,7 @@
-Register: plugin-private://wx35678fec06d475b4/pages/ctprivacy/index
-servicewechat.com:0 Register: plugin-private://wx35678fec06d475b4/pages/ctserving/index
-servicewechat.com:0 Register: plugin-private://wx35678fec06d475b4/pages/cuprivacy/index
-servicewechat.com:0 Register: plugin-private://wx35678fec06d475b4/pages/contract-list/index
-servicewechat.com:0 Register: plugin-private://wx35678fec06d475b4/pages/newcuprivacy/index
-servicewechat.com:0 Register: plugin-private://wx35678fec06d475b4/pages/privacy/index
-servicewechat.com:0 Register: plugin-private://wx35678fec06d475b4/pages/serving/index
-app.js? [sm]:34 App: onLaunch have been invoked
-app.js:1 App: onShow have been invoked
-index.js? [sm]:13 Register: pages/index/index
-page-experience.js? [sm]:25 Register: pages/page-experience/page-experience
-page-debug.js? [sm]:49 Register: pages/page-debug/page-debug
-page-result.js? [sm]:18 Register: pages/page-result/page-result
-index.js? [sm]:319 Register: pages/contract/index
-index.js? [sm]:352 App route: 
-- path: pages/index/index
-- openType: appLaunch
-- renderer: webview
-- componentFramework: exparser
-index.js? [sm]:352 Update view with init data
-index.js? [sm]:352 pages/index/index: onLoad have been invoked
-index.js:1 pages/index/index: onShow have been invoked
-index.js:1 pages/index/index: onRouteDone have been invoked
-index.js:1 Invoke event onReady in page: pages/index/index
-index.js:1 pages/index/index: onReady have been invoked
+message：发生错误
+SyntaxError: parse js file (A:/shanyan_git_h5/WeChatMiniProgram/shanyan_demo_wechatminiprogram/node_modules/shanyan-miniprogram-sdk/index.js) failed: 'return' outside of function (647:6)
+appid: wxae73f63d6ef4b286
+openid: o6zAJs098welYgvNWGGqFunl7wRA
+ideVersion: 2.01.2510280
+osType: win32-x64
+time: 2026-06-08 16:44:56

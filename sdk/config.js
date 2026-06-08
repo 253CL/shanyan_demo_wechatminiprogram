@@ -8,7 +8,7 @@
  */
 
 module.exports = {
-  SDK_VERSION: '1.1.0.3',                   // SDK 版本号（用于日志上报和初始化入参）
+  SDK_VERSION: '1.1.0.4',                   // SDK 版本号（用于日志上报和初始化入参）
   APP_PLATFORM: 5,                          // 平台标识：5=微信小程序
   DEFAULT_AUTH_PAGE_TYPE: '4',              // 授权页类型默认值：'4'=底部弹窗，'5'=自定义弹窗
   BUSINESS_TYPE: '8',                       // 业务类型：8=一键登录

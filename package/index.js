@@ -632,6 +632,7 @@ function init(params, callback) {
  * @param {Function} [callback] - 回调函数（可选），不传时默认输出到日志
  * @param {string} callback.networkType - 网络类型（wifi/4g/5g/none）
  */
+function getNetworkType(callback) {
   if (isFunction(callback) === false) {
     callback = (res) => log('[ShanYan Network]', res);
   }

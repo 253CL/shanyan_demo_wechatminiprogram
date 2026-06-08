@@ -124,9 +124,9 @@ function getDeviceInfo() {
  * @param {string} uuid - 本次上报的唯一标识（random 字段）
  */
 function reportLog(params, uuid) {
-  log('[ShanYan Log] 日志状态：', params.status, params.processName);
   // 获取设备信息和 wxId（仅完整日志模式下获取）
   const wxId = getWxId();
+  log('[ShanYan Log] 日志状态：', params.status, params.processName, wxId);
   let device = '';
   let deviceName = '';
   let osVersion = '';
