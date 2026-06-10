@@ -2,6 +2,12 @@ const demoUtils = require('../../demo-utils');
 const dlog = require('../../demo-log');
 const app = getApp();
 
+// 手机号查询接口地址（demo层维护，不属于SDK）
+const MOBILE_QUERY_URLS = {
+  stable: 'https://110.cm253.com:8445/open/web/wxprog-mobile-query',
+  release: 'https://api.253.com/open/web/wxprog-mobile-query',
+};
+
 /**
  * 授权结果页
  *
@@ -24,9 +30,9 @@ Page({
     dlog.log('[Page-Result] globalData appId:', app.globalData.appId, 'appKey:', app.globalData.appKey, 'env:', app.globalData.envLabel);
 
     try {
-      const systemInfo = wx.getSystemInfoSync();
+      const windowInfo = wx.getWindowInfo();
       this.setData({
-        statusBarHeight: systemInfo.statusBarHeight || 20,
+        statusBarHeight: windowInfo.statusBarHeight || 20,
       });
     } catch (e) {
       this.setData({
@@ -78,8 +84,10 @@ Page({
       dlog.log('[Page-Result] 签名入参:', JSON.stringify(params));
       dlog.log('[Page-Result] sign:', sign);
 
-      const mobileQueryUrl = demoUtils.getMobileQueryUrl(app.globalData.envLabel);
+      const envLabel = app.globalData.envLabel;
+      const mobileQueryUrl = envLabel && envLabel.indexOf('stable') !== -1 ? MOBILE_QUERY_URLS.stable : MOBILE_QUERY_URLS.release;
       dlog.log('[Page-Result] mobileQueryUrl:', mobileQueryUrl);
+      dlog.log('[Page-Result] envLabel:', envLabel);
 
       const requestData = `appId=${encodeURIComponent(appId)}&token=${encodeURIComponent(token)}&timestamp=${encodeURIComponent(timestamp)}&sign=${encodeURIComponent(sign)}`;
       dlog.log('[Page-Result] wx.request data (form):', requestData);

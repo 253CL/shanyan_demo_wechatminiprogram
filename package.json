@@ -10,7 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "crypto-js": "^4.2.0",
-    "shanyan-miniprogram-sdk": "^1.0.1"
+    "crypto-js": "4.1.1",
+    "shanyan-miniprogram-sdk": "^1.1.0"
   }
 }

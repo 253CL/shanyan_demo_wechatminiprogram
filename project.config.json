@@ -1,7 +1,20 @@
 {
   "description": "闪验小程序SDK Demo项目配置文件",
   "packOptions": {
-    "ignore": [],
+    "ignore": [
+      {
+        "type": "folder",
+        "value": "node_modules"
+      },
+      {
+        "type": "folder",
+        "value": ".claude"
+      },
+      {
+        "type": "suffix",
+        "value": ".map"
+      }
+    ],
     "include": []
   },
   "setting": {
@@ -45,8 +58,9 @@
   "compileType": "miniprogram",
   "libVersion": "3.3.4",
   "appid": "wxae73f63d6ef4b286",
-  "projectname": "shanyan-miniprogram-demo",
+  "projectname": "shanyan-miniprogram-sdk",
   "condition": {},
   "simulatorPluginLibVersion": {},
-  "editorSetting": {}
+  "editorSetting": {},
+  "testRoot": "minitest/"
 }
