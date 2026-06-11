@@ -1,0 +1,18 @@
+<view class="container">
+  <!-- 自定义导航栏 -->
+  <view class="navbar" style="padding-top: {{statusBarHeight}}px;">
+    <view class="navbar-inner">
+      <view class="back-btn" bindtap="goBack">
+        <text class="back-icon">‹</text>
+      </view>
+      <text class="navbar-title">{{title}}</text>
+      <view class="back-btn"></view>
+    </view>
+  </view>
+
+  <!-- 文档内容 -->
+  <scroll-view scroll-y class="content" style="padding-top: {{navBarHeight}}px;">
+    <rich-text nodes="{{richText}}"></rich-text>
+    <view class="spacer-bottom"></view>
+  </scroll-view>
+</view>

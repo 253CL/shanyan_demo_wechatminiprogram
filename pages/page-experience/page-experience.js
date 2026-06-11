@@ -81,11 +81,32 @@ Page({
    */
   openAuthWithStyle(getPreset, label) {
     const option = getPreset();
+    dlog.log('[Page-Experience] openAuthWithStyle 拉起授权页, label:', label);
     SDK.openLoginAuth({ option: option }, (authRes) => {
       dlog.log('[Page-Experience] openLoginAuth result:', JSON.stringify(authRes));
+      dlog.log('[Page-Experience] authRes.code:', authRes && authRes.code, 'type:', typeof authRes);
       if (authRes.code === '501') {
-        // 用户取消授权
+        // 全屏样式中"其他登录方式"按钮返回 501，跳转到行为验证码
+        if (label === '全屏样式') {
+          dlog.log('[Page-Experience] 全屏样式用户选择其他登录方式 (501)，跳转到行为验证码页');
+          wx.switchTab({
+            url: '/pages/page-captcha/index',
+            success: () => { dlog.log('[Page-Experience] switchTab 跳转成功'); },
+            fail: (err) => { dlog.error('[Page-Experience] switchTab 跳转失败:', JSON.stringify(err)); },
+          });
+          return;
+        }
+        dlog.log('[Page-Experience] 用户取消授权 (501)');
         wx.showToast({ title: '用户取消授权', icon: 'none' });
+        return;
+      }
+      if (authRes.code === '502') {
+        dlog.log('[Page-Experience] 用户选择其他登录方式 (502)，跳转到行为验证码页');
+        wx.switchTab({
+          url: '/pages/page-captcha/index',
+          success: () => { dlog.log('[Page-Experience] switchTab 跳转成功'); },
+          fail: (err) => { dlog.error('[Page-Experience] switchTab 跳转失败:', JSON.stringify(err)); },
+        });
         return;
       }
       this.navigateToResult(label, authRes);
@@ -129,6 +150,15 @@ Page({
       dlog.log('[Page-Experience] openLoginAuth result:', JSON.stringify(authRes));
       if (authRes.code === '501') {
         wx.showToast({ title: '用户取消授权', icon: 'none' });
+        return;
+      }
+      if (authRes.code === '502') {
+        dlog.log('[Page-Experience] 用户选择其他登录方式 (502)，跳转到行为验证码页');
+        wx.switchTab({
+          url: '/pages/page-captcha/index',
+          success: () => { dlog.log('[Page-Experience] switchTab 跳转成功'); },
+          fail: (err) => { dlog.error('[Page-Experience] switchTab 跳转失败:', JSON.stringify(err)); },
+        });
         return;
       }
       this.navigateToResult('默认弹窗样式', authRes);

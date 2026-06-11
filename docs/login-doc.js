@@ -1,0 +1,418 @@
+module.exports = {
+  content: `# 微信小程序集成文档
+
+# 
+
+## 1  产品概述
+
+闪验 SDK 是基于运营商网关认证能力的一键登录解决方案。用户只需点击"一键登录"按钮，即可自动获取本机手机号码，完成登录/注册，无需手动输入手机号和短信验证码。
+
+## 2 核心能力
+
+- **一键登录**：用户在授权页点击确认，SDK自动获取当前流量卡对应的token，通过服务端可置换完整手机号码。
+
+- **三网支持**：自动适配移动、联通、电信三大运营商，一套配置三网共用。
+
+- **网络支持：**自动选择网络通道，支持WiFi\\+数据网络和纯数据网络。
+
+## 3 接入准备
+
+### 3\\.1 平台申请
+
+1. 在微信公众平台申请微信小程序能力，获取 **wxappid**
+
+2. 在创蓝平台注册账号，创建应用并获取 **appId** 和 **appkey**
+
+3. 在腾讯公众平台小程序后台添加取号插件：\`"设置" → "第三方服务" → "插件管理"\` → 搜索 **"号码认证"** 申请添加
+
+### 3\\.2 重要参数说明
+
+|参数|说明|
+|---|---|
+|**wxappid**|微信平台分配的微信小程序ID|
+|**appId**|创蓝平台分配的应用AppId，用于 SDK 初始化|
+|**appkey**|创蓝平台分配的密钥，用于服务端 token 校验及手机号 AES 解密|
+
+## 4 SDK 快速接入
+
+### 4\\.0 版本说明
+
+| 组件 | 推荐版本 | 说明 |
+|---|---|---|
+| npm SDK（\`shanyan-miniprogram-sdk\`） | 1.0.2 | 通过 \`npm install shanyan-miniprogram-sdk@<version>\` 安装 |
+| 取号插件（\`auth-plugin\`） | 2.2.0 | 在 \`app.json\` 的 \`plugins\` 中配置 \`version\` 字段 |
+
+> **注意**：1.0.3 版本存在语法错误（\`getNetworkType\` 方法缺少函数声明，报错 \`'return' outside of function\`），请暂时不要升级。
+
+**更新 SDK**：运行 \`npm install shanyan-miniprogram-sdk@latest\`，然后在微信开发者工具中重新构建 npm。
+
+### 4\\.1 安装 SDK
+
+在小程序项目根目录下执行：
+
+\`\`\`Bash
+npm install shanyan-miniprogram-sdk
+\`\`\`
+
+安装完成后，在微信开发者工具中点击 **工具 → 构建 npm**，生成 npm 依赖。
+
+### 4\\.2 引入插件包
+
+**注意：下面4项必须全部配置，否则可能无法启动授权页。**
+
+**① app\\.json 中引用插件：**
+
+\`\`\`JSON
+{
+  "pages": [
+    "pages/index/index"
+  ],
+  "plugins": {
+    "auth-plugin": {
+      "version": "2.2.0",
+      "provider": "wx35678fec06d475b4"
+    }
+  }
+}
+\`\`\`
+
+**② 页面 json 文件中声明插件组件：**
+
+\`\`\`JSON
+{
+  "usingComponents": {
+    "onekeylogin": "plugin://auth-plugin/onekeylogin"
+  }
+}
+\`\`\`
+
+**③ ****wxml文件引用：**
+
+\`\`\`JSON
+<onekeylogin/>
+\`\`\`
+
+**④ js 文件中引入 SDK：**
+
+\`\`\`JavaScript
+const SDK = require('shanyan-miniprogram-sdk');
+\`\`\`
+
+### 4\\.3 初始化 SDK
+
+**初始化SDK，为后续取号功能做准备。**
+\`● 初始化会采集信息，建议放到同意隐私协议后调用。\`
+\`● 调用SDK其他流程方法前，请确保已调用过初始化。\`
+\`● 初始化首次调用有网络请求，后续会使用缓存，如果不使用缓存可以调用clearScripCache方法清理缓存。\`
+
+\`\`\`JavaScript
+SDK.init({ appId: 'YOUR_APP_ID' }, (res) => {
+  if (res.code === '200000') {
+    console.log('初始化成功, traceId:', res.traceId);
+  } else {
+    console.log('初始化失败:', res.message);
+  }
+});
+\`\`\`
+
+**回调参数：**
+
+|参数|类型|说明|
+|---|---|---|
+|code|string|\`'200000'\`=成功，其他=失败|
+|message|string|结果描述|
+|traceId|string|请求追踪 ID（成功时返回）|
+
+### 4\\.4 打开授权页
+
+调用此方法会启动一键登录授权页，用户授权后将返回认证token。
+
+● 拉起授权页方法会启一键登录授权页面，\`已登录状态请勿调用 。\`
+● 一键登录成功率会受网络环境、SIM卡状态等影响，\`不能作为唯一登录方式，建议在拉起授权页失败回调处做降级逻辑处理，\`避免造成自身APP功能异常。
+●\`不要连续调用或者在授权页已经展示时调用，\`否则可能会有异常。
+● 如果需要修改授权页界面配置，请传入可选界面配置入参\`option\`，详见授权页自定义配置。
+
+\`\`\`JavaScript
+SDK.openLoginAuth((res) => {
+  if (res.code === '200000') {
+    console.log('取号成功, token:', res.token);
+    console.log('msgId:', res.msgId);
+    // 将 token 发送到业务服务端校验换取手机号
+  } else if (res.code === '501') {
+    console.log('用户取消授权');
+  } else {
+    console.log('取号失败:', res.message);
+  }
+});
+\`\`\`
+
+**回调参数：**
+
+|参数|类型|说明|
+|---|---|---|
+|code|string|\`'200000'\`=成功，\`'501'\`=用户取消，其他=失败|
+|message|string|结果描述|
+|token|string|取号凭证（成功时返回，用于服务端校验）|
+|msgId|string|消息 ID（成功时返回）|
+
+### 4\\.5 完整调用流程示例
+
+\`\`\`JavaScript
+// 1. 初始化
+SDK.init({ appId: 'your_app_id' }, (initRes) => {
+  if (initRes.code !== '200000') {
+    wx.showToast({ title: '初始化失败', icon: 'none' });
+    return;
+  }
+
+  // 2. 打开授权页
+  SDK.openLoginAuth((authRes) => {
+    if (authRes.code === '200000') {
+      // 3. 将 token 发送到你的业务服务端
+      wx.request({
+        url: 'https://your-server.com/api/verify-token',
+        method: 'POST',
+        data: { token: authRes.token },
+        success: (res) => {
+          // 4. 登录成功，进入你的业务逻辑
+          wx.navigateTo({ url: '/pages/home/home' });
+        }
+      });
+    } else if (authRes.code === '501') {
+      wx.showToast({ title: '已取消授权', icon: 'none' });
+    } else {
+      wx.showToast({ title: authRes.message, icon: 'none' });
+    }
+  });
+});
+\`\`\`
+
+## 5 SDK 其他API 说明
+
+### 5\\.1 设置日志开关
+
+通过SDK\\.setLog\\(flag\\)可以设置 SDK 内部 console 日志输出开关。
+
+|参数|类型|说明|
+|---|---|---|
+|flag|boolean|\`true\`=开启日志，\`false\`=关闭（默认）|
+
+### 5\\.2 设置初始化超时时间
+
+通过SDK\\.setInitTimeout\\(ms\\)可以设置 init 接口超时时间，单位毫秒。
+
+|参数|类型|说明|
+|---|---|---|
+|ms|number|超时时间（毫秒），默认 \`6000\`|
+
+超时后返回 \`code: '001023', message: '超时'\`。
+
+### 5\\.3 清理初始化缓存
+
+通过SDK\\.clearScripCache\\(\\)可以清理本地初始化缓存。调用后下次 \`init\` 将重新请求服务端获取参数。
+
+## 6 授权页自定义配置
+
+授权页通过 \`SDK.openLoginAuth({ option: { ... } }, callback)\` 传入配置。
+
+### 6\\.1 配置项示例
+
+\`\`\`JavaScript
+SDK.openLoginAuth({
+  option: {
+    logoStyle: {
+      src: 'https://example.com/logo.png',
+      width: '200rpx',
+      height: '200rpx',
+    },
+    sureBtnStyle: {
+      text: '一键登录',
+      bgColor: '#2b7de0',
+    },
+  }
+}, (res) => { ... });
+\`\`\`
+
+### 6\\.2 配置项详细说明
+
+|配置模块|字段|含义|值|说明|
+|---|---|---|---|---|
+|**logo**|logoStyle\\.width<br>|Logo 宽度|百分比或数值，如 \`200rpx\`|可选|
+||logoStyle\\.height|Logo 高度|百分比或数值|可选|
+||logoStyle\\.src|Logo 图片路径|URL 路径|可选，默认创蓝 logo|
+||logoStyle\\.top|logo 距页面上边框距离|百分比或数值，如 \`20rpx\`|可选|
+||logoStyle\\.left|logo 距页面左边框距离|数值或 \`center\`|可选|
+|**小程序名称**|bussinessNameStyle\\.text|小程序名称文案|string|可选|
+||bussinessNameStyle\\.fontFamily|文案的字体|string，如\`serif/monospace\`等|可选|
+||bussinessNameStyle\\.fontColor|字体颜色|十六进制颜色码，如\`“#FFFFFF”\`|可选|
+||bussinessNameStyle\\.fontSize|字体大小|数值，如 \`32rpx\`|可选|
+||bussinessNameStyle\\.top|距上边框距离|百分比或数值|可选|
+||bussinessNameStyle\\.left|距左边框距离|数值或 \`center\`|可选|
+|**授权栏**<br>|authTextStyle\\.fontFamily|文案的字体|string，如\`serif/monospace\`等|可选|
+||authTextStyle\\.fontColor|字体颜色|十六进制颜色码，如\`“#FFFFFF”\`|可选|
+||authTextStyle\\.fontSize|字体大小|数值|可选|
+||authTextStyle\\.top|距上边框距离|百分比或数值|可选|
+||authTextStyle\\.left|距左边框距离|数值或 \`center\`|可选|
+|**授权提示栏**|authTipStyle\\.ifShow|是否展示提示栏|boolean|可选|
+||authTipStyle\\.text|提示栏文案|string|可选|
+||authTipStyle\\.width|提示栏宽度|百分比或数值，如 \`200rpx\`|可选|
+||authTipStyle\\.fontFamily|文案的字体|string，如\`serif/monospace\`等|可选|
+||authTipStyle\\.fontColor|文案的字体颜色|十六进制颜色码，如\`“#FFFFFF”\`|可选|
+||authTipStyle\\.fontSize|文案的字体大小|数值<br>|可选|
+||authTipStyle\\.top|距上边框距离|百分比或数值|可选|
+||authTipStyle\\.left|距左边框距离|数值或 \`center\`|可选|
+|**号码栏**|phoneStyle\\.fontFamily|文案的字体|string，如\`serif/monospace\`等|可选|
+||phoneStyle\\.fontColor|字体颜色|十六进制颜色码，如\`“#FFFFFF”\`|可选|
+||phoneStyle\\.fontSize|文案的字体大小|数值<br>|可选|
+||phoneStyle\\.top|距上边框距离|百分比或数值|可选|
+||phoneStyle\\.left|距左边框距离|数值或 \`center\`|可选|
+|**取消按钮**<br>|cancleBtnStyle\\.text|按钮文案（默认"拒绝"）|string，≤6字|可选|
+||cancleBtnStyle\\.textAlign|文案对齐选项|\`“center/left/right”\`|可选|
+||cancleBtnStyle\\.fontFamily|文案的字体<br>|string，如\`serif/monospace\`等|可选|
+||cancleBtnStyle\\.fontColor|字体颜色|十六进制颜色码，如\`“#FFFFFF”\`|可选|
+||cancleBtnStyle\\.fontSize|文案的字体大小|数值<br>|可选|
+||cancleBtnStyle\\.top|距上边框距离|百分比或数值|可选|
+||cancleBtnStyle\\.left|距左边框距离|数值或 \`center\`|可选|
+||cancleBtnStyle\\.width|按钮宽度|百分比或数值|可选|
+||cancleBtnStyle\\.height|按钮高度|百分比或数值|可选|
+||cancleBtnStyle\\.bgColor|按钮颜色|十六进制颜色码，如\`“#FFFFFF”\`|可选|
+||cancleBtnStyle\\.radius|按钮圆角|百分比或数值|可选|
+||cancleBtnStyle\\.borderColor|按钮边框颜色|十六进制颜色码，如\`“#FFFFFF”\`|可选|
+||cancleBtnStyle\\.borderWidth|按钮边框线宽|数值，如\`“1px”\`|可选|
+|**登录按钮**|sureBtnStyle\\.text|按钮文案（默认"授权登录"）|string，≤6字<br>|可选|
+||sureBtnStyle\\.textAlign|文案对齐选项|\`“center/left/right”\`|可选|
+||sureBtnStyle\\.fontFamily|文案的字体<br>|string，如\`serif/monospace\`等|可选|
+||sureBtnStyle\\.fontColor|字体颜色|十六进制颜色码，如\`“#FFFFFF”\`|可选|
+||sureBtnStyle\\.fontSize|文案的字体大小|数值<br>|可选|
+||sureBtnStyle\\.top|距上边框距离|百分比或数值|可选|
+||sureBtnStyle\\.left|距左边框距离|数值或 \`center\`|可选|
+||sureBtnStyle\\.width|按钮宽度|百分比或数值|可选|
+||sureBtnStyle\\.height|按钮高度|百分比或数值|可选|
+||sureBtnStyle\\.bgColor|按钮颜色|十六进制颜色码，如\`“#FFFFFF”\`|可选|
+||sureBtnStyle\\.radius|按钮圆角|百分比或数值|可选|
+||sureBtnStyle\\.borderColor|按钮边框颜色|十六进制颜色码，如\`“#FFFFFF”\`|可选|
+||sureBtnStyle\\.borderWidth|按钮边框线宽|数值，如\`“1px”\`|可选|
+|**协议栏**|agreeLineStyle\\.textAlign|文案对齐选项|\`“center/left/right”\`|可选|
+||agreeLineStyle\\.fontFamily|文案的字体<br>|string，如\`serif/monospace\`等|可选|
+||agreeLineStyle\\.fontColor|字体颜色<br>|十六进制颜色码，如\`“#FFFFFF”\`|可选|
+||agreeLineStyle\\.fontSize|文案的字体大小|数值<br>|可选|
+||agreeLineStyle\\.top|距上边框距离|百分比或数值|可选|
+||agreeLineStyle\\.left|距左边框距离|数值或 \`center\`|可选|
+||agreeLineStyle\\.width|文案宽度<br>|百分比或数值|可选|
+|**协议勾选****框**|checkBtnStyle\\.uncheck|未选中图标 URL|string|可选|
+||checkBtnStyle\\.checked|选中图标 URL|string|可选|
+||checkBtnStyle\\.width|图标宽度|百分比或数值|可选|
+||checkBtnStyle\\.height|图标高度|百分比或数值|可选|
+|**协议名称**|agreeStyle\\.contracts|协议数组<br>|\`[{name:"协议名", url:"链接"}]\`仅支持小程序原生协议页面如：\`url: "/pages/contract/index"\`|可选|
+||agreeStyle\\.fontFamily|文案的字体<br>|string，如\`serif/monospace\`等|可选|
+||agreeStyle\\.fontColor|字体颜色<br>|十六进制颜色码，如\`“#FFFFFF”\`|可选|
+|**自定义控件**|customControlStyle|数组格式|详见下方说明|可选|
+|**弹窗**|layerStyle\\.height|弹窗高度|百分比或数值|可选|
+||layerStyle\\.radius|弹窗圆角|数值|可选|
+||layerStyle\\.bgColor|弹窗背景色|十六进制颜色码|可选|
+|**蒙层**|maskStyle\\.ifShowMask|是否显示蒙层|boolean，默认 true|可选|
+||maskStyle\\.bgColor|蒙层背景色|十六进制颜色码|可选|
+||maskStyle\\.opacity|蒙层透明度|数值|可选|
+
+### 6\\.3 自定义控件说明
+
+\`customControlStyle\` 为数组格式，支持在授权页添加自定义按钮控件。
+
+|字段|含义|值|说明|
+|---|---|---|---|
+|ifShow|是否展示|boolean，默认 false|必选|
+|id|控件 ID|string|可选|
+|openType|跳转方式|\`navigate/redirect/switchTab/reLaunch/navigateBack\`|可选|
+|name|显示文案|string|可选|
+|width|宽度|百分比或数值|可选|
+|height|高度|百分比或数值|可选|
+|top|距弹窗上边框距离|百分比或数值|可选|
+|left|距弹窗左边框距离|百分比或数值|可选|
+|fontFamily|文案的字体<br>|string，如\`serif/monospace\`等|可选|
+|fontColor|字体颜色<br>|十六进制颜色码，如\`“#FFFFFF”\`|可选|
+|fontSize|字体大小|数值|可选|
+|bgColor|背景颜色|十六进制颜色码，如\`“#FFFFFF”\`|可选|
+|textAlign|文本对齐|\`center/left/right\`|可选|
+|radius|圆角|数值|可选|
+|url|跳转 URL|URL 链接|必选|
+
+## 7 返回码说明
+
+### 7\\.1 SDK 返回码
+
+|返回码|描述|说明|
+|---|---|---|
+|200000|成功|初始化/取号成功|
+|001023|超时|init 接口超时|
+|000400|服务端响应为空|服务端未返回有效数据|
+|000401|请求服务端失败|网络请求异常|
+|000500|请先调用 init 初始化|openLoginAuth 前未调用 init|
+|000501|移动 appId 未初始化|cmccAppId 未获取到|
+|000520|appId 必传|init 未传入 appId|
+|000600|SDK 初始化异常|初始化过程发生异常|
+|000601|SDK 响应处理异常|处理服务端响应时发生异常|
+|000602|Token 签名计算异常|签名计算过程发生异常|
+|000603|Token UUID 生成异常|UUID 生成失败|
+|000604|Token 处理异常|Token 处理过程发生异常|
+|000605|Token 插件调用异常|调用取号插件时发生异常|
+|000606|网络类型处理异常|网络类型处理时发生异常|
+|000607|网络类型调用异常|网络类型调用时发生异常|
+|000001|获取网络类型失败|获取网络类型失败|
+
+### 7\\.2 运营商返回码
+
+**移动取号：**
+
+|返回码|描述|
+|---|---|
+|103000|成功|
+|500|网络异常，请检查网络设置|
+|503|参数缺失|
+|130010|参数为空|
+|105002|移动网关取号失败|
+|105112|时间戳非法|
+|105113|APPID 非法或为空|
+|103101|错误的请求签名|
+|110023|应用没有权益|
+|110025|权益已失效|
+|110029|微信 appid 校验失败|
+
+**电信取号：**
+
+|返回码|描述|
+|---|---|
+|103000|成功|
+|301|参数错误|
+|500|网络异常|
+|502|电信/联通取号能力关闭|
+|105003|电信网关取号失败|
+|110023|应用没有权益|
+|110025|权益已失效|
+
+**联通取号：**
+
+|返回码|描述|
+|---|---|
+|103000|成功|
+|500|网络异常|
+|502|电信/联通取号能力关闭|
+|105001|联通网关取号失败|
+|110023|应用没有权益|
+|110025|权益已失效|
+
+**获取 token：**
+
+|返回码|描述|
+|---|---|
+|501|用户取消授权|
+|502|用户选择其他登录方式|
+|103002|没有填写必传参数|
+|104000|app 不存在|
+|104001|businessType 校验失败|
+|104003|应用没有权益|
+|104004|权益已失效|
+|104007|accessToken 不存在（token 有效期 2 分钟）|
+|104008|accessToken 校验失败|
+|104011|手机号不能为空|
+|104012|本机号码校验失败|`
+};

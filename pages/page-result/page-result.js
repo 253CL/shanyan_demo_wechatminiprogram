@@ -23,6 +23,8 @@ Page({
     phone: '',
     telecomText: '',
     errorText: '',
+    ticket: '',
+    captchaCode: '',
   },
 
   onLoad(options) {
@@ -44,6 +46,20 @@ Page({
       styleName: options.styleName || '',
     });
 
+    // 行为验证码结果
+    if (options.styleName === 'captcha') {
+      const isSuccess = options.success === 'true';
+      this.setData({
+        isSuccess,
+        ticket: options.ticket || '',
+        captchaCode: options.captchaCode || '',
+        statusText: isSuccess ? '验证通过' : '验证失败',
+        errorText: options.message ? decodeURIComponent(options.message) : '',
+      });
+      return;
+    }
+
+    // 一键登录结果
     const resultCode = options.code;
     const resultMessage = options.message || '';
     const token = options.token || '';
@@ -54,9 +70,13 @@ Page({
       this.setData({ telecomText: '该能力由创蓝闪验提供' });
       this.queryMobile(app.globalData.appId, token);
     } else {
+      const errorMsg = (resultCode === '504' || resultCode === '000001')
+        ? '请插入手机SIM卡，并使用数据流量网络访问'
+        : decodeURIComponent(resultMessage);
       this.setData({
         isSuccess: false,
-        errorText: `状态码：${resultCode}\n错误日志：${decodeURIComponent(resultMessage)}`,
+        statusText: '登录失败',
+        errorText: `状态码：${resultCode}\n错误日志：${errorMsg}`,
       });
     }
   },

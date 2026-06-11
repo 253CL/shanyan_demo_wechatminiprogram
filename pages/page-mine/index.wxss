@@ -1,0 +1,107 @@
+/* ========== 页面容器 ========== */
+.container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  background: #f5f5f5;
+}
+
+/* ========== 自定义导航栏 ========== */
+.navbar {
+  width: 100%;
+  background: transparent;
+}
+
+.navbar-fixed {
+  position: fixed;
+  left: 0;
+  right: 0;
+  z-index: 1;
+  background: transparent;
+}
+
+.navbar-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 88rpx;
+  padding: 0 24rpx;
+}
+
+.navbar-placeholder {
+  width: 60rpx;
+}
+
+.navbar-title {
+  font-size: 34rpx;
+  font-weight: 600;
+  color: #333;
+}
+
+.navbar-spacer {
+  width: 100%;
+}
+
+/* ========== 卡片区块 ========== */
+.section {
+  margin: 20rpx 30rpx;
+  background: #fff;
+  border-radius: 16rpx;
+  overflow: hidden;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
+}
+
+.section-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #999;
+  padding: 20rpx 24rpx 8rpx;
+}
+
+.list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 28rpx 24rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.list-item:last-child {
+  border-bottom: none;
+}
+
+.list-item:active {
+  background: #f9f9f9;
+}
+
+.item-text {
+  font-size: 30rpx;
+  color: #333;
+}
+
+.item-value {
+  font-size: 28rpx;
+  color: #999;
+}
+
+.arrow {
+  font-size: 32rpx;
+  color: #ccc;
+}
+
+/* ========== 关于我们 ========== */
+.about-content {
+  padding: 0 24rpx 28rpx;
+}
+
+.about-text {
+  font-size: 28rpx;
+  color: #666;
+  line-height: 1.8;
+}
+
+/* ========== 底部留白 ========== */
+.tab-bar-spacer {
+  height: 100rpx;
+}

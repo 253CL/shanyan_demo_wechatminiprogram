@@ -24,9 +24,9 @@
     <!-- 失败区域 -->
     <view class="result-fail" wx:if="{{!isSuccess}}">
       <image class="fail-icon" src="/images/login_demo_login_fail.png" mode="aspectFit"></image>
-      <text class="fail-title">登录失败</text>
+      <text class="fail-title">{{statusText}}</text>
       <view class="fail-error-box">
-        <text class="fail-error-label">请按以下指引排除原因：</text>
+        <text class="fail-error-label" wx:if="{{captchaCode}}">错误码：{{captchaCode}}</text>
         <text class="fail-error-text">{{errorText}}</text>
       </view>
     </view>

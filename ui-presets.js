@@ -160,6 +160,7 @@ function getBottomPopupOption() {
       {
         'ifShow': true,        // 是否展示自定义控件（Boolean，默认 FALSE）
         'name': '其他登录方式>', // 自定义控件显示文案
+        'url': '/pages/page-captcha/index', // 点击跳转到行为验证码页
         'width': '200rpx',     // 自定义控件宽度
         'height': '',          // 自定义控件高度（空=自适应）
         'top': '560rpx',       // 自定义控件距离弹窗上边框的距离

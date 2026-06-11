@@ -1,0 +1,68 @@
+<view class="container">
+  <!-- 自定义导航栏 -->
+  <view class="navbar" style="height: {{statusBarHeight}}px;"></view>
+  <view class="navbar-fixed" style="top: {{statusBarHeight}}px;">
+    <view class="navbar-content">
+      <view class="navbar-placeholder"></view>
+      <view class="navbar-placeholder"></view>
+    </view>
+  </view>
+  <view class="navbar-spacer" style="height: {{statusBarHeight + 44}}px;"></view>
+
+  <!-- 版本信息 -->
+  <view class="section">
+    <view class="section-title">版本信息</view>
+    <view class="list-item">
+      <text class="item-text">小程序版本</text>
+      <text class="item-value">{{version}}</text>
+    </view>
+  </view>
+
+  <!-- 集成文档 -->
+  <view class="section">
+    <view class="section-title">集成文档</view>
+    <view class="list-item" bindtap="onOpenDoc" data-doc="login">
+      <text class="item-text">一键登录</text>
+      <text class="arrow">></text>
+    </view>
+    <view class="list-item" bindtap="onOpenDoc" data-doc="captcha">
+      <text class="item-text">行为验证码</text>
+      <text class="arrow">></text>
+    </view>
+  </view>
+
+  <!-- 隐私协议 -->
+  <view class="section">
+    <view class="section-title">隐私协议</view>
+    <navigator url="/pages/contract/index?type=service" class="list-item">
+      <text class="item-text">服务协议</text>
+      <text class="arrow">></text>
+    </navigator>
+    <navigator url="/pages/contract/index?type=privacy" class="list-item">
+      <text class="item-text">隐私政策</text>
+      <text class="arrow">></text>
+    </navigator>
+  </view>
+
+  <!-- 联系我们 -->
+  <view class="section">
+    <view class="section-title">联系我们</view>
+    <view class="list-item">
+      <text class="item-text">微信号：CL_SDK</text>
+    </view>
+    <view class="list-item">
+      <text class="item-text">邮箱：app@253.com</text>
+    </view>
+  </view>
+
+  <!-- 关于我们 -->
+  <view class="section">
+    <view class="section-title">关于我们</view>
+    <view class="about-content">
+      <text class="about-text">{{aboutText}}</text>
+    </view>
+  </view>
+
+  <!-- 底部留白（适配 tabBar） -->
+  <view class="tab-bar-spacer"></view>
+</view>

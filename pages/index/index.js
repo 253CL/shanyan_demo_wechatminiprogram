@@ -33,6 +33,12 @@ Page({
     }
   },
 
+  onShow() {
+    if (typeof this.getTabBar === 'function' && this.getTabBar()) {
+      this.getTabBar().setData({ selected: 0 });
+    }
+  },
+
   /**
    * 进入体验模式
    * 导航至体验页面，展示多种授权页样式预设

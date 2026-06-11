@@ -4,18 +4,53 @@
     "pages/page-experience/page-experience",
     "pages/page-debug/page-debug",
     "pages/page-result/page-result",
-    "pages/contract/index"
+    "pages/contract/index",
+    "pages/page-captcha/index",
+    "pages/page-mine/index",
+    "pages/page-doc-view/index"
   ],
   "window": {
     "navigationStyle": "default",
     "navigationBarBackgroundColor": "#FFFFFF",
-    "navigationBarTextStyle": "black"
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#F5F5F5"
   },
   "plugins": {
     "auth-plugin": {
       "version": "2.2.0",
       "provider": "wx35678fec06d475b4"
+    },
+    "captcha": {
+      "version": "2.0.0",
+      "provider": "wx1fe8d9a3cb067a75"
     }
+  },
+  "tabBar": {
+    "custom": true,
+    "color": "#999999",
+    "selectedColor": "#2b7de0",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "white",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "一键登录",
+        "iconPath": "images/home_login_unchecked.png",
+        "selectedIconPath": "images/home_login_checked.png"
+      },
+      {
+        "pagePath": "pages/page-captcha/index",
+        "text": "行为验证码",
+        "iconPath": "images/home_captcha_unchecked.png",
+        "selectedIconPath": "images/home_captcha_checked.png"
+      },
+      {
+        "pagePath": "pages/page-mine/index",
+        "text": "个人中心",
+        "iconPath": "images/home_mine_unchecked.png",
+        "selectedIconPath": "images/home_mine_checked.png"
+      }
+    ]
   },
   "sitemapLocation": "sitemap.json",
   "style": "v2"

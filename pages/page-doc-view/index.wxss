@@ -1,0 +1,55 @@
+.container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  background: #fff;
+}
+
+/* ========== 自定义导航栏 ========== */
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1;
+  background: #fff;
+  border-bottom: 1rpx solid #eee;
+}
+
+.navbar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 88rpx;
+  padding: 0 24rpx;
+}
+
+.back-btn {
+  width: 60rpx;
+  display: flex;
+  align-items: center;
+}
+
+.back-icon {
+  font-size: 48rpx;
+  color: #333;
+}
+
+.navbar-title {
+  font-size: 34rpx;
+  font-weight: 600;
+  color: #333;
+}
+
+/* ========== 文档内容 ========== */
+.content {
+  width: 100%;
+  flex: 1;
+  padding: 0 30rpx;
+  box-sizing: border-box;
+}
+
+.spacer-bottom {
+  height: 60rpx;
+}

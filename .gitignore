@@ -17,6 +17,7 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
+project.private.config.json
 
 # Env / Secrets
 .env
@@ -26,3 +27,6 @@ Thumbs.db
 # Logs
 *.log
 .gstack/
+
+# Temp files
+临时文件.txt
