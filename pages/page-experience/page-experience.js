@@ -25,6 +25,7 @@ const app = getApp();
 Page({
   data: {
     statusBarHeight: 20,
+    showLoading: false,
   },
 
   /**
@@ -44,6 +45,13 @@ Page({
       });
     }
     this.autoInit();
+  },
+
+  /**
+   * 页面隐藏时清理 loading
+   */
+  onHide() {
+    this.setData({ showLoading: false });
   },
 
   /**
@@ -69,6 +77,17 @@ Page({
   },
 
   /**
+   * 显示 loading，SDK 回调时隐藏
+   */
+  showLoadingForAuth() {
+    this.setData({ showLoading: true });
+  },
+
+  hideLoading() {
+    this.setData({ showLoading: false });
+  },
+
+  /**
    * 通用方法：使用指定 UI 预设打开授权页，完成后跳转到结果页
    *
    * @param {Function} getPreset - 返回 UI 配置对象的函数（如 getBottomPopupOption）
@@ -81,9 +100,11 @@ Page({
    */
   openAuthWithStyle(getPreset, label) {
     const option = getPreset();
+    this.showLoadingForAuth();
     dlog.log('[Page-Experience] openAuthWithStyle 拉起授权页, label:', label);
     SDK.openLoginAuth({ option: option }, (authRes) => {
-      dlog.log('[Page-Experience] openLoginAuth result:', JSON.stringify(authRes));
+      this.hideLoading();
+      dlog.log('[Page-Experience] openAuthAuth result:', JSON.stringify(authRes));
       dlog.log('[Page-Experience] authRes.code:', authRes && authRes.code, 'type:', typeof authRes);
       if (authRes.code === '501') {
         // 全屏样式中"其他登录方式"按钮返回 501，跳转到行为验证码
@@ -146,7 +167,9 @@ Page({
 
   /** 默认弹窗样式：不传 option，SDK 使用默认配置 */
   onStandardStyle() {
+    this.showLoadingForAuth();
     SDK.openLoginAuth((authRes) => {
+      this.hideLoading();
       dlog.log('[Page-Experience] openLoginAuth result:', JSON.stringify(authRes));
       if (authRes.code === '501') {
         wx.showToast({ title: '用户取消授权', icon: 'none' });
@@ -168,23 +191,48 @@ Page({
   /** 全屏样式 */
   onCustomStyle() {
     const { getFullScreenOption } = require('../../ui-presets');
+    this.showLoadingForAuth();
     this.openAuthWithStyle(getFullScreenOption, '全屏样式');
   },
 
   /** 自定义弹窗样式1（极简样式） */
   onCustomStyle1() {
     const { getMinimalPopupOption } = require('../../ui-presets');
+    this.showLoadingForAuth();
     this.openAuthWithStyle(getMinimalPopupOption, '自定义弹窗样式1');
   },
 
   /** 自定义弹窗样式2（底部弹窗） */
   onCustomStyle2() {
     const { getBottomPopupOption } = require('../../ui-presets');
+    this.showLoadingForAuth();
     this.openAuthWithStyle(getBottomPopupOption, '自定义弹窗样式2');
   },
 
   /** 返回上一页 */
   onGoBack() {
     wx.navigateBack();
+  },
+
+  /**
+   * 分享给好友
+   */
+  onShareAppMessage() {
+    return {
+      title: '一键登录Demo',
+      path: '/pages/page-experience/page-experience',
+      imageUrl: '',
+    };
+  },
+
+  /**
+   * 分享到朋友圈
+   */
+  onShareTimeline() {
+    return {
+      title: '一键登录Demo',
+      query: '',
+      imageUrl: '',
+    };
   },
 });

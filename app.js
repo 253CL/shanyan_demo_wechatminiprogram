@@ -26,9 +26,9 @@ const ENV_MAP = {
   // 开发环境2：微信开发者工具（接口创建应用）- 推荐使用
   develop1: { sdkEnv: 'stable', appId: 'hfaqtYRe', appKey: 'BS5N82tT', label: 'stable环境' },
   // 体验版环境：用于 WeChat official testing
-  trial: { sdkEnv: 'release', appId: '9IQdkCRI', appKey: 'CZIp8p8u', label: 'release环境' },
+  trial: { sdkEnv: 'release', appId: 'lGBu6YuW', appKey: 'QEI2xcBY', label: 'release环境' },
   // 正式版环境：用于生产线上
-  release: { sdkEnv: 'release', appId: '9IQdkCRI', appKey: 'CZIp8p8u', label: 'release环境' },
+  release: { sdkEnv: 'release', appId: 'lGBu6YuW', appKey: 'QEI2xcBY', label: 'release环境' },
 };
 
 App({
@@ -37,7 +37,7 @@ App({
     appId: '',              // 当前环境的应用 ID（开发者在创蓝平台的应用 ID）
     appKey: '',             // 当前环境的应用 Key（用于手机号解密）
     envLabel: '',           // 环境标签，用于 UI 展示（如 "stable环境"、"release环境"）
-    demoLogEnabled: true,  // demo 层日志开关（仅影响页面层日志，SDK 层不受影响，默认关闭）
+    demoLogEnabled: false,  // demo 层日志开关（仅影响页面层日志，SDK 层不受影响，默认关闭）
   },
 
   /**
@@ -55,14 +55,8 @@ App({
    * 实际初始化由各页面在需要时调用 SDK.init({ appId }, callback)。
    */
   onLaunch() {
-    const envConfig = ENV_MAP.develop1;
-
-    // 设置 SDK 运行环境（必须在 init 前调用）
-    SDK.setEnvironment(envConfig.sdkEnv);
-    SDK.setLog(true);
-    // 清理本地缓存的初始化参数，确保下次 init 时重新请求服务端
-    SDK.clearScripCache();
-
+    //一键登录运行环境配置
+    const envConfig = ENV_MAP.release;
     // 保存环境配置到全局数据，供页面层使用
     this.globalData.appId = envConfig.appId;
     this.globalData.appKey = envConfig.appKey;

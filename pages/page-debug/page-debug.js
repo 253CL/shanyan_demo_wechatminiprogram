@@ -10,7 +10,7 @@ const appKey = app.globalData.appKey;
 // 注意：此接口已从 SDK 配置中移除，现由 demo 层自行管理
 const MOBILE_QUERY_URLS = {
   stable: 'https://110.cm253.com:8445/open/web/wxprog-mobile-query',
-  release: 'https://api.253.com/open/web/wxprog-mobile-query',
+  release: 'https://wsflash.253.com/open/web/wxprog-mobile-query',
 };
 
 /**
@@ -287,5 +287,27 @@ Page({
    */
   onGoBack() {
     wx.navigateBack();
+  },
+
+  /**
+   * 分享给好友
+   */
+  onShareAppMessage() {
+    return {
+      title: '一键登录Demo',
+      path: '/pages/page-debug/page-debug',
+      imageUrl: '',
+    };
+  },
+
+  /**
+   * 分享到朋友圈
+   */
+  onShareTimeline() {
+    return {
+      title: '一键登录Demo',
+      query: '',
+      imageUrl: '',
+    };
   },
 });

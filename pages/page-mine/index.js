@@ -44,4 +44,26 @@ Page({
       url: '/pages/page-doc-view/index?doc=' + doc,
     });
   },
+
+  /**
+   * 分享给好友
+   */
+  onShareAppMessage() {
+    return {
+      title: '一键登录Demo',
+      path: '/pages/page-mine/index',
+      imageUrl: '',
+    };
+  },
+
+  /**
+   * 分享到朋友圈
+   */
+  onShareTimeline() {
+    return {
+      title: '一键登录Demo',
+      query: '',
+      imageUrl: '',
+    };
+  },
 });

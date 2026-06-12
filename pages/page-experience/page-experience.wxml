@@ -39,4 +39,9 @@
       <text class="card-title">自定义弹窗样式2</text>
     </view>
   </view>
+
+  <!-- Loading 遮罩 -->
+  <view class="loading-overlay" wx:if="{{showLoading}}">
+    <image class="loading-gif" src="/images/login_demo_loading.gif" mode="aspectFit"></image>
+  </view>
 </view>

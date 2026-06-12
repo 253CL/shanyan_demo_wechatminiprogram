@@ -79,7 +79,7 @@ function aesDecrypt(content, seed) {
  */
 const MOBILE_QUERY_URL = {
   stable: 'https://110.cm253.com:8445/open/web/wxprog-mobile-query',
-  release: 'https://api.253.com/open/web/wxprog-mobile-query',
+  release: 'https://wsflash.253.com/open/web/wxprog-mobile-query',
 };
 
 /**

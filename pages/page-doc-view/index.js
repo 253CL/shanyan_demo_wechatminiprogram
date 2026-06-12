@@ -32,6 +32,28 @@ Page({
   goBack() {
     wx.navigateBack();
   },
+
+  /**
+   * 分享给好友
+   */
+  onShareAppMessage() {
+    return {
+      title: '一键登录Demo',
+      path: '/pages/page-doc-view/index?doc=' + (this.options && this.options.doc || 'login'),
+      imageUrl: '',
+    };
+  },
+
+  /**
+   * 分享到朋友圈
+   */
+  onShareTimeline() {
+    return {
+      title: '一键登录Demo',
+      query: 'doc=' + (this.options && this.options.doc || 'login'),
+      imageUrl: '',
+    };
+  },
 });
 
 function markdownToHtml(text) {
