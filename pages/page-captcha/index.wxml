@@ -23,7 +23,7 @@
   <!-- 验证码插件组件（隐藏，通过代码调用显示） -->
   <t-captcha
     id="captcha"
-    app-id="191114501"
+    app-id="{{captchaAppId}}"
     bindverify="handlerVerify"
     bindready="handlerReady"
     bindclose="handlerClose"

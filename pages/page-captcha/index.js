@@ -4,6 +4,7 @@ const app = getApp();
 Page({
   data: {
     statusBarHeight: 20,
+    captchaAppId: '',
   },
 
   onLoad() {
@@ -15,6 +16,15 @@ Page({
     } catch (e) {
       this.setData({ statusBarHeight: 20 });
     }
+    const g = app.globalData;
+    if (g.captchaCaptchaAppId) {
+      this.setData({ captchaAppId: g.captchaCaptchaAppId });
+    }
+    dlog.log('[Page-Captcha] 验证码配置信息 =>');
+    dlog.log('  appId:', g.captchaAppId);
+    dlog.log('  CaptchaAppId:', g.captchaCaptchaAppId);
+    dlog.log('  AppSecretKey:', g.captchaAppSecretKey);
+    dlog.log('  票据请求地址:', g.captchaTicketUrl);
   },
 
   onShow() {
@@ -41,13 +51,14 @@ Page({
 
   handlerReady() {
     this.setData({ captchaReady: true });
-    dlog.log('[Page-Captcha] 验证码组件已准备就绪，可以启动');
+    dlog.log('[Page-Captcha] 回调 => handlerReady，验证码组件已准备就绪');
   },
 
   handlerVerify(ev) {
+    dlog.log('[Page-Captcha] 回调 => handlerVerify, ev.detail:', JSON.stringify(ev.detail));
     if (ev.detail.ret === 0) {
       const ticket = ev.detail.ticket;
-      dlog.log('[Page-Captcha] 验证成功，收到 ticket:', ticket);
+      dlog.log('[Page-Captcha] 验证成功，ticket:', ticket);
       this.verifyTicketOnServer(ticket);
     } else {
       dlog.log('[Page-Captcha] 验证失败，ret:', ev.detail.ret);
@@ -56,6 +67,7 @@ Page({
   },
 
   handlerClose(ev) {
+    dlog.log('[Page-Captcha] 回调 => handlerClose, ev.detail:', JSON.stringify(ev.detail));
     if (ev && ev.detail && ev.detail.ret === 2) {
       dlog.log('[Page-Captcha] 用户主动点击关闭按钮，验证码弹窗关闭');
     } else {
@@ -64,29 +76,34 @@ Page({
   },
 
   handlerError(ev) {
+    dlog.log('[Page-Captcha] 回调 => handlerError, ev.detail:', JSON.stringify(ev.detail));
     dlog.error('[Page-Captcha] 验证码配置失败 => errMsg:', ev && ev.detail ? ev.detail.errMsg : 'unknown');
     wx.showToast({ title: '验证码加载失败', icon: 'none' });
   },
 
   verifyTicketOnServer(ticket) {
+    const g = app.globalData;
     const requestData = {
-      appId: 'eqWILZ9j',
-      appKey: 'onFZ5nkI',
-      AppSecretKey: 'CA7jaGZWzgnZPfvL3Pa0dno3S',
-      CaptchaAppId: '191114501',
+      appId: g.captchaAppId || '',
+      appKey: g.captchaAppKey || '',
+      AppSecretKey: g.captchaAppSecretKey || '',
+      CaptchaAppId: g.captchaCaptchaAppId || '',
       Ticket: ticket,
-      IP: '116.66.66.166',
+      IP: g.captchaTicketIp || '',
     };
-    dlog.log('[Page-Captcha] 请求服务端票据校验 => POST https://api.253.com/open/txyzm/yzmMini-v2');
+    const ticketUrl = g.captchaTicketUrl || 'https://api.253.com/open/txyzm/yzmMini-v2';
+    dlog.log('[Page-Captcha] 请求服务端票据校验 => POST ' + ticketUrl);
     dlog.log('[Page-Captcha] 请求参数:', JSON.stringify(requestData));
     wx.request({
-      url: 'https://api.253.com/open/txyzm/yzmMini-v2',
+      url: ticketUrl,
       method: 'POST',
       header: { 'content-type': 'application/x-www-form-urlencoded' },
       data: requestData,
       success: (res) => {
-        dlog.log('[Page-Captcha] 服务端响应 => statusCode:', res.statusCode, 'data:', JSON.stringify(res.data));
+        dlog.log('[Page-Captcha] 服务端响应回调 => statusCode:', res.statusCode);
+        dlog.log('[Page-Captcha] 响应数据:', JSON.stringify(res.data));
         if (res.data && res.data.code === '200000' && res.data.data && res.data.data.CaptchaCode === '1') {
+          dlog.log('[Page-Captcha] 验证通过，跳转结果页');
           wx.navigateTo({
             url: '/pages/page-result/page-result?styleName=captcha&success=true&ticket=' + ticket + '&message=' + encodeURIComponent('验证通过'),
           });
@@ -100,7 +117,7 @@ Page({
         }
       },
       fail: (err) => {
-        dlog.error('[Page-Captcha] 服务端请求失败 => ', JSON.stringify(err));
+        dlog.error('[Page-Captcha] 服务端请求失败 =>', JSON.stringify(err));
         wx.navigateTo({
           url: '/pages/page-result/page-result?styleName=captcha&success=false&message=' + encodeURIComponent('验证失败'),
         });
@@ -108,9 +125,6 @@ Page({
     });
   },
 
-  /**
-   * 分享给好友
-   */
   onShareAppMessage() {
     return {
       title: '一键登录Demo',
@@ -119,9 +133,6 @@ Page({
     };
   },
 
-  /**
-   * 分享到朋友圈
-   */
   onShareTimeline() {
     return {
       title: '一键登录Demo',
