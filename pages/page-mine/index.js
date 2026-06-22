@@ -36,6 +36,11 @@ Page({
     if (typeof this.getTabBar === 'function' && this.getTabBar()) {
       this.getTabBar().setData({ selected: 2 });
     }
+    // 隐私合规：首次启动时提示用户阅读并同意隐私政策
+    const modal = this.selectComponent('#privacyModal');
+    if (modal) {
+      modal.checkAndShow();
+    }
   },
 
   onOpenDoc(e) {

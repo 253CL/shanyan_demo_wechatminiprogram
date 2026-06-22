@@ -29,4 +29,7 @@
     bindclose="handlerClose"
     binderror="handlerError"
   />
+
+  <!-- 隐私政策弹窗 -->
+  <privacy-modal id="privacyModal" />
 </view>

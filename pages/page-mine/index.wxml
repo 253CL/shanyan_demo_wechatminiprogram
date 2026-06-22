@@ -65,4 +65,7 @@
 
   <!-- 底部留白（适配 tabBar） -->
   <view class="tab-bar-spacer"></view>
+
+  <!-- 隐私政策弹窗 -->
+  <privacy-modal id="privacyModal" />
 </view>
